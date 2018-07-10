@@ -16,7 +16,7 @@ gulp.task("watch",()=>{
             baseDir: './dist/'
         },
         port: 6633,
-        files: ['*.js', 'index.html']
+        files: ['./dist/*.js', './dist/*.html']
     })
 });
 

@@ -1,9 +1,23 @@
 <html>
     <head>
         <title>RUI test</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.min.js"></script>
     </head>
     <body>
-        <p>hello world</p>
-        <canvas id="ruicanvas"></canvas>
+        <canvas id="ruicanvas" style="width: 800px;height: 600px; background-color:#333"></canvas>
+        <script>
+            require(['rui'],rui=>{
+                let canvas = document.getElementById('ruicanvas');
+
+                let ruicanvas = new rui.RUICanvas(canvas);
+
+
+                function onFrame(ts){
+                    ruicanvas.OnFrame(ts);
+                    window.requestAnimationFrame(onFrame);
+                }
+                window.requestAnimationFrame(onFrame);
+            })
+        </script>
     </body>
 </html>
