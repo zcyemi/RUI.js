@@ -22,6 +22,7 @@
     "gulp-glsl": "^1.2.4",
     "gulp-sequence": "^1.0.0",
     "gulp-typescript": "^5.0.0-alpha.3",
+    "through2": "^2.0.3",
     "typescript": "^2.9.2"
   }
 }

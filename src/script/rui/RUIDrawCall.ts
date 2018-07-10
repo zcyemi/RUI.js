@@ -24,7 +24,7 @@ export class RUIDrawCall{
 
         console.log('rebuild');
         let cmd =new DrawCmd();
-        cmd.Rect = [10,10,100,20];
+        cmd.Rect = [-1,-1,0.5,0.5];
 
         this.drawList = [cmd];
 
