@@ -9,6 +9,7 @@ export class wglProgram{
 
 
     public AttrPos :number;
+    public AttrColor: number;
     public UniformProj:WebGLUniformLocation;
 
 
@@ -32,6 +33,8 @@ export class wglProgram{
         }
 
         this.AttrPos = this.Attribute['aPosition'];
+        this.AttrColor = this.Attribute['aColor'];
+
         this.UniformProj = this.Uniform['uProj'];
 
     }

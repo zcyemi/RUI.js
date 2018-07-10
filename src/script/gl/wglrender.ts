@@ -93,10 +93,14 @@ export class WGLRender{
         let drawRectCount = drawbuffer.drawCountRect;
         if(drawRectCount>0){
 
-
             gl.bindBuffer(gl.ARRAY_BUFFER,drawbuffer.vertexBufferRect);
             gl.vertexAttribPointer(this.m_programRect.AttrPos,2,gl.FLOAT,false,0,0);
             gl.enableVertexAttribArray(this.m_programRect.AttrPos);
+
+            //color
+            gl.bindBuffer(gl.ARRAY_BUFFER,drawbuffer.colorBufferRect);
+            gl.vertexAttribPointer(this.m_programRect.AttrColor,4,gl.FLOAT,true,0,0);
+            gl.enableVertexAttribArray(this.m_programRect.AttrColor);
 
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,this.m_indicesBuffer);
 

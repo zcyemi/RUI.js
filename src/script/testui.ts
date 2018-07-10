@@ -7,6 +7,7 @@ export class TestUI extends UIObject{
     constructor(){
         super();
         
+        this.style.color = [0.5,0.5,0.5,1.0];
     }
 
     public onBuild(){

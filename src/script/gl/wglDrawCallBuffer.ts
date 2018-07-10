@@ -1,13 +1,18 @@
 import { RUIDrawCall } from "../rui/RUIDrawCall";
 
+
+const COLOR_ERROR:number[] = [1,0,1,1];
+
 export class wglDrawCallBuffer {
 
     public vertexBufferRect: WebGLBuffer;
+    public colorBufferRect: WebGLBuffer;
     public drawCountRect: number = 0;
 
     private m_drawcall: RUIDrawCall;
 
     public isDirty: boolean = true;
+
 
 
     constructor(gl: WebGLRenderingContext, drawcall: RUIDrawCall) {
@@ -17,9 +22,11 @@ export class wglDrawCallBuffer {
 
         let vbuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, vbuffer);
-
         this.vertexBufferRect = vbuffer;
 
+        let cbuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER,cbuffer);
+        this.colorBufferRect = cbuffer;
 
     }
 
@@ -35,9 +42,23 @@ export class wglDrawCallBuffer {
         }
         else{
             let vertices = [];
+
+            let colorary = [];
             for (var i = 0; i < drawlist.length; i++) {
                 let cmd = drawlist[i];
                 let rect = cmd.Rect;
+
+                let color = cmd.Color;
+                if(color == null) color = COLOR_ERROR;
+                let r = color[0];
+                let g = color[1];
+                let b = color[2];
+                let a = color[3];
+                colorary.push(r,g,b,a);
+                colorary.push(r,g,b,a);
+                colorary.push(r,g,b,a);
+                colorary.push(r,g,b,a);
+                
                 
                 let x =rect[0];
                 let y = rect[1];
@@ -47,6 +68,9 @@ export class wglDrawCallBuffer {
             }
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBufferRect);
             gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(vertices),gl.STATIC_DRAW);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER,this.colorBufferRect);
+            gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(colorary),gl.STATIC_DRAW);
 
             console.log('sync vertex buffer');
         }

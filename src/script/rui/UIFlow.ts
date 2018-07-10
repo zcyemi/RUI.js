@@ -4,6 +4,7 @@ import { UIObject } from "./UIObject";
 export enum FlowNodeType{
     START,
     END,
+    CHILD,
 }
 
 export class UIFLowNode{
@@ -34,7 +35,8 @@ export class UIFlow{
     }
 
     public addChild(ui:UIObject){
-
+        let fnode = new UIFLowNode(FlowNodeType.CHILD,ui);
+        this.nodes.push(fnode);
     }
 
     public flexBegin(isHorizontal:boolean = true){

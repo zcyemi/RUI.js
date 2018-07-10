@@ -6,6 +6,7 @@ import { UIFlow, FlowNodeType } from "./UIFlow";
 export class DrawCmd{
 
     public Rect:number[] = [];
+    public Color:number[];
 
     public constructor(rect?:number[]){
         this.Rect = rect;
@@ -41,15 +42,25 @@ export class RUIDrawCall{
 
         var offsetX :number = 0;
         var offsetY : number = 0;
+        var maxWidth: number = 0;
+        var maxHeight: number =0;
         for(var i=0;i< nodes.length;i++){
             let node = nodes[i];
             
             switch(node.type){
                 case FlowNodeType.START:
-
-                let ui = node.ui;
-                let uil = ui.layout;
-                this.DrawRect(offsetX,offsetY,uil.width,uil.height);
+                {
+                    let ui = node.ui;
+                    let uil = ui.layout;
+                    this.DrawRectWithColor([offsetX,offsetY,uil.width,uil.height],ui.style.color);
+                }
+                break;
+                case FlowNodeType.CHILD:
+                {
+                    let ui = node.ui;
+                    this.DrawRectWithColor([offsetX,offsetY,ui.layout.width,ui.layout.height],ui.style.color);
+                    offsetY += ui.layout.height;
+                }
                 break;
             }
             
@@ -60,5 +71,11 @@ export class RUIDrawCall{
         this.drawList.push(new DrawCmd([x,y,w,h]));
     }
 
+    private DrawRectWithColor(pos:number[],color:number[]){
+
+        let cmd = new DrawCmd(pos);
+        cmd.Color = color;
+        this.drawList.push(cmd);
+    }
     
 }
