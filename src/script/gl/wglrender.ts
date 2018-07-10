@@ -14,6 +14,8 @@ export class WGLRender{
 
     private m_programRect: wglProgram;
 
+    private m_projectParam: number[] = [0,0,0,0];
+
     private constructor(wgl:WebGLRenderingContext){
         this.gl = wgl;
 
@@ -58,8 +60,10 @@ export class WGLRender{
 
         //pipeline
         gl.disable(gl.DEPTH_TEST);
-        gl.viewport(0,0,800,600);
-    
+        //parameter
+        this.m_projectParam = [2/800.0,2/600.0,0,0];
+
+        gl.viewport(0,0,800.0,600.0);
     }
 
     public Draw(drawcall :RUIDrawCall){
@@ -86,15 +90,17 @@ export class WGLRender{
         let drawRectCount = drawbuffer.drawCountRect;
         if(drawRectCount>0){
 
-            gl.useProgram(this.m_programRect.Program);
 
             gl.bindBuffer(gl.ARRAY_BUFFER,drawbuffer.vertexBufferRect);
             gl.vertexAttribPointer(this.m_programRect.AttrPos,2,gl.FLOAT,false,0,0);
             gl.enableVertexAttribArray(this.m_programRect.AttrPos);
 
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,this.m_indicesBuffer);
+
+            gl.useProgram(this.m_programRect.Program);
+            gl.uniform4fv(this.m_programRect.UniformProj,this.m_projectParam);
             
-            gl.drawElements(gl.TRIANGLES,6,gl.UNSIGNED_SHORT,0);
+            gl.drawElements(gl.TRIANGLES,drawRectCount*6,gl.UNSIGNED_SHORT,0);
         }
 
         drawbuffer.isDirty = false;
