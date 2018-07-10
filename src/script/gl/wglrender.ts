@@ -81,9 +81,12 @@ export class WGLRender{
 
         let drawbuffer:wglDrawCallBuffer = this.m_drawcallBuffer;
         
-        //if(!drawbuffer.isDirty) return;
+        if(!drawbuffer.isDirty) return;
 
         let gl = this.gl;
+
+        gl.clearColor(0,0,0,1);
+        gl.clear(gl.COLOR_BUFFER_BIT);
         
 
         //draw drawcall buffer

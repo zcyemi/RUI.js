@@ -31,7 +31,8 @@ function BuildScript(){
     gulp.src('./src/script/**/*.ts').pipe(gulpts({
         module: 'amd',
         declaration: true,
-        outFile: 'rui.js'
+        outFile: 'rui.js',
+        target: 'es5',
     }))
     .pipe(gulp.dest('./dist/'));
 }
