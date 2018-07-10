@@ -2,6 +2,7 @@ import { RUIDrawCall } from "../rui/RUIDrawCall";
 import { wglDrawCallBuffer } from "./wglDrawCallBuffer";
 import { wglProgram } from "./wglProgram";
 import { GLSL_VERT_DEF, GLSL_FRAG_COLOR } from "./wglShaderLib";
+import { RUIFontTexture } from "../rui/RUIFontTexture";
 
 
 const MAX_RECT_COUNT = 512;
@@ -18,6 +19,7 @@ export class WGLRender{
 
     private constructor(wgl:WebGLRenderingContext){
         this.gl = wgl;
+        RUIFontTexture.Init();
 
         this.SetupWGL();
     }
