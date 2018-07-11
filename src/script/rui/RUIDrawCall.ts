@@ -31,40 +31,40 @@ export class RUIDrawCall{
         console.log('rebuild');
         this.drawList = [];
 
-        this.RebuildFlow(ui.flow);
+        this.RebuildFlow(ui);
 
         ui.isDirty =false;
     }
 
-    private RebuildFlow(flow:UIFlow){
-        if(flow == null) return;
-        let nodes = flow.nodes;
+    private RebuildFlow(ui:UIObject){
+        // if(flow == null) return;
+        // let nodes = flow.nodes;
 
-        var offsetX :number = 0;
-        var offsetY : number = 0;
-        var maxWidth: number = 0;
-        var maxHeight: number =0;
-        for(var i=0;i< nodes.length;i++){
-            let node = nodes[i];
+        // var offsetX :number = 0;
+        // var offsetY : number = 0;
+        // var maxWidth: number = 0;
+        // var maxHeight: number =0;
+        // for(var i=0;i< nodes.length;i++){
+        //     let node = nodes[i];
             
-            switch(node.type){
-                case FlowNodeType.START:
-                {
-                    let ui = node.ui;
-                    let uil = ui.layout;
-                    this.DrawRectWithColor([offsetX,offsetY,uil.width,uil.height],ui.style.color);
-                }
-                break;
-                case FlowNodeType.CHILD:
-                {
-                    let ui = node.ui;
-                    this.DrawRectWithColor([offsetX,offsetY,ui.layout.width,ui.layout.height],ui.style.color);
-                    offsetY += ui.layout.height;
-                }
-                break;
-            }
+        //     switch(node.type){
+        //         case FlowNodeType.START:
+        //         {
+        //             let ui = node.ui;
+        //             let uil = ui.layout;
+        //             this.DrawRectWithColor([offsetX,offsetY,uil.width,uil.height],ui.style.color);
+        //         }
+        //         break;
+        //         case FlowNodeType.CHILD:
+        //         {
+        //             let ui = node.ui;
+        //             this.DrawRectWithColor([offsetX,offsetY,ui.layout.width,ui.layout.height],ui.style.color);
+        //             offsetY += ui.layout.height;
+        //         }
+        //         break;
+        //     }
             
-        }
+        // }
     }
 
     private DrawRect(x:number,y:number,w:number,h:number){

@@ -1,12 +1,11 @@
-import { UIObject } from "./UIObject";
 import { UIUtil } from "./UIUtil";
+import { UIView } from "./UIView";
 
 
-export class UIButton extends UIObject{
+export class UIButton extends UIView {
 
     constructor(){
         super();
-
-        this.style.color = UIUtil.RandomColor();
+        this.color = UIUtil.RandomColor();
     }
 }

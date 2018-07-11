@@ -13,6 +13,11 @@ gulp.task("build",()=>{
 });
 
 gulp.task("watch",()=>{
+
+    BuildScript();
+    BuildTemplate();
+    BuildShader();
+
     gulp.watch('./src/script/**/*.ts',BuildScript);
     gulp.watch('./src/template/**.*',BuildTemplate);
     gulp.watch('./src/shader/*.glsl',BuildShader);

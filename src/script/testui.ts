@@ -1,30 +1,29 @@
 import { UIObject } from "./rui/UIObject";
 import { UIButton } from "./rui/UIButton";
+import { UIView } from "./rui/UIView";
+import { UIBuilder } from "./rui/UIBuilder";
+import { UIDocument } from "./rui/UIDocument";
 
 
-export class TestUI extends UIObject{
+export class TestUI extends UIDocument{
 
     constructor(){
         super();
-        
-        this.style.color = [0.5,0.5,0.5,1.0];
+        this.width = 800;
+        this.height = 600;
     }
 
-    public onBuild(){
-
+    public onBuild(builder:UIBuilder){
         console.log("testui onbuild");
 
-        this.layout.width = 220;
-        this.layout.height = 500;
-        this.layout.isDirty = true;
+        builder.flexStart(true);
 
-        let flow = this.flow;
-        flow.begin();
+        builder.flexChildFlex(new UIButton(),1);
+        builder.flexChildFixed(new UIButton(),100);
+        builder.flexChildFlex(new UIButton(),1);
 
-        flow.addChild(new UIButton());
-        flow.addChild(new UIButton());
+        builder.flexEnd();
 
 
-        flow.end();
     }
 }

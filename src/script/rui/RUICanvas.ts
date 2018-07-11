@@ -2,6 +2,7 @@ import { RUIDrawCall } from "./RUIDrawCall";
 import { UIObject } from "./UIObject"
 import { TestUI } from "../testui";
 import { WGLRender } from "../gl/wglrender";
+import { UIBuilder } from "./UIBuilder";
 
 export class RUICanvas{
 
@@ -30,7 +31,10 @@ export class RUICanvas{
     }
 
     public OnBuild(){
+        this.m_rootUI.onBuild(new UIBuilder(this.m_rootUI));
         this.m_drawcall.Rebuild(this.m_rootUI);
+
+        console.log(this.m_rootUI);
     }
 
     public OnFrame(ts:number){
