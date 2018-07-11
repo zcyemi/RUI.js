@@ -1,57 +1,120 @@
 import { UIObject } from "./UIObject";
-import { FlexLayout } from "./FlexLayout";
-import { UILayout, LayoutType } from "./UILayout";
+import { UIGroup } from "./widget/UIGroup";
+
+
+class HierarchyState{
+    public ui:UIObject;
+    public contentWidth:number = 0;
+    public contentHeight:number = 0;
+    public vertical: boolean = true;
+
+    public maxWidth:number;
+    public maxHeight:number;
+}
 
 export class UIBuilder{
 
     private m_root: UIObject;
-    private m_list: UIObject[];
 
-    private m_stackUI:UIObject[] = [];
-    private m_stackLayout:LayoutType[] = [];
+    private m_stateStack: HierarchyState[] = [];
+    private m_state: HierarchyState;
 
-    private m_ui:UIObject;
-    private m_layoutType: LayoutType = LayoutType.DEFAULT;
-
-    public constructor(ui:UIObject){
+   
+    public constructor(ui:UIObject,canvasWidth:number,canvasHeight:number){
         this.m_root = ui;
-        this.m_list = ui.children;
 
-        this.m_ui = ui;
-        this.m_layoutType = LayoutType.DEFAULT;
+        let state = new HierarchyState();
+        state.ui = ui;
+        state.maxWidth = canvasWidth;
+        state.maxHeight = canvasHeight;
+        this.m_state = state;
+    }
+
+    private expandContentSize(state:HierarchyState,ui:UIObject){
+        if(state.vertical){
+            state.contentHeight += ui.drawHeight;
+            state.contentWidth = Math.max(state.contentWidth,ui.drawWidth);
+        }
+        else{
+            state.contentWidth += ui.drawWidth;
+            state.contentHeight = Math.max(state.contentHeight,ui.drawHeight);
+        }
+    }
+
+    private calculateSize(state:HierarchyState,ui:UIObject){
+        if(ui.width == null){
+            ui.width = state.contentWidth;
+        }
+        else{
+            ui.width = Math.max(state.contentWidth,ui.validWidth);
+        }
+
+        if(ui.height == null){
+            ui.height = state.contentHeight;
+        }
+        else{
+            ui.height = Math.max(state.contentHeight,ui.validHeight);
+        }
+    }
+
+    public Start(){
+
     }
 
     public addChild(ui:UIObject){
-        this.m_list.push(ui);
+
+        this.m_stateStack.push(this.m_state);
+        this.m_state.ui.children.push(ui);
+
+        let state = new HierarchyState();
+        state.ui = ui;
+        this.m_state = state;
+
+        ui.onBuild(this);
+        
+        this.m_state = this.m_stateStack.pop();
+        this.expandContentSize(this.m_state,ui);
     }
 
-    public flexStart(isVertical:boolean = false){
+    public End(){
+        let state = this.m_state;
+        let ui = state.ui;
 
-        this.m_stackUI.push(this.m_root);
-        this.m_stackLayout.push(this.m_layoutType);
+        this.calculateSize(state,ui);
+    }
 
-        let flex = new FlexLayout(isVertical);
+    public GroupBegin(isVertical:boolean,width?:number,height?:number){
+        let group = new UIGroup(isVertical);
+        group.width = width;
+        group.height = height;
+        this.m_stateStack.push(this.m_state);
+        this.m_state.ui.children.push(group);
 
-        this.m_ui = flex;
-        this.m_layoutType = isVertical? LayoutType.FLEX_VER : LayoutType.FLEX_HOR;
+        let state = new HierarchyState();
+        state.ui = group;
+        state.vertical = isVertical;
+        
+        this.m_state = state;
 
-        this.m_list.push(flex);
-        this.m_list = flex.children;
+        return group;
+    }
+
+    public GroupEnd(){
+        let state = this.m_state;
+        let ui = state.ui;
+
+        this.calculateSize(state,ui);
+        this.m_state = this.m_stateStack.pop();
+        this.expandContentSize(this.m_state,ui);
+    }
+
+    public FlexBegin(isVertical:boolean){
 
     }
 
-    public flexChildFixed(ui:UIObject,size:number){
-        (<FlexLayout>this.m_ui).addChildFixed(ui,size);
+    public FlexEnd(){
+        
     }
 
-    public flexChildFlex(ui:UIObject,flex:number){
-        (<FlexLayout>this.m_ui).addChildFlex(ui,flex);
-    }
-
-    public flexEnd(){
-        this.m_ui = this.m_stackUI.pop();
-        this.m_layoutType = this.m_stackLayout.pop();
-        this.m_list = this.m_ui.children;
-    }
 
 }

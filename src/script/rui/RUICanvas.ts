@@ -31,7 +31,7 @@ export class RUICanvas{
     }
 
     public OnBuild(){
-        this.m_rootUI.onBuild(new UIBuilder(this.m_rootUI));
+        this.m_rootUI.onBuild(new UIBuilder(this.m_rootUI,800,600));
         this.m_drawcall.Rebuild(this.m_rootUI);
 
         console.log(this.m_rootUI);

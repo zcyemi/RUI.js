@@ -18,24 +18,6 @@ define("rui/UIStyle", ["require", "exports"], function (require, exports) {
     }());
     exports.UIStyle = UIStyle;
 });
-define("rui/UILayout", ["require", "exports", "rui/UIObject"], function (require, exports, UIObject_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var LayoutType;
-    (function (LayoutType) {
-        LayoutType[LayoutType["DEFAULT"] = 0] = "DEFAULT";
-        LayoutType[LayoutType["FLEX_HOR"] = 1] = "FLEX_HOR";
-        LayoutType[LayoutType["FLEX_VER"] = 2] = "FLEX_VER";
-    })(LayoutType = exports.LayoutType || (exports.LayoutType = {}));
-    var UILayout = /** @class */ (function (_super) {
-        __extends(UILayout, _super);
-        function UILayout() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return UILayout;
-    }(UIObject_1.UIObject));
-    exports.UILayout = UILayout;
-});
 define("rui/UIFlow", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -84,82 +66,177 @@ define("rui/UIFlow", ["require", "exports"], function (require, exports) {
     }());
     exports.UIFlow = UIFlow;
 });
-define("rui/FlexLayout", ["require", "exports", "rui/UILayout"], function (require, exports, UILayout_1) {
+define("rui/widget/UIGroup", ["require", "exports", "rui/UIObject"], function (require, exports, UIObject_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var FlexLayout = /** @class */ (function (_super) {
-        __extends(FlexLayout, _super);
-        function FlexLayout(isVertical) {
-            if (isVertical === void 0) { isVertical = false; }
-            return _super.call(this) || this;
+    var UIGroup = /** @class */ (function (_super) {
+        __extends(UIGroup, _super);
+        function UIGroup(isVertical) {
+            var _this = _super.call(this) || this;
+            _this.isVertical = true;
+            _this.isVertical = isVertical;
+            _this.isDrawn = false;
+            return _this;
         }
-        FlexLayout.prototype.addChildFixed = function (ui, size) {
-            this.children.push(ui);
-        };
-        FlexLayout.prototype.addChildFlex = function (ui, flex) {
-            this.children.push(ui);
-        };
-        return FlexLayout;
-    }(UILayout_1.UILayout));
-    exports.FlexLayout = FlexLayout;
+        return UIGroup;
+    }(UIObject_1.UIObject));
+    exports.UIGroup = UIGroup;
 });
-define("rui/UIBuilder", ["require", "exports", "rui/FlexLayout", "rui/UILayout"], function (require, exports, FlexLayout_1, UILayout_2) {
+define("rui/UIBuilder", ["require", "exports", "rui/widget/UIGroup"], function (require, exports, UIGroup_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var UIBuilder = /** @class */ (function () {
-        function UIBuilder(ui) {
-            this.m_stackUI = [];
-            this.m_stackLayout = [];
-            this.m_layoutType = UILayout_2.LayoutType.DEFAULT;
-            this.m_root = ui;
-            this.m_list = ui.children;
-            this.m_ui = ui;
-            this.m_layoutType = UILayout_2.LayoutType.DEFAULT;
+    var HierarchyState = /** @class */ (function () {
+        function HierarchyState() {
+            this.contentWidth = 0;
+            this.contentHeight = 0;
+            this.vertical = true;
         }
+        return HierarchyState;
+    }());
+    var UIBuilder = /** @class */ (function () {
+        function UIBuilder(ui, canvasWidth, canvasHeight) {
+            this.m_stateStack = [];
+            this.m_root = ui;
+            var state = new HierarchyState();
+            state.ui = ui;
+            state.maxWidth = canvasWidth;
+            state.maxHeight = canvasHeight;
+            this.m_state = state;
+        }
+        UIBuilder.prototype.expandContentSize = function (state, ui) {
+            if (state.vertical) {
+                state.contentHeight += ui.drawHeight;
+                state.contentWidth = Math.max(state.contentWidth, ui.drawWidth);
+            }
+            else {
+                state.contentWidth += ui.drawWidth;
+                state.contentHeight = Math.max(state.contentHeight, ui.drawHeight);
+            }
+        };
+        UIBuilder.prototype.calculateSize = function (state, ui) {
+            if (ui.width == null) {
+                ui.width = state.contentWidth;
+            }
+            else {
+                ui.width = Math.max(state.contentWidth, ui.validWidth);
+            }
+            if (ui.height == null) {
+                ui.height = state.contentHeight;
+            }
+            else {
+                ui.height = Math.max(state.contentHeight, ui.validHeight);
+            }
+        };
+        UIBuilder.prototype.Start = function () {
+        };
         UIBuilder.prototype.addChild = function (ui) {
-            this.m_list.push(ui);
+            this.m_stateStack.push(this.m_state);
+            this.m_state.ui.children.push(ui);
+            var state = new HierarchyState();
+            state.ui = ui;
+            this.m_state = state;
+            ui.onBuild(this);
+            this.m_state = this.m_stateStack.pop();
+            this.expandContentSize(this.m_state, ui);
         };
-        UIBuilder.prototype.flexStart = function (isVertical) {
-            if (isVertical === void 0) { isVertical = false; }
-            this.m_stackUI.push(this.m_root);
-            this.m_stackLayout.push(this.m_layoutType);
-            var flex = new FlexLayout_1.FlexLayout(isVertical);
-            this.m_ui = flex;
-            this.m_layoutType = isVertical ? UILayout_2.LayoutType.FLEX_VER : UILayout_2.LayoutType.FLEX_HOR;
-            this.m_list.push(flex);
-            this.m_list = flex.children;
+        UIBuilder.prototype.End = function () {
+            var state = this.m_state;
+            var ui = state.ui;
+            this.calculateSize(state, ui);
         };
-        UIBuilder.prototype.flexChildFixed = function (ui, size) {
-            this.m_ui.addChildFixed(ui, size);
+        UIBuilder.prototype.GroupBegin = function (isVertical, width, height) {
+            var group = new UIGroup_1.UIGroup(isVertical);
+            group.width = width;
+            group.height = height;
+            this.m_stateStack.push(this.m_state);
+            this.m_state.ui.children.push(group);
+            var state = new HierarchyState();
+            state.ui = group;
+            state.vertical = isVertical;
+            this.m_state = state;
+            return group;
         };
-        UIBuilder.prototype.flexChildFlex = function (ui, flex) {
-            this.m_ui.addChildFlex(ui, flex);
+        UIBuilder.prototype.GroupEnd = function () {
+            var state = this.m_state;
+            var ui = state.ui;
+            this.calculateSize(state, ui);
+            this.m_state = this.m_stateStack.pop();
+            this.expandContentSize(this.m_state, ui);
         };
-        UIBuilder.prototype.flexEnd = function () {
-            this.m_ui = this.m_stackUI.pop();
-            this.m_layoutType = this.m_stackLayout.pop();
-            this.m_list = this.m_ui.children;
+        UIBuilder.prototype.FlexBegin = function (isVertical) {
+        };
+        UIBuilder.prototype.FlexEnd = function () {
         };
         return UIBuilder;
     }());
     exports.UIBuilder = UIBuilder;
 });
-define("rui/UIObject", ["require", "exports"], function (require, exports) {
+define("rui/UIUtil", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var UIUtil = /** @class */ (function () {
+        function UIUtil() {
+        }
+        UIUtil.RandomColor = function () {
+            return [Math.random(), Math.random(), Math.random(), 1.0];
+        };
+        return UIUtil;
+    }());
+    exports.UIUtil = UIUtil;
+});
+define("rui/UIObject", ["require", "exports", "rui/UIUtil"], function (require, exports, UIUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var UIObject = /** @class */ (function () {
         function UIObject() {
             this.isDirty = false;
+            this.isDrawn = true;
+            this.margin = 1;
+            this.color = UIUtil_1.UIUtil.RandomColor();
             this.extra = {};
             this.children = [];
         }
         UIObject.prototype.onBuild = function (builder) {
         };
+        Object.defineProperty(UIObject.prototype, "validWidth", {
+            get: function () {
+                if (!this.width) {
+                    return 23;
+                }
+                return this.width;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIObject.prototype, "validHeight", {
+            get: function () {
+                if (!this.height) {
+                    return 23;
+                }
+                return this.height;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIObject.prototype, "drawWidth", {
+            get: function () {
+                return this.validWidth + this.margin * 2;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIObject.prototype, "drawHeight", {
+            get: function () {
+                return this.validHeight + this.margin * 2;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return UIObject;
     }());
     exports.UIObject = UIObject;
 });
-define("rui/RUIDrawCall", ["require", "exports"], function (require, exports) {
+define("rui/RUIDrawCall", ["require", "exports", "rui/widget/UIGroup"], function (require, exports, UIGroup_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var DrawCmd = /** @class */ (function () {
@@ -178,35 +255,29 @@ define("rui/RUIDrawCall", ["require", "exports"], function (require, exports) {
         RUIDrawCall.prototype.Rebuild = function (ui) {
             console.log('rebuild');
             this.drawList = [];
-            this.RebuildFlow(ui);
+            this.RebuildFlow(ui, 0, 0);
             ui.isDirty = false;
         };
-        RUIDrawCall.prototype.RebuildFlow = function (ui) {
-            // if(flow == null) return;
-            // let nodes = flow.nodes;
-            // var offsetX :number = 0;
-            // var offsetY : number = 0;
-            // var maxWidth: number = 0;
-            // var maxHeight: number =0;
-            // for(var i=0;i< nodes.length;i++){
-            //     let node = nodes[i];
-            //     switch(node.type){
-            //         case FlowNodeType.START:
-            //         {
-            //             let ui = node.ui;
-            //             let uil = ui.layout;
-            //             this.DrawRectWithColor([offsetX,offsetY,uil.width,uil.height],ui.style.color);
-            //         }
-            //         break;
-            //         case FlowNodeType.CHILD:
-            //         {
-            //             let ui = node.ui;
-            //             this.DrawRectWithColor([offsetX,offsetY,ui.layout.width,ui.layout.height],ui.style.color);
-            //             offsetY += ui.layout.height;
-            //         }
-            //         break;
-            //     }
-            // }
+        RUIDrawCall.prototype.RebuildFlow = function (ui, xoff, yoff) {
+            var drawoffx = xoff;
+            var drawoffy = yoff;
+            var c = ui.children;
+            var isvertical = true;
+            if (ui instanceof UIGroup_2.UIGroup) {
+                isvertical = ui.isVertical;
+            }
+            if (ui.isDrawn)
+                this.DrawRectWithColor([drawoffx + ui.margin, drawoffy + ui.margin, ui.validWidth, ui.validHeight], ui.color);
+            for (var i = 0; i < c.length; i++) {
+                var cu = c[i];
+                this.RebuildFlow(cu, drawoffx, drawoffy);
+                if (isvertical) {
+                    drawoffy += cu.drawHeight;
+                }
+                else {
+                    drawoffx += cu.drawWidth;
+                }
+            }
         };
         RUIDrawCall.prototype.DrawRect = function (x, y, w, h) {
             this.drawList.push(new DrawCmd([x, y, w, h]));
@@ -220,81 +291,46 @@ define("rui/RUIDrawCall", ["require", "exports"], function (require, exports) {
     }());
     exports.RUIDrawCall = RUIDrawCall;
 });
-define("rui/UIUtil", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var UIUtil = /** @class */ (function () {
-        function UIUtil() {
-        }
-        UIUtil.RandomColor = function () {
-            return [Math.random(), Math.random(), Math.random(), 1.0];
-        };
-        return UIUtil;
-    }());
-    exports.UIUtil = UIUtil;
-});
-define("rui/UIView", ["require", "exports", "rui/UIObject"], function (require, exports, UIObject_2) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var UIView = /** @class */ (function (_super) {
-        __extends(UIView, _super);
-        function UIView() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.width = 50;
-            _this.height = 23;
-            return _this;
-        }
-        return UIView;
-    }(UIObject_2.UIObject));
-    exports.UIView = UIView;
-});
-define("rui/UIButton", ["require", "exports", "rui/UIUtil", "rui/UIView"], function (require, exports, UIUtil_1, UIView_1) {
+define("rui/widget/UIButton", ["require", "exports", "rui/UIObject"], function (require, exports, UIObject_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var UIButton = /** @class */ (function (_super) {
         __extends(UIButton, _super);
-        function UIButton() {
+        function UIButton(w, height) {
             var _this = _super.call(this) || this;
-            _this.color = UIUtil_1.UIUtil.RandomColor();
+            _this.width = w;
+            _this.height = height;
             return _this;
         }
         return UIButton;
-    }(UIView_1.UIView));
+    }(UIObject_2.UIObject));
     exports.UIButton = UIButton;
 });
-define("rui/UIDocument", ["require", "exports", "rui/UIView"], function (require, exports, UIView_2) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var UIDocument = /** @class */ (function (_super) {
-        __extends(UIDocument, _super);
-        function UIDocument() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return UIDocument;
-    }(UIView_2.UIView));
-    exports.UIDocument = UIDocument;
-});
-define("testui", ["require", "exports", "rui/UIButton", "rui/UIDocument"], function (require, exports, UIButton_1, UIDocument_1) {
+define("testui", ["require", "exports", "rui/UIObject", "rui/widget/UIButton"], function (require, exports, UIObject_3, UIButton_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var TestUI = /** @class */ (function (_super) {
         __extends(TestUI, _super);
         function TestUI() {
             var _this = _super.call(this) || this;
-            _this.width = 800;
-            _this.height = 600;
+            _this.isDrawn = false;
             return _this;
         }
         TestUI.prototype.onBuild = function (builder) {
             console.log("testui onbuild");
-            builder.flexStart(true);
-            builder.flexChildFlex(new UIButton_1.UIButton(), 1);
-            builder.flexChildFixed(new UIButton_1.UIButton(), 100);
-            builder.flexChildFlex(new UIButton_1.UIButton(), 1);
-            builder.flexEnd();
+            builder.Start();
+            builder.addChild(new UIButton_1.UIButton(100));
+            builder.addChild(new UIButton_1.UIButton(200));
+            builder.GroupBegin(false, 500);
+            {
+                builder.addChild(new UIButton_1.UIButton(50));
+                builder.addChild(new UIButton_1.UIButton(200));
+            }
+            builder.GroupEnd();
+            builder.End();
         };
         return TestUI;
-    }(UIDocument_1.UIDocument));
+    }(UIObject_3.UIObject));
     exports.TestUI = TestUI;
 });
 define("gl/wglDrawCallBuffer", ["require", "exports"], function (require, exports) {
@@ -520,7 +556,7 @@ define("gl/wglrender", ["require", "exports", "gl/wglDrawCallBuffer", "gl/wglPro
             if (!drawbuffer.isDirty)
                 return;
             var gl = this.gl;
-            gl.clearColor(0, 0, 0, 1);
+            gl.clearColor(0.95, 0.95, 0.95, 1);
             gl.clear(gl.COLOR_BUFFER_BIT);
             //draw drawcall buffer
             var drawRectCount = drawbuffer.drawCountRect;
@@ -560,7 +596,7 @@ define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "testui", "gl/
             this.OnBuild();
         }
         RUICanvas.prototype.OnBuild = function () {
-            this.m_rootUI.onBuild(new UIBuilder_1.UIBuilder(this.m_rootUI));
+            this.m_rootUI.onBuild(new UIBuilder_1.UIBuilder(this.m_rootUI, 800, 600));
             this.m_drawcall.Rebuild(this.m_rootUI);
             console.log(this.m_rootUI);
         };
@@ -585,4 +621,16 @@ define("rui", ["require", "exports", "rui/RUICanvas"], function (require, export
     }
     Object.defineProperty(exports, "__esModule", { value: true });
     __export(RUICanvas_1);
+});
+define("rui/widget/UIFlex", ["require", "exports", "rui/UIObject"], function (require, exports, UIObject_4) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var UIFlex = /** @class */ (function (_super) {
+        __extends(UIFlex, _super);
+        function UIFlex() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return UIFlex;
+    }(UIObject_4.UIObject));
+    exports.UIFlex = UIFlex;
 });

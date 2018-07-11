@@ -1,5 +1,6 @@
 import { UIObject } from "./UIObject";
 import { UIFlow, FlowNodeType } from "./UIFlow";
+import { UIGroup } from "./widget/UIGroup";
 
 
 
@@ -31,40 +32,36 @@ export class RUIDrawCall{
         console.log('rebuild');
         this.drawList = [];
 
-        this.RebuildFlow(ui);
+        this.RebuildFlow(ui,0,0);
 
         ui.isDirty =false;
     }
 
-    private RebuildFlow(ui:UIObject){
-        // if(flow == null) return;
-        // let nodes = flow.nodes;
+    private RebuildFlow(ui:UIObject,xoff:number,yoff:number){
 
-        // var offsetX :number = 0;
-        // var offsetY : number = 0;
-        // var maxWidth: number = 0;
-        // var maxHeight: number =0;
-        // for(var i=0;i< nodes.length;i++){
-        //     let node = nodes[i];
-            
-        //     switch(node.type){
-        //         case FlowNodeType.START:
-        //         {
-        //             let ui = node.ui;
-        //             let uil = ui.layout;
-        //             this.DrawRectWithColor([offsetX,offsetY,uil.width,uil.height],ui.style.color);
-        //         }
-        //         break;
-        //         case FlowNodeType.CHILD:
-        //         {
-        //             let ui = node.ui;
-        //             this.DrawRectWithColor([offsetX,offsetY,ui.layout.width,ui.layout.height],ui.style.color);
-        //             offsetY += ui.layout.height;
-        //         }
-        //         break;
-        //     }
-            
-        // }
+        let drawoffx = xoff;
+        let drawoffy = yoff;
+
+        let c= ui.children;
+        let isvertical:boolean = true;
+        if(ui instanceof UIGroup){
+            isvertical = (<UIGroup>ui).isVertical;
+        }
+
+        if(ui.isDrawn)
+            this.DrawRectWithColor([drawoffx + ui.margin,drawoffy + ui.margin,ui.validWidth,ui.validHeight],ui.color);
+        
+        for(var i=0;i< c.length;i++){
+            let cu = c[i];
+            this.RebuildFlow(cu,drawoffx,drawoffy);
+
+            if(isvertical){
+                drawoffy += cu.drawHeight;
+            }
+            else{
+                drawoffx += cu.drawWidth;
+            }
+        }
     }
 
     private DrawRect(x:number,y:number,w:number,h:number){
@@ -72,7 +69,6 @@ export class RUIDrawCall{
     }
 
     private DrawRectWithColor(pos:number[],color:number[]){
-
         let cmd = new DrawCmd(pos);
         cmd.Color = color;
         this.drawList.push(cmd);
