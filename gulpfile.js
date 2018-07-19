@@ -37,7 +37,7 @@ function BuildScript(){
         module: 'amd',
         declaration: true,
         outFile: 'rui.js',
-        target: 'es5',
+        target: 'es5'
     }))
     .pipe(gulp.dest('./dist/'));
 }

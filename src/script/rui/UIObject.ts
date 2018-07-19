@@ -1,49 +1,76 @@
-import { UIStyle } from "./UIStyle";
-import { UIFlow } from "./UIFlow";
-import { UIBuilder } from "./UIBuilder";
 import { UIUtil } from "./UIUtil";
 
+export enum UIDisplayMode{
+    Default,
+    Flex,
+    Floating
+}
+
+export enum UIOrientation{
+    Vertical,
+    Horizontal
+}
+
 export class UIObject{
-    public isDirty:boolean = false;
-    public isDrawn: boolean = true;
+    public parent: UIObject = null;
+    public children: UIObject[] = [];
+    public isDirty:boolean = true;
 
-    public width:number|null;
-    public height:number|null;
-
-    public margin:number = 1;
+    public visible: boolean= false;
+    public displayMode: UIDisplayMode = UIDisplayMode.Default;
+    public orientation: UIOrientation = UIOrientation.Vertical;
 
     public color: number[] = UIUtil.RandomColor();
+    public width?:number = null;
+    public height?:number = null;
+    public flex?:number;
+
+    public _width:number;
+    public _height:number;
+    public _offsetX:number;
+    public _offsetY:number;
 
     public extra:{[key:string]:any} = {};
-
-    
-    public children: UIObject[] = [];
 
     constructor(){
     }
 
-    public onBuild(builder:UIBuilder){
+    public onBuild(){
 
     }
 
-    public get validWidth():number{
-        if(!this.width){
-            return 23;
+    public _dispatchOnBuild(){
+
+        this.onBuild();
+        let clen = this.children.length;
+        for(var i=0;i< clen;i++){
+            this.children[i]._dispatchOnBuild();
         }
-        return this.width;
     }
 
-    public get validHeight():number{
-        if(!this.height){
-            return 23;
-        }
-        return this.height;
+    public addChild(ui:UIObject){
+        if(ui == null || ui == this || ui == this.parent) return
+
+        let index = this.children.indexOf(ui);
+        if(index >=0) return;
+
+        ui.parent = this;
+        this.children.push(ui);
+
+        ui.isDirty= true;
+        this.isDirty = true;
+    }
+
+    public removeChild(ui:UIObject){
+        if(ui == null) return;
+
+        let index = this.children.indexOf(ui);
+        if(index < 0 )return;
+
+        this.children.splice(index,1);
+        ui.parent = null;
+        this.isDirty= true;
     }
     
-    public get drawWidth():number{
-        return this.validWidth+ this.margin *2;
-    }
-    public get drawHeight():number{
-        return this.validHeight + this.margin *2;
-    }
+    
 }

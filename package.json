@@ -26,6 +26,7 @@
     "typescript": "^2.9.2"
   },
   "dependencies": {
+    "@types/webgl2": "0.0.4",
     "typr-ts": "^1.1.5"
   }
 }

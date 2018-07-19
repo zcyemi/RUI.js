@@ -8,169 +8,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define("rui/UIStyle", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var UIStyle = /** @class */ (function () {
-        function UIStyle() {
-        }
-        return UIStyle;
-    }());
-    exports.UIStyle = UIStyle;
-});
-define("rui/UIFlow", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var FlowNodeType;
-    (function (FlowNodeType) {
-        FlowNodeType[FlowNodeType["START"] = 0] = "START";
-        FlowNodeType[FlowNodeType["END"] = 1] = "END";
-        FlowNodeType[FlowNodeType["CHILD"] = 2] = "CHILD";
-    })(FlowNodeType = exports.FlowNodeType || (exports.FlowNodeType = {}));
-    var UIFLowNode = /** @class */ (function () {
-        function UIFLowNode(nodetype, ui) {
-            this.type = nodetype;
-            this.ui = ui;
-        }
-        return UIFLowNode;
-    }());
-    exports.UIFLowNode = UIFLowNode;
-    var UIFlow = /** @class */ (function () {
-        function UIFlow(target) {
-            this.nodes = [];
-            this.m_targetUI = target;
-        }
-        UIFlow.prototype.begin = function () {
-            this.nodes = [];
-            var fnode = new UIFLowNode(FlowNodeType.START, this.m_targetUI);
-            this.nodes.push(fnode);
-        };
-        UIFlow.prototype.addChild = function (ui) {
-            var fnode = new UIFLowNode(FlowNodeType.CHILD, ui);
-            this.nodes.push(fnode);
-        };
-        UIFlow.prototype.flexBegin = function (isHorizontal) {
-            if (isHorizontal === void 0) { isHorizontal = true; }
-        };
-        UIFlow.prototype.flexChildFlex = function (ui, flex) {
-        };
-        UIFlow.prototype.flexChildWidth = function (ui, flex) {
-        };
-        UIFlow.prototype.flexEnd = function () {
-        };
-        UIFlow.prototype.end = function () {
-            var fnode = new UIFLowNode(FlowNodeType.END, this.m_targetUI);
-            this.nodes.push(fnode);
-        };
-        return UIFlow;
-    }());
-    exports.UIFlow = UIFlow;
-});
-define("rui/widget/UIGroup", ["require", "exports", "rui/UIObject"], function (require, exports, UIObject_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var UIGroup = /** @class */ (function (_super) {
-        __extends(UIGroup, _super);
-        function UIGroup(isVertical) {
-            var _this = _super.call(this) || this;
-            _this.isVertical = true;
-            _this.isVertical = isVertical;
-            _this.isDrawn = false;
-            return _this;
-        }
-        return UIGroup;
-    }(UIObject_1.UIObject));
-    exports.UIGroup = UIGroup;
-});
-define("rui/UIBuilder", ["require", "exports", "rui/widget/UIGroup"], function (require, exports, UIGroup_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var HierarchyState = /** @class */ (function () {
-        function HierarchyState() {
-            this.contentWidth = 0;
-            this.contentHeight = 0;
-            this.vertical = true;
-        }
-        return HierarchyState;
-    }());
-    var UIBuilder = /** @class */ (function () {
-        function UIBuilder(ui, canvasWidth, canvasHeight) {
-            this.m_stateStack = [];
-            this.m_root = ui;
-            var state = new HierarchyState();
-            state.ui = ui;
-            state.maxWidth = canvasWidth;
-            state.maxHeight = canvasHeight;
-            this.m_state = state;
-        }
-        UIBuilder.prototype.expandContentSize = function (state, ui) {
-            if (state.vertical) {
-                state.contentHeight += ui.drawHeight;
-                state.contentWidth = Math.max(state.contentWidth, ui.drawWidth);
-            }
-            else {
-                state.contentWidth += ui.drawWidth;
-                state.contentHeight = Math.max(state.contentHeight, ui.drawHeight);
-            }
-        };
-        UIBuilder.prototype.calculateSize = function (state, ui) {
-            if (ui.width == null) {
-                ui.width = state.contentWidth;
-            }
-            else {
-                ui.width = Math.max(state.contentWidth, ui.validWidth);
-            }
-            if (ui.height == null) {
-                ui.height = state.contentHeight;
-            }
-            else {
-                ui.height = Math.max(state.contentHeight, ui.validHeight);
-            }
-        };
-        UIBuilder.prototype.Start = function () {
-        };
-        UIBuilder.prototype.addChild = function (ui) {
-            this.m_stateStack.push(this.m_state);
-            this.m_state.ui.children.push(ui);
-            var state = new HierarchyState();
-            state.ui = ui;
-            this.m_state = state;
-            ui.onBuild(this);
-            this.m_state = this.m_stateStack.pop();
-            this.expandContentSize(this.m_state, ui);
-        };
-        UIBuilder.prototype.End = function () {
-            var state = this.m_state;
-            var ui = state.ui;
-            this.calculateSize(state, ui);
-        };
-        UIBuilder.prototype.GroupBegin = function (isVertical, width, height) {
-            var group = new UIGroup_1.UIGroup(isVertical);
-            group.width = width;
-            group.height = height;
-            this.m_stateStack.push(this.m_state);
-            this.m_state.ui.children.push(group);
-            var state = new HierarchyState();
-            state.ui = group;
-            state.vertical = isVertical;
-            this.m_state = state;
-            return group;
-        };
-        UIBuilder.prototype.GroupEnd = function () {
-            var state = this.m_state;
-            var ui = state.ui;
-            this.calculateSize(state, ui);
-            this.m_state = this.m_stateStack.pop();
-            this.expandContentSize(this.m_state, ui);
-        };
-        UIBuilder.prototype.FlexBegin = function (isVertical) {
-        };
-        UIBuilder.prototype.FlexEnd = function () {
-        };
-        return UIBuilder;
-    }());
-    exports.UIBuilder = UIBuilder;
-});
 define("rui/UIUtil", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -187,56 +24,65 @@ define("rui/UIUtil", ["require", "exports"], function (require, exports) {
 define("rui/UIObject", ["require", "exports", "rui/UIUtil"], function (require, exports, UIUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var UIDisplayMode;
+    (function (UIDisplayMode) {
+        UIDisplayMode[UIDisplayMode["Default"] = 0] = "Default";
+        UIDisplayMode[UIDisplayMode["Flex"] = 1] = "Flex";
+        UIDisplayMode[UIDisplayMode["Floating"] = 2] = "Floating";
+    })(UIDisplayMode = exports.UIDisplayMode || (exports.UIDisplayMode = {}));
+    var UIOrientation;
+    (function (UIOrientation) {
+        UIOrientation[UIOrientation["Vertical"] = 0] = "Vertical";
+        UIOrientation[UIOrientation["Horizontal"] = 1] = "Horizontal";
+    })(UIOrientation = exports.UIOrientation || (exports.UIOrientation = {}));
     var UIObject = /** @class */ (function () {
         function UIObject() {
-            this.isDirty = false;
-            this.isDrawn = true;
-            this.margin = 1;
-            this.color = UIUtil_1.UIUtil.RandomColor();
-            this.extra = {};
+            this.parent = null;
             this.children = [];
+            this.isDirty = true;
+            this.visible = false;
+            this.displayMode = UIDisplayMode.Default;
+            this.orientation = UIOrientation.Vertical;
+            this.color = UIUtil_1.UIUtil.RandomColor();
+            this.width = null;
+            this.height = null;
+            this.extra = {};
         }
-        UIObject.prototype.onBuild = function (builder) {
+        UIObject.prototype.onBuild = function () {
         };
-        Object.defineProperty(UIObject.prototype, "validWidth", {
-            get: function () {
-                if (!this.width) {
-                    return 23;
-                }
-                return this.width;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(UIObject.prototype, "validHeight", {
-            get: function () {
-                if (!this.height) {
-                    return 23;
-                }
-                return this.height;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(UIObject.prototype, "drawWidth", {
-            get: function () {
-                return this.validWidth + this.margin * 2;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(UIObject.prototype, "drawHeight", {
-            get: function () {
-                return this.validHeight + this.margin * 2;
-            },
-            enumerable: true,
-            configurable: true
-        });
+        UIObject.prototype._dispatchOnBuild = function () {
+            this.onBuild();
+            var clen = this.children.length;
+            for (var i = 0; i < clen; i++) {
+                this.children[i]._dispatchOnBuild();
+            }
+        };
+        UIObject.prototype.addChild = function (ui) {
+            if (ui == null || ui == this || ui == this.parent)
+                return;
+            var index = this.children.indexOf(ui);
+            if (index >= 0)
+                return;
+            ui.parent = this;
+            this.children.push(ui);
+            ui.isDirty = true;
+            this.isDirty = true;
+        };
+        UIObject.prototype.removeChild = function (ui) {
+            if (ui == null)
+                return;
+            var index = this.children.indexOf(ui);
+            if (index < 0)
+                return;
+            this.children.splice(index, 1);
+            ui.parent = null;
+            this.isDirty = true;
+        };
         return UIObject;
     }());
     exports.UIObject = UIObject;
 });
-define("rui/RUIDrawCall", ["require", "exports", "rui/widget/UIGroup"], function (require, exports, UIGroup_2) {
+define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (require, exports, UIObject_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var DrawCmd = /** @class */ (function () {
@@ -255,29 +101,36 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/widget/UIGroup"], function
         RUIDrawCall.prototype.Rebuild = function (ui) {
             console.log('rebuild');
             this.drawList = [];
-            this.RebuildFlow(ui, 0, 0);
+            this.RebuildUINode(ui);
             ui.isDirty = false;
         };
-        RUIDrawCall.prototype.RebuildFlow = function (ui, xoff, yoff) {
-            var drawoffx = xoff;
-            var drawoffy = yoff;
-            var c = ui.children;
-            var isvertical = true;
-            if (ui instanceof UIGroup_2.UIGroup) {
-                isvertical = ui.isVertical;
-            }
-            if (ui.isDrawn)
-                this.DrawRectWithColor([drawoffx + ui.margin, drawoffy + ui.margin, ui.validWidth, ui.validHeight], ui.color);
-            for (var i = 0; i < c.length; i++) {
-                var cu = c[i];
-                this.RebuildFlow(cu, drawoffx, drawoffy);
-                if (isvertical) {
-                    drawoffy += cu.drawHeight;
+        RUIDrawCall.prototype.RebuildUINode = function (ui) {
+            var children = ui.children;
+            var childCount = children.length;
+            var isVertical = ui.orientation == UIObject_1.UIOrientation.Vertical;
+            var maxsize = isVertical ? ui.width : ui.height;
+            var offset = 0;
+            if (childCount != 0) {
+                for (var i = 0; i < childCount; i++) {
+                    var c = children[i];
+                    if (c.isDirty) {
+                        this.RebuildUINode(c);
+                        c._offsetX = isVertical ? 0 : offset;
+                        c._offsetY = isVertical ? offset : 0;
+                    }
+                    offset += isVertical ? c._height : c._width;
+                    maxsize = Math.max(maxsize, isVertical ? c._width : c._height);
                 }
-                else {
-                    drawoffx += cu.drawWidth;
-                }
+                if (ui.width == undefined)
+                    ui._width = isVertical ? maxsize : offset;
+                if (ui.height == undefined)
+                    ui._height = isVertical ? offset : maxsize;
             }
+            else {
+                ui._width = ui.width == null ? 20 : ui.width;
+                ui._height = ui.height == null ? 20 : ui.height;
+            }
+            ui.isDirty = false;
         };
         RUIDrawCall.prototype.DrawRect = function (x, y, w, h) {
             this.drawList.push(new DrawCmd([x, y, w, h]));
@@ -290,48 +143,6 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/widget/UIGroup"], function
         return RUIDrawCall;
     }());
     exports.RUIDrawCall = RUIDrawCall;
-});
-define("rui/widget/UIButton", ["require", "exports", "rui/UIObject"], function (require, exports, UIObject_2) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var UIButton = /** @class */ (function (_super) {
-        __extends(UIButton, _super);
-        function UIButton(w, height) {
-            var _this = _super.call(this) || this;
-            _this.width = w;
-            _this.height = height;
-            return _this;
-        }
-        return UIButton;
-    }(UIObject_2.UIObject));
-    exports.UIButton = UIButton;
-});
-define("testui", ["require", "exports", "rui/UIObject", "rui/widget/UIButton"], function (require, exports, UIObject_3, UIButton_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var TestUI = /** @class */ (function (_super) {
-        __extends(TestUI, _super);
-        function TestUI() {
-            var _this = _super.call(this) || this;
-            _this.isDrawn = false;
-            return _this;
-        }
-        TestUI.prototype.onBuild = function (builder) {
-            console.log("testui onbuild");
-            builder.Start();
-            builder.addChild(new UIButton_1.UIButton(100));
-            builder.addChild(new UIButton_1.UIButton(200));
-            builder.GroupBegin(false, 500);
-            {
-                builder.addChild(new UIButton_1.UIButton(50));
-                builder.addChild(new UIButton_1.UIButton(200));
-            }
-            builder.GroupEnd();
-            builder.End();
-        };
-        return TestUI;
-    }(UIObject_3.UIObject));
-    exports.TestUI = TestUI;
 });
 define("gl/wglDrawCallBuffer", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -493,12 +304,12 @@ define("rui/RUIFontTexture", ["require", "exports"], function (require, exports)
     }());
     exports.RUIFontTexture = RUIFontTexture;
 });
-define("gl/wglrender", ["require", "exports", "gl/wglDrawCallBuffer", "gl/wglProgram", "gl/wglShaderLib", "rui/RUIFontTexture"], function (require, exports, wglDrawCallBuffer_1, wglProgram_1, wglShaderLib_1, RUIFontTexture_1) {
+define("gl/wglctx", ["require", "exports", "gl/wglDrawCallBuffer", "gl/wglProgram", "gl/wglShaderLib", "rui/RUIFontTexture"], function (require, exports, wglDrawCallBuffer_1, wglProgram_1, wglShaderLib_1, RUIFontTexture_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var MAX_RECT_COUNT = 512;
-    var WGLRender = /** @class */ (function () {
-        function WGLRender(wgl) {
+    var WGLContext = /** @class */ (function () {
+        function WGLContext(wgl) {
             this.m_drawcallBuffer = null;
             this.m_indicesBuffer = null;
             this.m_projectParam = [0, 0, 0, 0];
@@ -506,19 +317,22 @@ define("gl/wglrender", ["require", "exports", "gl/wglDrawCallBuffer", "gl/wglPro
             RUIFontTexture_1.RUIFontTexture.Init();
             this.SetupWGL();
         }
-        WGLRender.InitWidthCanvas = function (canvas) {
-            var wgl = canvas.getContext('webgl');
+        WGLContext.InitWidthCanvas = function (canvas) {
+            var wgl = canvas.getContext('webgl2');
+            if (wgl == null) {
+                wgl = canvas.getContext('webgl');
+            }
             if (wgl == null) {
                 throw new Error('get webgl context failed!');
             }
-            var wglrender = new WGLRender(wgl);
+            var wglrender = new WGLContext(wgl);
             return wglrender;
         };
-        WGLRender.InitWidthWGL = function (wgl) {
-            var wglrender = new WGLRender(wgl);
+        WGLContext.InitWidthWGL = function (wgl) {
+            var wglrender = new WGLContext(wgl);
             return wglrender;
         };
-        WGLRender.prototype.SetupWGL = function () {
+        WGLContext.prototype.SetupWGL = function () {
             var gl = this.gl;
             if (gl == null)
                 return;
@@ -541,7 +355,7 @@ define("gl/wglrender", ["require", "exports", "gl/wglDrawCallBuffer", "gl/wglPro
             this.m_projectParam = [2 / 800.0, 2 / 600.0, 0, 0];
             gl.viewport(0, 0, 800.0, 600.0);
         };
-        WGLRender.prototype.Draw = function (drawcall) {
+        WGLContext.prototype.Draw = function (drawcall) {
             if (drawcall == null)
                 return;
             if (this.m_drawcallBuffer == null) {
@@ -575,28 +389,78 @@ define("gl/wglrender", ["require", "exports", "gl/wglDrawCallBuffer", "gl/wglPro
             }
             drawbuffer.isDirty = false;
         };
-        return WGLRender;
+        return WGLContext;
     }());
-    exports.WGLRender = WGLRender;
+    exports.WGLContext = WGLContext;
 });
-define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "testui", "gl/wglrender", "rui/UIBuilder"], function (require, exports, RUIDrawCall_1, testui_1, wglrender_1, UIBuilder_1) {
+define("rui/UIWidgets", ["require", "exports", "rui/UIObject"], function (require, exports, UIObject_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var UIButton = /** @class */ (function (_super) {
+        __extends(UIButton, _super);
+        function UIButton() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        UIButton.prototype.onBuild = function () {
+            this.visible = true;
+            this.width = 100;
+            this.height = 23;
+        };
+        return UIButton;
+    }(UIObject_2.UIObject));
+    exports.UIButton = UIButton;
+    var UIRect = /** @class */ (function (_super) {
+        __extends(UIRect, _super);
+        function UIRect() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        UIRect.prototype.onBuild = function () {
+            this.visible = true;
+            this.width = 50;
+            this.height = 50;
+        };
+        return UIRect;
+    }(UIObject_2.UIObject));
+    exports.UIRect = UIRect;
+});
+define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/UIWidgets"], function (require, exports, UIObject_3, UIWidgets_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var DebugUI = /** @class */ (function (_super) {
+        __extends(DebugUI, _super);
+        function DebugUI() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        DebugUI.prototype.onBuild = function () {
+            this.addChild(new UIWidgets_1.UIButton());
+            var c = new UIObject_3.UIObject();
+            c.orientation = UIObject_3.UIOrientation.Horizontal;
+            c.addChild(new UIWidgets_1.UIRect());
+            c.addChild(new UIWidgets_1.UIRect());
+            this.addChild(c);
+            this.addChild(new UIWidgets_1.UIRect());
+        };
+        return DebugUI;
+    }(UIObject_3.UIObject));
+    exports.DebugUI = DebugUI;
+});
+define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "gl/wglctx", "rui/DebugUI"], function (require, exports, RUIDrawCall_1, wglctx_1, DebugUI_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUICanvas = /** @class */ (function () {
         function RUICanvas(canvas, UIClass) {
             this.m_valid = false;
-            console.log('create rui canvas');
             this.m_canvas = canvas;
-            this.m_gl = wglrender_1.WGLRender.InitWidthCanvas(canvas);
+            this.m_gl = wglctx_1.WGLContext.InitWidthCanvas(canvas);
             this.m_drawcall = new RUIDrawCall_1.RUIDrawCall();
-            this.m_rootUI = new testui_1.TestUI();
+            this.m_rootUI = new DebugUI_1.DebugUI();
             if (this.m_gl) {
                 this.m_valid = true;
             }
             this.OnBuild();
         }
         RUICanvas.prototype.OnBuild = function () {
-            this.m_rootUI.onBuild(new UIBuilder_1.UIBuilder(this.m_rootUI, 800, 600));
+            this.m_rootUI._dispatchOnBuild();
             this.m_drawcall.Rebuild(this.m_rootUI);
             console.log(this.m_rootUI);
         };
@@ -621,16 +485,4 @@ define("rui", ["require", "exports", "rui/RUICanvas"], function (require, export
     }
     Object.defineProperty(exports, "__esModule", { value: true });
     __export(RUICanvas_1);
-});
-define("rui/widget/UIFlex", ["require", "exports", "rui/UIObject"], function (require, exports, UIObject_4) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var UIFlex = /** @class */ (function (_super) {
-        __extends(UIFlex, _super);
-        function UIFlex() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return UIFlex;
-    }(UIObject_4.UIObject));
-    exports.UIFlex = UIFlex;
 });

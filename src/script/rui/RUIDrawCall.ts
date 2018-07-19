@@ -1,6 +1,4 @@
-import { UIObject } from "./UIObject";
-import { UIFlow, FlowNodeType } from "./UIFlow";
-import { UIGroup } from "./widget/UIGroup";
+import { UIObject, UIOrientation } from "./UIObject";
 
 
 
@@ -31,38 +29,53 @@ export class RUIDrawCall{
 
         console.log('rebuild');
         this.drawList = [];
-
-        this.RebuildFlow(ui,0,0);
+        
+        this.RebuildUINode(ui);
 
         ui.isDirty =false;
     }
 
-    private RebuildFlow(ui:UIObject,xoff:number,yoff:number){
 
-        let drawoffx = xoff;
-        let drawoffy = yoff;
+    private RebuildUINode(ui:UIObject){
 
-        let c= ui.children;
-        let isvertical:boolean = true;
-        if(ui instanceof UIGroup){
-            isvertical = (<UIGroup>ui).isVertical;
-        }
+        let children = ui.children;
+        let childCount = children.length;
 
-        if(ui.isDrawn)
-            this.DrawRectWithColor([drawoffx + ui.margin,drawoffy + ui.margin,ui.validWidth,ui.validHeight],ui.color);
+        let isVertical = ui.orientation == UIOrientation.Vertical;
         
-        for(var i=0;i< c.length;i++){
-            let cu = c[i];
-            this.RebuildFlow(cu,drawoffx,drawoffy);
+        let maxsize:number = isVertical ? ui.width : ui.height;
+        let offset:number = 0;
+        
+        if(childCount != 0){
 
-            if(isvertical){
-                drawoffy += cu.drawHeight;
+            for(var i=0;i< childCount;i++){
+
+                let c = children[i];
+                if(c.isDirty){
+                    this.RebuildUINode(c);
+
+                    c._offsetX = isVertical ? 0 : offset;
+                    c._offsetY = isVertical ? offset : 0;
+                }
+
+                offset += isVertical ? c._height : c._width;
+                maxsize = Math.max(maxsize, isVertical ? c._width : c._height);
+
             }
-            else{
-                drawoffx += cu.drawWidth;
-            }
+
+            if(ui.width == undefined) ui._width = isVertical ? maxsize : offset;
+            if(ui.height == undefined) ui._height = isVertical ? offset : maxsize;
         }
+        else{
+            ui._width = ui.width == null ? 20 :ui.width;
+            ui._height = ui.height == null? 20 : ui.height;
+        }
+
+        
+        
+        ui.isDirty= false;
     }
+
 
     private DrawRect(x:number,y:number,w:number,h:number){
         this.drawList.push(new DrawCmd([x,y,w,h]));
