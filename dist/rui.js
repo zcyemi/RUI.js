@@ -102,7 +102,17 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
             console.log('rebuild');
             this.drawList = [];
             this.RebuildUINode(ui);
+            this.ExecNodes(ui, this.PostRebuild.bind(this));
             ui.isDirty = false;
+        };
+        RUIDrawCall.prototype.ExecNodes = function (uiobj, f) {
+            f(uiobj);
+            var c = uiobj.children;
+            var cc = c.length;
+            for (var i = 0; i < cc; i++) {
+                var cu = c[i];
+                this.ExecNodes(cu, f);
+            }
         };
         RUIDrawCall.prototype.RebuildUINode = function (ui) {
             var children = ui.children;
@@ -131,6 +141,21 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
                 ui._height = ui.height == null ? 20 : ui.height;
             }
             ui.isDirty = false;
+        };
+        RUIDrawCall.prototype.PostRebuild = function (ui) {
+            var p = ui.parent;
+            if (p == null) {
+                ui._calculateX = 0;
+                ui._calculateY = 0;
+            }
+            else {
+                ui._calculateX = p._calculateX + ui._offsetX;
+                ui._calculateY = p._calculateY + ui._offsetY;
+            }
+            if (ui.visible) {
+                var rect = [ui._calculateX, ui._calculateY, ui._width, ui._height];
+                this.DrawRectWithColor(rect, ui.color);
+            }
         };
         RUIDrawCall.prototype.DrawRect = function (x, y, w, h) {
             this.drawList.push(new DrawCmd([x, y, w, h]));

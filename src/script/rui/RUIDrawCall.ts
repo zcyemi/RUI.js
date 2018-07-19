@@ -32,12 +32,22 @@ export class RUIDrawCall{
         
         this.RebuildUINode(ui);
 
+        this.ExecNodes(ui,this.PostRebuild.bind(this));
+
         ui.isDirty =false;
     }
 
+    private ExecNodes(uiobj:UIObject,f:(ui:UIObject)=>void){
+        f(uiobj);
+        let c= uiobj.children;
+        let cc = c.length;
+        for(let i=0;i<cc;i++){
+            let cu = c[i];
+            this.ExecNodes(cu,f);
+        }
+    }
 
     private RebuildUINode(ui:UIObject){
-
         let children = ui.children;
         let childCount = children.length;
 
@@ -70,10 +80,27 @@ export class RUIDrawCall{
             ui._width = ui.width == null ? 20 :ui.width;
             ui._height = ui.height == null? 20 : ui.height;
         }
-
-        
-        
         ui.isDirty= false;
+    }
+
+    private PostRebuild(ui:UIObject){
+        
+        let p = ui.parent;
+        if(p == null){
+            ui._calculateX = 0;
+            ui._calculateY = 0;
+        }
+        else{
+            ui._calculateX = p._calculateX + ui._offsetX;
+            ui._calculateY = p._calculateY + ui._offsetY;
+        }
+
+        if(ui.visible){
+
+            let rect = [ui._calculateX,ui._calculateY,ui._width,ui._height];
+            this.DrawRectWithColor(rect,ui.color);
+        }
+
     }
 
 

@@ -29,6 +29,8 @@ export class UIObject{
     public _height:number;
     public _offsetX:number;
     public _offsetY:number;
+    public _calculateX:number;
+    public _calculateY:number;
 
     public extra:{[key:string]:any} = {};
 
