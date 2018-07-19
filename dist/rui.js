@@ -418,6 +418,58 @@ define("gl/wglctx", ["require", "exports", "gl/wglDrawCallBuffer", "gl/wglProgra
     }());
     exports.WGLContext = WGLContext;
 });
+define("rui/RUIEventSys", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUIEvent = /** @class */ (function () {
+        function RUIEvent() {
+            this.isUsed = false;
+            this._isPrevented = false;
+        }
+        RUIEvent.prototype.prevent = function () {
+            this._isPrevented = true;
+        };
+        RUIEvent.prototype.Use = function () {
+            this.isUsed = true;
+        };
+        return RUIEvent;
+    }());
+    exports.RUIEvent = RUIEvent;
+    var RUIEventEmitter = /** @class */ (function () {
+        function RUIEventEmitter() {
+            this.m_listener = [];
+        }
+        RUIEventEmitter.prototype.on = function (listener) {
+            var l = this.m_listener;
+            var index = l.indexOf(listener);
+            if (index >= 0)
+                return;
+            l.push(listener);
+        };
+        RUIEventEmitter.prototype.removeListener = function (listener) {
+            var l = this.m_listener;
+            var index = l.indexOf(listener);
+            if (index >= 0) {
+                l.splice(index, 1);
+            }
+        };
+        RUIEventEmitter.prototype.removeAllListener = function () {
+            this.m_listener = [];
+        };
+        RUIEventEmitter.prototype.emit = function (e) {
+            var l = this.m_listener;
+            var lc = l.length;
+            for (var i = 0; i < lc; i++) {
+                var li = l[i];
+                li(e);
+                if (e['_isPrevented'])
+                    return;
+            }
+        };
+        return RUIEventEmitter;
+    }());
+    exports.RUIEventEmitter = RUIEventEmitter;
+});
 define("rui/UIWidgets", ["require", "exports", "rui/UIObject"], function (require, exports, UIObject_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -469,7 +521,28 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/UIWidgets"], f
     }(UIObject_3.UIObject));
     exports.DebugUI = DebugUI;
 });
-define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "gl/wglctx", "rui/DebugUI"], function (require, exports, RUIDrawCall_1, wglctx_1, DebugUI_1) {
+define("rui/RUIInput", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUIInput = /** @class */ (function () {
+        function RUIInput(uicanvas) {
+            this.m_target = uicanvas;
+            this.RegisterEvent();
+        }
+        RUIInput.prototype.RegisterEvent = function () {
+            var c = this.m_target.canvas;
+            c.addEventListener('mousedown', function (e) {
+            });
+            c.addEventListener('mouseup', function (e) {
+            });
+            c.addEventListener('mousemove', function (e) {
+            });
+        };
+        return RUIInput;
+    }());
+    exports.RUIInput = RUIInput;
+});
+define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "gl/wglctx", "rui/DebugUI", "rui/RUIInput"], function (require, exports, RUIDrawCall_1, wglctx_1, DebugUI_1, RUIInput_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUICanvas = /** @class */ (function () {
@@ -479,11 +552,26 @@ define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "gl/wglctx", "
             this.m_gl = wglctx_1.WGLContext.InitWidthCanvas(canvas);
             this.m_drawcall = new RUIDrawCall_1.RUIDrawCall();
             this.m_rootUI = new DebugUI_1.DebugUI();
+            this.m_input = new RUIInput_1.RUIInput(this);
             if (this.m_gl) {
                 this.m_valid = true;
             }
             this.OnBuild();
         }
+        Object.defineProperty(RUICanvas.prototype, "canvas", {
+            get: function () {
+                return this.m_canvas;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RUICanvas.prototype, "rootui", {
+            get: function () {
+                return this.m_rootUI;
+            },
+            enumerable: true,
+            configurable: true
+        });
         RUICanvas.prototype.OnBuild = function () {
             this.m_rootUI._dispatchOnBuild();
             this.m_drawcall.Rebuild(this.m_rootUI);

@@ -1,7 +1,12 @@
 import { UIObject } from "./UIObject";
+import { RUIEventEmitter } from "./RUIEventSys";
 
 
 export class UIButton extends UIObject{
+
+    public EvtMouseDown: RUIEventEmitter;
+    public EvtMouseUp: RUIEventEmitter;
+    public EvtMouseClick:RUIEventEmitter;
 
     public onBuild(){
         this.visible = true;

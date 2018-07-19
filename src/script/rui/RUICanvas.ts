@@ -2,6 +2,7 @@ import { RUIDrawCall } from "./RUIDrawCall";
 import { UIObject } from "./UIObject"
 import { WGLContext } from "../gl/wglctx";
 import { DebugUI } from "./DebugUI";
+import { RUIInput } from "./RUIInput";
 
 export class RUICanvas{
     private m_canvas : HTMLCanvasElement;
@@ -9,8 +10,10 @@ export class RUICanvas{
     private m_gl: WGLContext;
 
     private m_rootUI: UIObject;
+    private m_input :RUIInput;
 
     private m_valid :boolean = false;
+    
     
     constructor(canvas:HTMLCanvasElement,UIClass?:any){
         this.m_canvas =canvas;
@@ -18,12 +21,20 @@ export class RUICanvas{
 
         this.m_drawcall = new RUIDrawCall();
         this.m_rootUI = new DebugUI();
+        this.m_input = new RUIInput(this);
 
         if(this.m_gl){
             this.m_valid = true;
         }
 
         this.OnBuild();
+    }
+
+    public get canvas():HTMLCanvasElement{
+        return this.m_canvas;
+    }
+    public get rootui():UIObject{
+        return this.m_rootUI;
     }
 
     public OnBuild(){
