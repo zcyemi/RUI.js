@@ -1,4 +1,5 @@
 import { UIUtil } from "./UIUtil";
+import { RUIMouseEvent } from "./RUIEventSys";
 
 export enum UIDisplayMode{
     Default,
@@ -84,6 +85,26 @@ export class UIObject{
             let c = children[i];
             c.execRecursive(f);
         }
+    }
+
+    public onMouseEnter(){
+
+    }
+
+    public onMouseLeave(){
+
+    }
+
+    public onMouseDown(){
+
+    }
+
+    public onMouseUp(){
+
+    }
+
+    public onMouseClick(e:RUIMouseEvent){
+
     }
 
     public rectContains(x:number,y:number):boolean{

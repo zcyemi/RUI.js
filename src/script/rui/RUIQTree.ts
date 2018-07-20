@@ -21,13 +21,14 @@ export class RUIQTree{
     }
 
 
-    public DispatchEvtMouseEvent(x:number,y:number,type:string){
+    public DispatchEvtMouseEvent(x:number,y:number,type:string): UIObject{
         let target = this.TraversalTree(x,y);
-        if(target == null) return;
+        if(target == null) return null;
         let d = target[type];
         if(d){
             (<RUIEventEmitter>d).emit(new RUIMouseEvent(target,type,x,y));
         }
+        return target;
     }
 
 
@@ -36,6 +37,21 @@ export class RUIQTree{
         let curlist = this.TraversalNormalAll(x,y);
         let hovlist= this.m_listHovered;
 
+
+        for(var i=hovlist.length-1;i>=0;i--){
+            let c= hovlist[i];
+            if(curlist.indexOf(c) == -1){
+                c.onMouseLeave();
+                hovlist.splice(i,1);
+            }
+        }
+
+        for(var i=0,len = curlist.length;i<len;i++){
+            let c = curlist[i];
+            if(hovlist.indexOf(c)>=0) continue;
+            c.onMouseEnter();
+            hovlist.push(c);
+        }
     }
 
 
@@ -45,7 +61,7 @@ export class RUIQTree{
     }
 
     private TraversalNormalAll(x:number,y:number):UIObject[]{
-        let list:UIObject[] = [];
+        var list:UIObject[] = [];
 
         this.m_ui.execRecursive((ui)=>{
             if(ui.rectContains(x,y)){

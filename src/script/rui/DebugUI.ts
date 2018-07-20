@@ -10,8 +10,8 @@ export class DebugUI extends UIObject{
 
         let btn1 = new UIButton();
 
-        btn1.EvtMouseDown.on((e)=>{
-            console.log('btn1 mousedown');
+        btn1.EvtMouseClick.on((e)=>{
+            console.log('btn1 click');
         });
         this.addChild(btn1);
 

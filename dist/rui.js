@@ -21,6 +21,74 @@ define("rui/UIUtil", ["require", "exports"], function (require, exports) {
     }());
     exports.UIUtil = UIUtil;
 });
+define("rui/RUIEventSys", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUIEvent = /** @class */ (function () {
+        function RUIEvent(tar, type) {
+            this.isUsed = false;
+            this._isPrevented = false;
+            this.target = tar;
+            this.eventType = type;
+        }
+        RUIEvent.prototype.prevent = function () {
+            this._isPrevented = true;
+        };
+        RUIEvent.prototype.Use = function () {
+            this.isUsed = true;
+        };
+        RUIEvent.MOUSE_DOWN = "EvtMouseDown";
+        RUIEvent.MOUSE_UP = "EvtMouseUp";
+        RUIEvent.MOUSE_CLICK = "EvtMouseClick";
+        return RUIEvent;
+    }());
+    exports.RUIEvent = RUIEvent;
+    var RUIMouseEvent = /** @class */ (function (_super) {
+        __extends(RUIMouseEvent, _super);
+        function RUIMouseEvent(tar, type, x, y) {
+            var _this = _super.call(this, tar, type) || this;
+            _this.mousex = x;
+            _this.mousey = y;
+            return _this;
+        }
+        return RUIMouseEvent;
+    }(RUIEvent));
+    exports.RUIMouseEvent = RUIMouseEvent;
+    var RUIEventEmitter = /** @class */ (function () {
+        function RUIEventEmitter() {
+            this.m_listener = [];
+        }
+        RUIEventEmitter.prototype.on = function (listener) {
+            var l = this.m_listener;
+            var index = l.indexOf(listener);
+            if (index >= 0)
+                return;
+            l.push(listener);
+        };
+        RUIEventEmitter.prototype.removeListener = function (listener) {
+            var l = this.m_listener;
+            var index = l.indexOf(listener);
+            if (index >= 0) {
+                l.splice(index, 1);
+            }
+        };
+        RUIEventEmitter.prototype.removeAllListener = function () {
+            this.m_listener = [];
+        };
+        RUIEventEmitter.prototype.emit = function (e) {
+            var l = this.m_listener;
+            var lc = l.length;
+            for (var i = 0; i < lc; i++) {
+                var li = l[i];
+                li(e);
+                if (e['_isPrevented'])
+                    return;
+            }
+        };
+        return RUIEventEmitter;
+    }());
+    exports.RUIEventEmitter = RUIEventEmitter;
+});
 define("rui/UIObject", ["require", "exports", "rui/UIUtil"], function (require, exports, UIUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -86,6 +154,16 @@ define("rui/UIObject", ["require", "exports", "rui/UIUtil"], function (require, 
                 var c = children[i];
                 c.execRecursive(f);
             }
+        };
+        UIObject.prototype.onMouseEnter = function () {
+        };
+        UIObject.prototype.onMouseLeave = function () {
+        };
+        UIObject.prototype.onMouseDown = function () {
+        };
+        UIObject.prototype.onMouseUp = function () {
+        };
+        UIObject.prototype.onMouseClick = function (e) {
         };
         UIObject.prototype.rectContains = function (x, y) {
             if (x < this._calculateX || x > this._calculateX + this._width)
@@ -436,73 +514,6 @@ define("gl/wglctx", ["require", "exports", "gl/wglDrawCallBuffer", "gl/wglProgra
     }());
     exports.WGLContext = WGLContext;
 });
-define("rui/RUIEventSys", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var RUIEvent = /** @class */ (function () {
-        function RUIEvent(tar, type) {
-            this.isUsed = false;
-            this._isPrevented = false;
-            this.target = tar;
-            this.eventType = type;
-        }
-        RUIEvent.prototype.prevent = function () {
-            this._isPrevented = true;
-        };
-        RUIEvent.prototype.Use = function () {
-            this.isUsed = true;
-        };
-        RUIEvent.MOUSE_DOWN = "EvtMouseDown";
-        RUIEvent.MOUSE_UP = "EvtMouseUp";
-        return RUIEvent;
-    }());
-    exports.RUIEvent = RUIEvent;
-    var RUIMouseEvent = /** @class */ (function (_super) {
-        __extends(RUIMouseEvent, _super);
-        function RUIMouseEvent(tar, type, x, y) {
-            var _this = _super.call(this, tar, type) || this;
-            _this.mousex = x;
-            _this.mousey = y;
-            return _this;
-        }
-        return RUIMouseEvent;
-    }(RUIEvent));
-    exports.RUIMouseEvent = RUIMouseEvent;
-    var RUIEventEmitter = /** @class */ (function () {
-        function RUIEventEmitter() {
-            this.m_listener = [];
-        }
-        RUIEventEmitter.prototype.on = function (listener) {
-            var l = this.m_listener;
-            var index = l.indexOf(listener);
-            if (index >= 0)
-                return;
-            l.push(listener);
-        };
-        RUIEventEmitter.prototype.removeListener = function (listener) {
-            var l = this.m_listener;
-            var index = l.indexOf(listener);
-            if (index >= 0) {
-                l.splice(index, 1);
-            }
-        };
-        RUIEventEmitter.prototype.removeAllListener = function () {
-            this.m_listener = [];
-        };
-        RUIEventEmitter.prototype.emit = function (e) {
-            var l = this.m_listener;
-            var lc = l.length;
-            for (var i = 0; i < lc; i++) {
-                var li = l[i];
-                li(e);
-                if (e['_isPrevented'])
-                    return;
-            }
-        };
-        return RUIEventEmitter;
-    }());
-    exports.RUIEventEmitter = RUIEventEmitter;
-});
 define("rui/UIWidgets", ["require", "exports", "rui/UIObject", "rui/RUIEventSys"], function (require, exports, UIObject_2, RUIEventSys_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -511,12 +522,20 @@ define("rui/UIWidgets", ["require", "exports", "rui/UIObject", "rui/RUIEventSys"
         function UIButton() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.EvtMouseDown = new RUIEventSys_1.RUIEventEmitter();
+            _this.EvtMouseClick = new RUIEventSys_1.RUIEventEmitter();
             return _this;
         }
         UIButton.prototype.onBuild = function () {
             this.visible = true;
             this.width = 100;
             this.height = 23;
+        };
+        UIButton.prototype.onMouseEnter = function () {
+        };
+        UIButton.prototype.onMouseLeave = function () {
+        };
+        UIButton.prototype.onMouseClick = function (e) {
+            this.EvtMouseClick.emit(e);
         };
         return UIButton;
     }(UIObject_2.UIObject));
@@ -545,8 +564,8 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/UIWidgets"], f
         }
         DebugUI.prototype.onBuild = function () {
             var btn1 = new UIWidgets_1.UIButton();
-            btn1.EvtMouseDown.on(function (e) {
-                console.log('btn1 mousedown');
+            btn1.EvtMouseClick.on(function (e) {
+                console.log('btn1 click');
             });
             this.addChild(btn1);
             var c = new UIObject_3.UIObject();
@@ -565,6 +584,7 @@ define("rui/RUIInput", ["require", "exports", "rui/RUIEventSys"], function (requ
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUIInput = /** @class */ (function () {
         function RUIInput(uicanvas) {
+            this.m_activeMouseUI = null;
             this.m_target = uicanvas;
             this.RegisterEvent();
         }
@@ -573,13 +593,17 @@ define("rui/RUIInput", ["require", "exports", "rui/RUIEventSys"], function (requ
             var c = this.m_target.canvas;
             c.addEventListener('mousedown', function (e) {
                 var tar = _this.m_target;
-                tar.qtree.DispatchEvtMouseEvent(e.offsetX, e.offsetY, RUIEventSys_2.RUIEvent.MOUSE_DOWN);
+                _this.m_activeMouseUI = tar.qtree.DispatchEvtMouseEvent(e.offsetX, e.offsetY, RUIEventSys_2.RUIEvent.MOUSE_DOWN);
             });
             c.addEventListener('mouseup', function (e) {
                 var tar = _this.m_target;
-                tar.qtree.DispatchEvtMouseEvent(e.offsetX, e.offsetY, RUIEventSys_2.RUIEvent.MOUSE_UP);
+                var tarui = tar.qtree.DispatchEvtMouseEvent(e.offsetX, e.offsetY, RUIEventSys_2.RUIEvent.MOUSE_UP);
+                if (tarui && tarui == _this.m_activeMouseUI) {
+                    tarui.onMouseClick(new RUIEventSys_2.RUIMouseEvent(tarui, RUIEventSys_2.RUIEvent.MOUSE_CLICK, e.offsetX, e.offsetY));
+                }
             });
             c.addEventListener('mousemove', function (e) {
+                _this.m_target.qtree.DispatchEvtMouseMove(e.offsetX, e.offsetY);
             });
         };
         return RUIInput;
@@ -607,15 +631,30 @@ define("rui/RUIQTree", ["require", "exports", "rui/RUIEventSys"], function (requ
         RUIQTree.prototype.DispatchEvtMouseEvent = function (x, y, type) {
             var target = this.TraversalTree(x, y);
             if (target == null)
-                return;
+                return null;
             var d = target[type];
             if (d) {
                 d.emit(new RUIEventSys_3.RUIMouseEvent(target, type, x, y));
             }
+            return target;
         };
         RUIQTree.prototype.DispatchEvtMouseMove = function (x, y) {
             var curlist = this.TraversalNormalAll(x, y);
             var hovlist = this.m_listHovered;
+            for (var i = hovlist.length - 1; i >= 0; i--) {
+                var c = hovlist[i];
+                if (curlist.indexOf(c) == -1) {
+                    c.onMouseLeave();
+                    hovlist.splice(i, 1);
+                }
+            }
+            for (var i = 0, len = curlist.length; i < len; i++) {
+                var c = curlist[i];
+                if (hovlist.indexOf(c) >= 0)
+                    continue;
+                c.onMouseEnter();
+                hovlist.push(c);
+            }
         };
         RUIQTree.prototype.TraversalTree = function (x, y) {
             return this.TraversalNoraml(x, y);

@@ -24,6 +24,7 @@ export class RUIEvent{
 
     public static readonly MOUSE_DOWN:string = "EvtMouseDown";
     public static readonly MOUSE_UP:string = "EvtMouseUp";
+    public static readonly MOUSE_CLICK:string = "EvtMouseClick";
 }
 
 export class RUIMouseEvent extends RUIEvent{
