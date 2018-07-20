@@ -74,6 +74,23 @@ export class UIObject{
         ui.parent = null;
         this.isDirty= true;
     }
+
+    public execRecursive(f:(ui:UIObject)=>void){
+        f(this);
+        let clen = this.children.length;
+        let children = this.children;
+
+        for(var i=0;i< clen;i++){
+            let c = children[i];
+            c.execRecursive(f);
+        }
+    }
+
+    public rectContains(x:number,y:number):boolean{
+        if(x < this._calculateX || x > this._calculateX +this._width) return false;
+        if(y < this._calculateY || y > this._calculateY + this._height) return false;
+        return true;
+    }
     
     
 }

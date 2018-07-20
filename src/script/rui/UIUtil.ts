@@ -5,3 +5,4 @@ export class UIUtil{
         return [Math.random(),Math.random(),Math.random(),1.0];
     }
 }
+

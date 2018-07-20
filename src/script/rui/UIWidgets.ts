@@ -4,7 +4,7 @@ import { RUIEventEmitter } from "./RUIEventSys";
 
 export class UIButton extends UIObject{
 
-    public EvtMouseDown: RUIEventEmitter;
+    public EvtMouseDown: RUIEventEmitter = new RUIEventEmitter();
     public EvtMouseUp: RUIEventEmitter;
     public EvtMouseClick:RUIEventEmitter;
 

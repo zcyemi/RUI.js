@@ -7,7 +7,13 @@ export class DebugUI extends UIObject{
 
     public onBuild(){
         
-        this.addChild(new UIButton());
+
+        let btn1 = new UIButton();
+
+        btn1.EvtMouseDown.on((e)=>{
+            console.log('btn1 mousedown');
+        });
+        this.addChild(btn1);
 
         let c = new UIObject();
         c.orientation = UIOrientation.Horizontal;

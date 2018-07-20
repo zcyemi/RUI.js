@@ -1,12 +1,19 @@
 import { UIObject } from "./UIObject";
 
 
+
 export class RUIEvent{
     public eventType:string;
     public target:UIObject;
 
     public isUsed:boolean = false;
     private _isPrevented: boolean = false;
+
+    public constructor(tar:UIObject,type:string){
+        this.target= tar;
+        this.eventType = type;
+    }
+
     public prevent(){
         this._isPrevented = true;
     }
@@ -14,15 +21,31 @@ export class RUIEvent{
     public Use(){
         this.isUsed = true;
     }
+
+    public static readonly MOUSE_DOWN:string = "EvtMouseDown";
+    public static readonly MOUSE_UP:string = "EvtMouseUp";
 }
 
+export class RUIMouseEvent extends RUIEvent{
+
+    public mousex:number;
+    public mousey:number;
+    public constructor(tar:UIObject,type:string,x:number,y:number){
+        super(tar,type);
+
+        this.mousex = x;
+        this.mousey = y;
+    }
+}
+
+export type RUIEventFunc = (RUIEvent)=>void;
 
 
 export class RUIEventEmitter{
 
-    private m_listener:((e:RUIEvent)=>void)[] = [];
+    private m_listener:RUIEventFunc[] = [];
 
-    public on(listener:(e:RUIEvent)=>void){
+    public on(listener:RUIEventFunc){
         let l = this.m_listener;
 
         let index = l.indexOf(listener);
@@ -31,7 +54,7 @@ export class RUIEventEmitter{
     }
 
 
-    public removeListener(listener:(e:RUIEvent)=>void){
+    public removeListener(listener:RUIEventFunc){
         let l = this.m_listener;
 
         let index = l.indexOf(listener);
