@@ -89,10 +89,12 @@ export class RUIDrawCall{
         if(p == null){
             ui._calculateX = 0;
             ui._calculateY = 0;
+            ui._level = 0;
         }
         else{
             ui._calculateX = p._calculateX + ui._offsetX;
             ui._calculateY = p._calculateY + ui._offsetY;
+            ui._level = p._level +1;
         }
 
         if(ui.visible){
