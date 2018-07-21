@@ -6,8 +6,7 @@ export class DebugUI extends UIObject{
 
 
     public onBuild(){
-        
-
+    
         let btn1 = new UIButton();
 
         btn1.EvtMouseClick.on((e)=>{

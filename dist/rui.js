@@ -179,11 +179,31 @@ define("rui/UIObject", ["require", "exports", "rui/UIUtil"], function (require, 
 define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (require, exports, UIObject_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var DrawCmdType;
+    (function (DrawCmdType) {
+        DrawCmdType[DrawCmdType["rect"] = 0] = "rect";
+        DrawCmdType[DrawCmdType["text"] = 1] = "text";
+    })(DrawCmdType = exports.DrawCmdType || (exports.DrawCmdType = {}));
     var DrawCmd = /** @class */ (function () {
         function DrawCmd(rect) {
             this.Rect = [];
+            this.type = DrawCmdType.rect;
             this.Rect = rect;
         }
+        DrawCmd.prototype.CmdRect = function (rect, color) {
+            var cmd = new DrawCmd();
+            cmd.Rect = rect;
+            cmd.Color = color;
+            return cmd;
+        };
+        DrawCmd.prototype.CmdText = function (text, cliprect, color) {
+            var cmd = new DrawCmd();
+            cmd.Text = text;
+            cmd.Rect = cliprect;
+            cmd.Color = color;
+            cmd.type = DrawCmdType.text;
+            return cmd;
+        };
         return DrawCmd;
     }());
     exports.DrawCmd = DrawCmd;
@@ -392,12 +412,13 @@ define("gl/wglShaderLib", ["require", "exports"], function (require, exports) {
     exports.GLSL_FRAG_COLOR = 'precision lowp float;\n\nvarying vec4 vColor;\n\nvoid main(){\ngl_FragColor = vColor;\n}';
     exports.GLSL_VERT_DEF = 'precision mediump float;\nattribute vec2 aPosition;\nattribute vec4 aColor;\n\nuniform vec4 uProj;\nvarying vec4 vColor;\n\nvoid main(){\nvec2 pos = aPosition * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,0,1);\nvColor = aColor;\n}';
 });
-define("rui/RUIFontTexture", ["require", "exports"], function (require, exports) {
+define("rui/RUIFontTexture", ["require", "exports", "opentype.js"], function (require, exports, opentype) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUIFontTexture = /** @class */ (function () {
         function RUIFontTexture() {
             this.CrateTexture();
+            this.LoadFont();
         }
         RUIFontTexture.Init = function () {
             if (RUIFontTexture.s_inited)
@@ -405,20 +426,64 @@ define("rui/RUIFontTexture", ["require", "exports"], function (require, exports)
             RUIFontTexture.ASIICTexture = new RUIFontTexture();
             RUIFontTexture.s_inited = true;
         };
+        RUIFontTexture.prototype.LoadFont = function () {
+            var _this = this;
+            opentype.load('arial.ttf', function (e, f) {
+                _this.m_font = f;
+                _this.FillTexture();
+            });
+        };
+        RUIFontTexture.prototype.FillTexture = function () {
+            var f = this.m_font;
+            var ctx2d = this.m_ctx2d;
+            var fontsize = 16.0;
+            var upx = fontsize / f.unitsPerEm;
+            var linh = 0;
+            var linw = 0;
+            var maxh = 0;
+            for (var i = 33; i <= 126; i++) {
+                var c = String.fromCharCode(i);
+                var g = f.charToGlyph(c);
+                var m = g.getMetrics();
+                var y = Math.ceil(upx * (m.yMax));
+                var x = Math.ceil(upx * (m.xMax - m.xMin)) + 1;
+                if (linw + x > 128) {
+                    linw = 0;
+                    linh += 16;
+                    maxh = 0;
+                }
+                var p = g.getPath(linw, linh + y, fontsize);
+                p['fill'] = "white";
+                p.draw(ctx2d);
+                linw += x;
+                maxh = Math.max(maxh, y);
+            }
+        };
         RUIFontTexture.prototype.CrateTexture = function () {
-            // let canvas2d = document.createElement("canvas");
-            // canvas2d.width = 128;
-            // canvas2d.height = 128;
-            // let ctx : CanvasRenderingContext2D = canvas2d.getContext('2d');
+            var texw = 128;
+            var texh = 128;
+            var canvas2d = document.createElement("canvas");
+            canvas2d.style.backgroundColor = "#000";
+            canvas2d.width = texw;
+            canvas2d.height = texh;
+            var h = 14;
+            var lineh = h;
+            var linew = 0;
+            var ctx = canvas2d.getContext('2d');
             // ctx.font = '14px arial';
-            // ctx.fillText('Hello world', 0, 100);
-            // let m = ctx.measureText('H');
-            // let p = fetch("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.ttf");
-            // p.then(resp=>{
-            //     console.log(resp);
-            // },rej=>{
-            // });
-            // document.body.appendChild(canvas2d);
+            // for(var i= 33;i<=126;i++){
+            //     let c = String.fromCharCode(i);
+            //     let w = ctx.measureText('H').width;
+            //     console.log(w);
+            //     if(linew +w > texw){
+            //         lineh += h;
+            //         linew = 0;
+            //     }
+            //     ctx.fillText(c,linew,lineh);
+            //     linew+=w;
+            // }
+            this.m_ctx2d = ctx;
+            document.body.appendChild(canvas2d);
         };
         RUIFontTexture.s_inited = false;
         return RUIFontTexture;

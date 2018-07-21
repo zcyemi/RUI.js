@@ -45,6 +45,7 @@ function BuildScript(){
 function BuildTemplate(){
     console.log('[sync template]');
     gulp.src('./src/template/**.*').pipe(gulp.dest('./dist'));
+    gulp.src('./node_modules/opentype.js/dist/opentype.js').pipe(gulp.dest('./dist'));
 }
 
 function BuildShader(){

@@ -47,7 +47,6 @@ export class wglDrawCallBuffer {
             for (var i = 0; i < drawlist.length; i++) {
                 let cmd = drawlist[i];
                 let rect = cmd.Rect;
-
                 let color = cmd.Color;
                 if(color == null) color = COLOR_ERROR;
                 let r = color[0];

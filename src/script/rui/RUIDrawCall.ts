@@ -2,14 +2,39 @@ import { UIObject, UIOrientation } from "./UIObject";
 
 
 
+export enum DrawCmdType{
+    rect,
+    text
+}
+
 export class DrawCmd{
 
     public Rect:number[] = [];
     public Color:number[];
+    public Text:string;
+
+    public type:DrawCmdType = DrawCmdType.rect;
 
     public constructor(rect?:number[]){
         this.Rect = rect;
     }
+
+    public CmdRect(rect:number[],color:number[]):DrawCmd{
+        let cmd = new DrawCmd();
+        cmd.Rect = rect;
+        cmd.Color = color;
+        return cmd;
+    }
+
+    public CmdText(text:string,cliprect:number[],color?:number[]){
+        let cmd= new DrawCmd();
+        cmd.Text = text;
+        cmd.Rect = cliprect;
+        cmd.Color = color;
+        cmd.type = DrawCmdType.text;
+        return cmd;
+    }
+
 }
 
 
