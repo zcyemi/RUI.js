@@ -2,6 +2,16 @@ import * as opentype from 'opentype.js';
 import { GLContext } from 'wglut';
 
 
+export class RUIGlyph{
+
+    public width:number;
+    public height:number;
+
+    public offsetY: number;
+
+    public uv:number[];
+}
+
 export class RUIFontTexture{
 
     private static s_inited =false;
@@ -17,7 +27,13 @@ export class RUIFontTexture{
 
     public m_glTexture:WebGLTexture;
     private m_textureValid:boolean = false;
-    
+
+    public glyphs:{[key:number]:RUIGlyph} = {};
+
+    public glyphsWidth:number[] = [];
+
+    public m_isDirty:boolean = false;
+    public fontSize:number = 16;
 
 
     constructor(){
@@ -28,6 +44,13 @@ export class RUIFontTexture{
 
     public get isTextureValid():boolean{
         return this.m_textureValid;
+    }
+
+    public get isDirty():boolean{
+        return this.m_isDirty;
+    }
+    public set isDirty(d:boolean){
+        this.m_isDirty = d;
     }
 
     public static Init(gl:GLContext){
@@ -48,18 +71,35 @@ export class RUIFontTexture{
 
     }
 
+    public MeasureTextWith(content:string):number{
+        let w = 0;
+        let gw = this.glyphsWidth;
+        for(var i=0,len=content.length;i<len;i++){
+           w+= gw[content.charCodeAt(i)]; 
+        }
+        return w;
+    }
+
     private FillTexture(){
 
         let f = this.m_font;
         let ctx2d = this.m_ctx2d;
 
-        let fontsize = 16.0;
+        let fontsize = this.fontSize;
         let upx = fontsize / f.unitsPerEm;
 
         let linh = 0;
         let linw = 0;
 
         let maxh = 0;
+
+        let uvunit = 1.0/ this.m_textureWidth;
+
+
+        let glyphWidth = this.glyphsWidth;
+        for(i=0;i<33;i++){
+            glyphWidth.push(5);
+        }
 
         for(var i= 33;i<=126;i++){
             let c = String.fromCharCode(i);
@@ -71,9 +111,25 @@ export class RUIFontTexture{
 
             if(linw + x > 128){
                 linw =0;
-                linh += 16;
+                linh += fontsize;
                 maxh = 0;
             }
+
+            let glyph = new RUIGlyph();
+            glyph.width = x;
+            glyph.height = y;
+            glyph.offsetY = (upx * -m.yMax);
+            glyphWidth.push(x);
+
+            
+            let uvx1 = linw * uvunit;
+            let uvx2 = (linw + x)* uvunit;
+            let uvy1 = linh* uvunit;
+            let uvy2 = (linh + y)* uvunit;
+
+            glyph.uv = [uvx1,uvy1,uvx2,uvy1,uvx2,uvy2,uvx1,uvy2];
+            
+            this.glyphs[i] = glyph;
 
             let p = g.getPath(linw,linh+y,fontsize);
             p['fill'] = "white";
@@ -88,6 +144,7 @@ export class RUIFontTexture{
 
         let gltex = this.createTextureImage(glctx,gl.RGBA,gl.RGBA,url,true,true,()=>{
             this.m_textureValid = true;
+            this.m_isDirty = true;
         });
 
         this.m_glTexture = gltex;
@@ -127,7 +184,7 @@ export class RUIFontTexture{
         canvas2d.width = texw;
         canvas2d.height = texh;
 
-        let h:number = 14;
+        let h:number = this.fontSize;
 
         let lineh = h;
         let linew = 0;

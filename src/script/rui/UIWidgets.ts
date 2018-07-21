@@ -32,9 +32,7 @@ export class UIButton extends UIObject{
         let rect = [this._calculateX,this._calculateY,this._width,this._height];
         drawcall.DrawRectWithColor(rect,this.color);
 
-
-        let r = [50,50,128,128];
-        drawcall.DrawText('Button1',r,null);
+        drawcall.DrawText('Button1',rect,null);
     }
 }
 

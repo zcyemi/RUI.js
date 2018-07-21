@@ -52,6 +52,8 @@ export class RUIRenderer{
 
         //pipeline
         gl.disable(gl.DEPTH_TEST);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
         //parameter
         this.m_projectParam = [2/800.0,2/600.0,0,0];
 
@@ -60,13 +62,18 @@ export class RUIRenderer{
 
     public Draw(drawcall:RUIDrawCall){
         if(drawcall == null) return;
+        
         if(this.m_drawcallBuffer == null){
             this.m_drawcallBuffer = new RUIDrawCallBuffer(this.glctx,drawcall);
         }
 
-        if(drawcall.isDirty){
+        let fonttex = RUIFontTexture.ASIICTexture;
+        
+
+        if(drawcall.isDirty ||fonttex.isDirty){
             this.m_drawcallBuffer.SyncBuffer(this.gl);
             drawcall.isDirty = false;
+            fonttex.isDirty= false;
         }
 
         //do draw
@@ -94,11 +101,6 @@ export class RUIRenderer{
 
         let drawTextCount = drawbuffer.drawCountText;
         if(drawTextCount > 0){
-
-            let fonttex = RUIFontTexture.ASIICTexture;
-
-
-
             if(fonttex.isTextureValid){
                 let programText: GLProgram|any = drawbuffer.programText;
                 gl.useProgram(programText.Program);

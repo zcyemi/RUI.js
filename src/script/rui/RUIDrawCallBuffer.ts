@@ -1,6 +1,7 @@
 import { RUIDrawCall, DrawCmdType } from "./RUIDrawCall";
 import { GLProgram, GLContext } from "wglut";
 import { GLSL_VERT_DEF, GLSL_FRAG_COLOR, GLSL_VERT_TEXT, GLSL_FRAG_TEXT } from "../gl/wglShaderLib";
+import { RUIFontTexture } from "./RUIFontTexture";
 
 
 const COLOR_ERROR: number[] = [1, 0, 1, 1];
@@ -8,6 +9,9 @@ const MAX_RECT_COUNT = 512;
 
 export class RUIDrawCallBuffer {
 
+    // v0 -- v1
+    // |     |
+    // v3 -- v2
 
     public vaoRect: WebGLVertexArrayObject;
     public vaoText: WebGLVertexArrayObject;
@@ -116,9 +120,12 @@ export class RUIDrawCallBuffer {
 
     public SyncBuffer(gl: WebGL2RenderingContext) {
 
+
         this.isDirty = true;
         let drawcall: RUIDrawCall = this.m_drawcall;
         let drawlist = drawcall.drawList;
+
+        let fonttex = RUIFontTexture.ASIICTexture;
 
 
         if (drawlist.length == 0) {
@@ -134,7 +141,7 @@ export class RUIDrawCallBuffer {
             let rectCount = 0;
             let textCount = 0;
 
-            for (var i = 0; i < drawlist.length; i++) {
+            for (var i = 0,cmdlen = drawlist.length; i < cmdlen; i++) {
                 let cmd = drawlist[i];
                 let rect = cmd.Rect;
                 let color = cmd.Color;
@@ -162,17 +169,43 @@ export class RUIDrawCallBuffer {
                         break;
                     case DrawCmdType.text:
                         {
+                            let content = cmd.Text;
+                            if (content == null || content === '') break;
+
                             let x = rect[0];
                             let y = rect[1];
                             let w = rect[2];
                             let h = rect[3];
-                            text_vert.push(x, y, x + w, y, x + w, y + h, x, y + h);
 
-                            text_uv.push(0, 0, 1, 0, 1, 1, 0, 1);
+                            let contentW = fonttex.MeasureTextWith(content);
 
-                            textCount++;
+                            x += Math.max(3,Math.floor((w - contentW)/2.0));
+                            y = y + h - (h - fonttex.fontSize);
+
+                            for (var j = 0, len = content.length; j < len; j++) {
+
+                                let glyph = fonttex.glyphs[content.charCodeAt(j)];
+                                if (glyph == null) {
+                                    // text_vert.push(x, y, x + w, y, x + w, y + h, x, y + h);
+                                    // text_uv.push(0, 0, 1, 0, 1, 1, 0, 1);
+                                }
+                                else {
+
+                                    let drawy = y + glyph.offsetY;
+
+                                    let drawy1 = drawy + glyph.height;
+                                    let drawx1 = x + glyph.width;
+
+                                    text_vert.push(x, drawy, drawx1, drawy, drawx1, drawy1, x, drawy1);
+                                    text_uv = text_uv.concat(glyph.uv);
+
+                                    x += glyph.width;
+                                    textCount++;
+                                }
+                            }
                         }
                         break;
+                        
                 }
 
             }
@@ -189,7 +222,7 @@ export class RUIDrawCallBuffer {
                     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rect_color), gl.STATIC_DRAW);
                 }
             }
-            
+
             //Text{
             this.drawCountText = textCount;
             if (textCount != 0) {

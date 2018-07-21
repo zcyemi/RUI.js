@@ -410,8 +410,7 @@ define("rui/UIWidgets", ["require", "exports", "rui/UIObject", "rui/RUIEventSys"
         UIButton.prototype.onDraw = function (drawcall) {
             var rect = [this._calculateX, this._calculateY, this._width, this._height];
             drawcall.DrawRectWithColor(rect, this.color);
-            var r = [50, 50, 128, 128];
-            drawcall.DrawText('Button1', r, null);
+            drawcall.DrawText('Button1', rect, null);
         };
         return UIButton;
     }(UIObject_2.UIObject));
@@ -545,10 +544,162 @@ define("gl/wglShaderLib", ["require", "exports"], function (require, exports) {
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.GLSL_FRAG_COLOR = 'precision lowp float;\n\nvarying vec4 vColor;\n\nvoid main(){\ngl_FragColor = vColor;\n}';
     exports.GLSL_VERT_DEF = 'precision mediump float;\nattribute vec2 aPosition;\nattribute vec4 aColor;\n\nuniform vec4 uProj;\nvarying vec4 vColor;\n\nvoid main(){\nvec2 pos = aPosition * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,0,1);\nvColor = aColor;\n}';
-    exports.GLSL_FRAG_TEXT = '#version 300 es\nprecision lowp float;\n\nin vec4 vColor;\nin vec2 vUV;\n\nuniform sampler2D uSampler;\n\nout vec4 fragColor;\n\nvoid main(){\nvec4 val = texture(uSampler,vUV);\nval.rgb *= val.a;\nfragColor = val;\n}';
+    exports.GLSL_FRAG_TEXT = '#version 300 es\nprecision lowp float;\n\nin vec4 vColor;\nin vec2 vUV;\n\nuniform sampler2D uSampler;\n\nout vec4 fragColor;\n\nvoid main(){\nfragColor = texture(uSampler,vUV);\n}';
     exports.GLSL_VERT_TEXT = '#version 300 es\nprecision mediump float;\nin vec2 aPosition;\nin vec4 aColor;\nin vec2 aUV;\nin vec4 aClip;\n\nuniform vec4 uProj;\nout vec4 vColor;\nout vec2 vUV;\n\nvoid main(){\nvec2 pos = aPosition * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,0,1);\nvColor = aColor;\nvUV =aUV;\n}';
 });
-define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wglShaderLib"], function (require, exports, RUIDrawCall_1, wglShaderLib_1) {
+define("rui/RUIFontTexture", ["require", "exports", "opentype.js"], function (require, exports, opentype) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUIGlyph = /** @class */ (function () {
+        function RUIGlyph() {
+        }
+        return RUIGlyph;
+    }());
+    exports.RUIGlyph = RUIGlyph;
+    var RUIFontTexture = /** @class */ (function () {
+        function RUIFontTexture() {
+            this.m_textureValid = false;
+            this.glyphs = {};
+            this.glyphsWidth = [];
+            this.m_isDirty = false;
+            this.fontSize = 16;
+            this.CrateTexture();
+            this.LoadFont();
+        }
+        Object.defineProperty(RUIFontTexture.prototype, "isTextureValid", {
+            get: function () {
+                return this.m_textureValid;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RUIFontTexture.prototype, "isDirty", {
+            get: function () {
+                return this.m_isDirty;
+            },
+            set: function (d) {
+                this.m_isDirty = d;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        RUIFontTexture.Init = function (gl) {
+            if (RUIFontTexture.s_inited)
+                return;
+            RUIFontTexture.s_gl = gl;
+            RUIFontTexture.ASIICTexture = new RUIFontTexture();
+            RUIFontTexture.s_inited = true;
+        };
+        RUIFontTexture.prototype.LoadFont = function () {
+            var _this = this;
+            opentype.load('arial.ttf', function (e, f) {
+                _this.m_font = f;
+                _this.FillTexture();
+            });
+        };
+        RUIFontTexture.prototype.MeasureTextWith = function (content) {
+            var w = 0;
+            var gw = this.glyphsWidth;
+            for (var i = 0, len = content.length; i < len; i++) {
+                w += gw[content.charCodeAt(i)];
+            }
+            return w;
+        };
+        RUIFontTexture.prototype.FillTexture = function () {
+            var _this = this;
+            var f = this.m_font;
+            var ctx2d = this.m_ctx2d;
+            var fontsize = this.fontSize;
+            var upx = fontsize / f.unitsPerEm;
+            var linh = 0;
+            var linw = 0;
+            var maxh = 0;
+            var uvunit = 1.0 / this.m_textureWidth;
+            var glyphWidth = this.glyphsWidth;
+            for (i = 0; i < 33; i++) {
+                glyphWidth.push(5);
+            }
+            for (var i = 33; i <= 126; i++) {
+                var c = String.fromCharCode(i);
+                var g = f.charToGlyph(c);
+                var m = g.getMetrics();
+                var y = Math.ceil(upx * (m.yMax));
+                var x = Math.ceil(upx * (m.xMax - m.xMin)) + 1;
+                if (linw + x > 128) {
+                    linw = 0;
+                    linh += fontsize;
+                    maxh = 0;
+                }
+                var glyph = new RUIGlyph();
+                glyph.width = x;
+                glyph.height = y;
+                glyph.offsetY = (upx * -m.yMax);
+                glyphWidth.push(x);
+                var uvx1 = linw * uvunit;
+                var uvx2 = (linw + x) * uvunit;
+                var uvy1 = linh * uvunit;
+                var uvy2 = (linh + y) * uvunit;
+                glyph.uv = [uvx1, uvy1, uvx2, uvy1, uvx2, uvy2, uvx1, uvy2];
+                this.glyphs[i] = glyph;
+                var p = g.getPath(linw, linh + y, fontsize);
+                p['fill'] = "white";
+                p.draw(ctx2d);
+                linw += x;
+                maxh = Math.max(maxh, y);
+            }
+            var url = ctx2d.canvas.toDataURL('image/png');
+            var glctx = RUIFontTexture.s_gl;
+            var gl = glctx.gl;
+            var gltex = this.createTextureImage(glctx, gl.RGBA, gl.RGBA, url, true, true, function () {
+                _this.m_textureValid = true;
+                _this.m_isDirty = true;
+            });
+            this.m_glTexture = gltex;
+        };
+        RUIFontTexture.prototype.createTextureImage = function (glctx, internalFmt, format, src, linear, mipmap, callback) {
+            if (linear === void 0) { linear = true; }
+            if (mipmap === void 0) { mipmap = true; }
+            var gl = glctx.gl;
+            var img = new Image();
+            var tex = gl.createTexture();
+            img.onload = function () {
+                gl.bindTexture(gl.TEXTURE_2D, tex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, internalFmt, format, gl.UNSIGNED_BYTE, img);
+                if (mipmap)
+                    gl.generateMipmap(gl.TEXTURE_2D);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, linear ? gl.LINEAR : gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, linear ? (mipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR) : gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.bindTexture(gl.TEXTURE_2D, null);
+                if (callback != null)
+                    callback();
+            };
+            img.src = src;
+            return tex;
+        };
+        RUIFontTexture.prototype.CrateTexture = function () {
+            var texw = 128;
+            var texh = 128;
+            var canvas2d = document.createElement("canvas");
+            canvas2d.style.backgroundColor = "#000";
+            canvas2d.width = texw;
+            canvas2d.height = texh;
+            var h = this.fontSize;
+            var lineh = h;
+            var linew = 0;
+            var ctx = canvas2d.getContext('2d');
+            this.m_ctx2d = ctx;
+            //document.body.appendChild(canvas2d);
+            this.m_textureWidth = texw;
+            this.m_textureHeight = texh;
+        };
+        RUIFontTexture.s_inited = false;
+        return RUIFontTexture;
+    }());
+    exports.RUIFontTexture = RUIFontTexture;
+});
+define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wglShaderLib", "rui/RUIFontTexture"], function (require, exports, RUIDrawCall_1, wglShaderLib_1, RUIFontTexture_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var COLOR_ERROR = [1, 0, 1, 1];
@@ -626,6 +777,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
             this.isDirty = true;
             var drawcall = this.m_drawcall;
             var drawlist = drawcall.drawList;
+            var fonttex = RUIFontTexture_1.RUIFontTexture.ASIICTexture;
             if (drawlist.length == 0) {
                 return;
             }
@@ -636,7 +788,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                 var text_uv = [];
                 var rectCount = 0;
                 var textCount = 0;
-                for (var i = 0; i < drawlist.length; i++) {
+                for (var i = 0, cmdlen = drawlist.length; i < cmdlen; i++) {
                     var cmd = drawlist[i];
                     var rect = cmd.Rect;
                     var color = cmd.Color;
@@ -663,13 +815,32 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                             break;
                         case RUIDrawCall_1.DrawCmdType.text:
                             {
+                                var content = cmd.Text;
+                                if (content == null || content === '')
+                                    break;
                                 var x = rect[0];
                                 var y = rect[1];
                                 var w = rect[2];
                                 var h = rect[3];
-                                text_vert.push(x, y, x + w, y, x + w, y + h, x, y + h);
-                                text_uv.push(0, 0, 1, 0, 1, 1, 0, 1);
-                                textCount++;
+                                var contentW = fonttex.MeasureTextWith(content);
+                                x += Math.max(3, Math.floor((w - contentW) / 2.0));
+                                y = y + h - (h - fonttex.fontSize);
+                                for (var j = 0, len = content.length; j < len; j++) {
+                                    var glyph = fonttex.glyphs[content.charCodeAt(j)];
+                                    if (glyph == null) {
+                                        // text_vert.push(x, y, x + w, y, x + w, y + h, x, y + h);
+                                        // text_uv.push(0, 0, 1, 0, 1, 1, 0, 1);
+                                    }
+                                    else {
+                                        var drawy = y + glyph.offsetY;
+                                        var drawy1 = drawy + glyph.height;
+                                        var drawx1 = x + glyph.width;
+                                        text_vert.push(x, drawy, drawx1, drawy, drawx1, drawy1, x, drawy1);
+                                        text_uv = text_uv.concat(glyph.uv);
+                                        x += glyph.width;
+                                        textCount++;
+                                    }
+                                }
                             }
                             break;
                     }
@@ -698,114 +869,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
     }());
     exports.RUIDrawCallBuffer = RUIDrawCallBuffer;
 });
-define("rui/RUIFontTexture", ["require", "exports", "opentype.js"], function (require, exports, opentype) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var RUIFontTexture = /** @class */ (function () {
-        function RUIFontTexture() {
-            this.m_textureValid = false;
-            this.CrateTexture();
-            this.LoadFont();
-        }
-        Object.defineProperty(RUIFontTexture.prototype, "isTextureValid", {
-            get: function () {
-                return this.m_textureValid;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        RUIFontTexture.Init = function (gl) {
-            if (RUIFontTexture.s_inited)
-                return;
-            RUIFontTexture.s_gl = gl;
-            RUIFontTexture.ASIICTexture = new RUIFontTexture();
-            RUIFontTexture.s_inited = true;
-        };
-        RUIFontTexture.prototype.LoadFont = function () {
-            var _this = this;
-            opentype.load('arial.ttf', function (e, f) {
-                _this.m_font = f;
-                _this.FillTexture();
-            });
-        };
-        RUIFontTexture.prototype.FillTexture = function () {
-            var _this = this;
-            var f = this.m_font;
-            var ctx2d = this.m_ctx2d;
-            var fontsize = 16.0;
-            var upx = fontsize / f.unitsPerEm;
-            var linh = 0;
-            var linw = 0;
-            var maxh = 0;
-            for (var i = 33; i <= 126; i++) {
-                var c = String.fromCharCode(i);
-                var g = f.charToGlyph(c);
-                var m = g.getMetrics();
-                var y = Math.ceil(upx * (m.yMax));
-                var x = Math.ceil(upx * (m.xMax - m.xMin)) + 1;
-                if (linw + x > 128) {
-                    linw = 0;
-                    linh += 16;
-                    maxh = 0;
-                }
-                var p = g.getPath(linw, linh + y, fontsize);
-                p['fill'] = "white";
-                p.draw(ctx2d);
-                linw += x;
-                maxh = Math.max(maxh, y);
-            }
-            var url = ctx2d.canvas.toDataURL('image/png');
-            var glctx = RUIFontTexture.s_gl;
-            var gl = glctx.gl;
-            var gltex = this.createTextureImage(glctx, gl.RGBA, gl.RGBA, url, true, true, function () {
-                _this.m_textureValid = true;
-            });
-            this.m_glTexture = gltex;
-        };
-        RUIFontTexture.prototype.createTextureImage = function (glctx, internalFmt, format, src, linear, mipmap, callback) {
-            if (linear === void 0) { linear = true; }
-            if (mipmap === void 0) { mipmap = true; }
-            var gl = glctx.gl;
-            var img = new Image();
-            var tex = gl.createTexture();
-            img.onload = function () {
-                gl.bindTexture(gl.TEXTURE_2D, tex);
-                gl.texImage2D(gl.TEXTURE_2D, 0, internalFmt, format, gl.UNSIGNED_BYTE, img);
-                if (mipmap)
-                    gl.generateMipmap(gl.TEXTURE_2D);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, linear ? gl.LINEAR : gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, linear ? (mipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR) : gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                gl.bindTexture(gl.TEXTURE_2D, null);
-                if (callback != null)
-                    callback();
-            };
-            img.src = src;
-            return tex;
-        };
-        RUIFontTexture.prototype.CrateTexture = function () {
-            var texw = 128;
-            var texh = 128;
-            var canvas2d = document.createElement("canvas");
-            canvas2d.style.backgroundColor = "#000";
-            canvas2d.width = texw;
-            canvas2d.height = texh;
-            var h = 14;
-            var lineh = h;
-            var linew = 0;
-            var ctx = canvas2d.getContext('2d');
-            this.m_ctx2d = ctx;
-            //document.body.appendChild(canvas2d);
-            this.m_textureWidth = texw;
-            this.m_textureHeight = texh;
-        };
-        RUIFontTexture.s_inited = false;
-        return RUIFontTexture;
-    }());
-    exports.RUIFontTexture = RUIFontTexture;
-});
-define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer", "rui/RUIFontTexture"], function (require, exports, wglut_1, RUIDrawCallBuffer_1, RUIFontTexture_1) {
+define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer", "rui/RUIFontTexture"], function (require, exports, wglut_1, RUIDrawCallBuffer_1, RUIFontTexture_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUIRenderer = /** @class */ (function () {
@@ -820,7 +884,7 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             }
             this.m_isvalid = true;
             this.gl = this.glctx.gl;
-            RUIFontTexture_1.RUIFontTexture.Init(this.glctx);
+            RUIFontTexture_2.RUIFontTexture.Init(this.glctx);
             this.SetupGL();
         }
         RUIRenderer.prototype.isValid = function () {
@@ -834,6 +898,8 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             //shaders
             //pipeline
             gl.disable(gl.DEPTH_TEST);
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
             //parameter
             this.m_projectParam = [2 / 800.0, 2 / 600.0, 0, 0];
             gl.viewport(0, 0, 800.0, 600.0);
@@ -844,9 +910,11 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             if (this.m_drawcallBuffer == null) {
                 this.m_drawcallBuffer = new RUIDrawCallBuffer_1.RUIDrawCallBuffer(this.glctx, drawcall);
             }
-            if (drawcall.isDirty) {
+            var fonttex = RUIFontTexture_2.RUIFontTexture.ASIICTexture;
+            if (drawcall.isDirty || fonttex.isDirty) {
                 this.m_drawcallBuffer.SyncBuffer(this.gl);
                 drawcall.isDirty = false;
+                fonttex.isDirty = false;
             }
             //do draw
             var drawbuffer = this.m_drawcallBuffer;
@@ -867,7 +935,6 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             }
             var drawTextCount = drawbuffer.drawCountText;
             if (drawTextCount > 0) {
-                var fonttex = RUIFontTexture_1.RUIFontTexture.ASIICTexture;
                 if (fonttex.isTextureValid) {
                     var programText = drawbuffer.programText;
                     gl.useProgram(programText.Program);
