@@ -1,4 +1,4 @@
-import { RUIDrawCall } from "../rui/RUIDrawCall";
+import { RUIDrawCall, DrawCmdType } from "../rui/RUIDrawCall";
 
 
 const COLOR_ERROR:number[] = [1,0,1,1];
@@ -36,35 +36,51 @@ export class wglDrawCallBuffer {
         let drawcall: RUIDrawCall = this.m_drawcall;
         let drawlist = drawcall.drawList;
 
-        this.drawCountRect =drawlist.length;
+        
         if (drawlist.length == 0) {
             return;
         }
         else{
             let vertices = [];
-
             let colorary = [];
+
+            let rectCount = 0;
+
             for (var i = 0; i < drawlist.length; i++) {
                 let cmd = drawlist[i];
                 let rect = cmd.Rect;
                 let color = cmd.Color;
-                if(color == null) color = COLOR_ERROR;
-                let r = color[0];
-                let g = color[1];
-                let b = color[2];
-                let a = color[3];
-                colorary.push(r,g,b,a);
-                colorary.push(r,g,b,a);
-                colorary.push(r,g,b,a);
-                colorary.push(r,g,b,a);
+
+                switch(cmd.type){
+                    case DrawCmdType.rect:
+                    if(color == null) color = COLOR_ERROR;
+                    let r = color[0];
+                    let g = color[1];
+                    let b = color[2];
+                    let a = color[3];
+                    colorary.push(r,g,b,a);
+                    colorary.push(r,g,b,a);
+                    colorary.push(r,g,b,a);
+                    colorary.push(r,g,b,a);
+                    
+                    let x =rect[0];
+                    let y = rect[1];
+                    let w = rect[2];
+                    let h =rect[3];
+                    vertices.push(x,y,x+w,y,x+w,y+h,x,y+h);
+                    rectCount++;
+
+                    break;
+                    case DrawCmdType.text:
+
+                    break;
+                }
                 
-                
-                let x =rect[0];
-                let y = rect[1];
-                let w = rect[2];
-                let h =rect[3];
-                vertices.push(x,y,x+w,y,x+w,y+h,x,y+h);
             }
+
+
+            this.drawCountRect = rectCount;
+
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBufferRect);
             gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(vertices),gl.STATIC_DRAW);
 

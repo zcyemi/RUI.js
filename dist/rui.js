@@ -193,13 +193,13 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
             this.type = DrawCmdType.rect;
             this.Rect = rect;
         }
-        DrawCmd.prototype.CmdRect = function (rect, color) {
+        DrawCmd.CmdRect = function (rect, color) {
             var cmd = new DrawCmd();
             cmd.Rect = rect;
             cmd.Color = color;
             return cmd;
         };
-        DrawCmd.prototype.CmdText = function (text, cliprect, color) {
+        DrawCmd.CmdText = function (text, cliprect, color) {
             var cmd = new DrawCmd();
             cmd.Text = text;
             cmd.Rect = cliprect;
@@ -272,8 +272,14 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
                 ui._level = p._level + 1;
             }
             if (ui.visible) {
-                var rect = [ui._calculateX, ui._calculateY, ui._width, ui._height];
-                this.DrawRectWithColor(rect, ui.color);
+                var onDraw = ui['onDraw'];
+                if (onDraw != null) {
+                    ui['onDraw'](this);
+                }
+                else {
+                    var rect = [ui._calculateX, ui._calculateY, ui._width, ui._height];
+                    this.DrawRectWithColor(rect, ui.color);
+                }
             }
         };
         RUIDrawCall.prototype.DrawRect = function (x, y, w, h) {
@@ -284,11 +290,15 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
             cmd.Color = color;
             this.drawList.push(cmd);
         };
+        RUIDrawCall.prototype.DrawText = function (text, clirect, color) {
+            var cmd = DrawCmd.CmdText(text, clirect, color);
+            this.drawList.push(cmd);
+        };
         return RUIDrawCall;
     }());
     exports.RUIDrawCall = RUIDrawCall;
 });
-define("gl/wglDrawCallBuffer", ["require", "exports"], function (require, exports) {
+define("gl/wglDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall"], function (require, exports, RUIDrawCall_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var COLOR_ERROR = [1, 0, 1, 1];
@@ -310,33 +320,41 @@ define("gl/wglDrawCallBuffer", ["require", "exports"], function (require, export
             this.isDirty = true;
             var drawcall = this.m_drawcall;
             var drawlist = drawcall.drawList;
-            this.drawCountRect = drawlist.length;
             if (drawlist.length == 0) {
                 return;
             }
             else {
                 var vertices = [];
                 var colorary = [];
+                var rectCount = 0;
                 for (var i = 0; i < drawlist.length; i++) {
                     var cmd = drawlist[i];
                     var rect = cmd.Rect;
                     var color = cmd.Color;
-                    if (color == null)
-                        color = COLOR_ERROR;
-                    var r = color[0];
-                    var g = color[1];
-                    var b = color[2];
-                    var a = color[3];
-                    colorary.push(r, g, b, a);
-                    colorary.push(r, g, b, a);
-                    colorary.push(r, g, b, a);
-                    colorary.push(r, g, b, a);
-                    var x = rect[0];
-                    var y = rect[1];
-                    var w = rect[2];
-                    var h = rect[3];
-                    vertices.push(x, y, x + w, y, x + w, y + h, x, y + h);
+                    switch (cmd.type) {
+                        case RUIDrawCall_1.DrawCmdType.rect:
+                            if (color == null)
+                                color = COLOR_ERROR;
+                            var r = color[0];
+                            var g = color[1];
+                            var b = color[2];
+                            var a = color[3];
+                            colorary.push(r, g, b, a);
+                            colorary.push(r, g, b, a);
+                            colorary.push(r, g, b, a);
+                            colorary.push(r, g, b, a);
+                            var x = rect[0];
+                            var y = rect[1];
+                            var w = rect[2];
+                            var h = rect[3];
+                            vertices.push(x, y, x + w, y, x + w, y + h, x, y + h);
+                            rectCount++;
+                            break;
+                        case RUIDrawCall_1.DrawCmdType.text:
+                            break;
+                    }
                 }
+                this.drawCountRect = rectCount;
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBufferRect);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBufferRect);
@@ -423,9 +441,10 @@ define("rui/RUIFontTexture", ["require", "exports", "opentype.js"], function (re
             this.CrateTexture();
             this.LoadFont();
         }
-        RUIFontTexture.Init = function () {
+        RUIFontTexture.Init = function (gl) {
             if (RUIFontTexture.s_inited)
                 return;
+            RUIFontTexture.s_gl = gl;
             RUIFontTexture.ASIICTexture = new RUIFontTexture();
             RUIFontTexture.s_inited = true;
         };
@@ -473,20 +492,11 @@ define("rui/RUIFontTexture", ["require", "exports", "opentype.js"], function (re
             var lineh = h;
             var linew = 0;
             var ctx = canvas2d.getContext('2d');
-            // ctx.font = '14px arial';
-            // for(var i= 33;i<=126;i++){
-            //     let c = String.fromCharCode(i);
-            //     let w = ctx.measureText('H').width;
-            //     console.log(w);
-            //     if(linew +w > texw){
-            //         lineh += h;
-            //         linew = 0;
-            //     }
-            //     ctx.fillText(c,linew,lineh);
-            //     linew+=w;
-            // }
             this.m_ctx2d = ctx;
             document.body.appendChild(canvas2d);
+            this.m_textureWidth = texw;
+            this.m_textureHeight = texh;
+            var gl = RUIFontTexture.s_gl;
         };
         RUIFontTexture.s_inited = false;
         return RUIFontTexture;
@@ -691,6 +701,11 @@ define("rui/UIWidgets", ["require", "exports", "rui/UIObject", "rui/RUIEventSys"
         UIButton.prototype.onMouseClick = function (e) {
             this.EvtMouseClick.emit(e);
         };
+        UIButton.prototype.onDraw = function (drawcall) {
+            var rect = [this._calculateX, this._calculateY, this._width, this._height];
+            drawcall.DrawRectWithColor(rect, this.color);
+            drawcall.DrawText('Button1', rect, null);
+        };
         return UIButton;
     }(UIObject_2.UIObject));
     exports.UIButton = UIButton;
@@ -703,6 +718,10 @@ define("rui/UIWidgets", ["require", "exports", "rui/UIObject", "rui/RUIEventSys"
             this.visible = true;
             this.width = 50;
             this.height = 50;
+        };
+        UIRect.prototype.onDraw = function (drawcall) {
+            var rect = [this._calculateX, this._calculateY, this._width, this._height];
+            drawcall.DrawRectWithColor(rect, this.color);
         };
         return UIRect;
     }(UIObject_2.UIObject));
@@ -814,7 +833,7 @@ define("rui/RUIQTree", ["require", "exports", "rui/RUIEventSys"], function (requ
     }());
     exports.RUIQTree = RUIQTree;
 });
-define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "gl/wglctx", "rui/DebugUI", "rui/RUIInput", "rui/RUIQTree", "rui/RUICursor"], function (require, exports, RUIDrawCall_1, wglctx_1, DebugUI_1, RUIInput_1, RUIQTree_1, RUICursor_2) {
+define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "gl/wglctx", "rui/DebugUI", "rui/RUIInput", "rui/RUIQTree", "rui/RUICursor"], function (require, exports, RUIDrawCall_2, wglctx_1, DebugUI_1, RUIInput_1, RUIQTree_1, RUICursor_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUICanvas = /** @class */ (function () {
@@ -822,7 +841,7 @@ define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "gl/wglctx", "
             this.m_valid = false;
             this.m_canvas = canvas;
             this.m_gl = wglctx_1.WGLContext.InitWidthCanvas(canvas);
-            this.m_drawcall = new RUIDrawCall_1.RUIDrawCall();
+            this.m_drawcall = new RUIDrawCall_2.RUIDrawCall();
             this.m_rootUI = new DebugUI_1.DebugUI();
             this.m_qtree = new RUIQTree_1.RUIQTree(this);
             this.m_input = new RUIInput_1.RUIInput(this);

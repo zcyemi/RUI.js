@@ -4,10 +4,18 @@ import * as opentype from 'opentype.js';
 export class RUIFontTexture{
 
     private static s_inited =false;
+    private static s_gl:WebGLRenderingContext;
+
     private static ASIICTexture: RUIFontTexture;
 
     private m_font:opentype.Font;
     private m_ctx2d:CanvasRenderingContext2D;
+
+    private m_textureWidth:number;
+    private m_textureHeight:number;
+
+    public m_glTexture:WebGLTexture;
+    
 
 
     constructor(){
@@ -16,9 +24,10 @@ export class RUIFontTexture{
         this.LoadFont();
     }
 
-    public static Init(){
+    public static Init(gl:WebGLRenderingContext){
         if(RUIFontTexture.s_inited) return;
 
+        RUIFontTexture.s_gl = gl;
         RUIFontTexture.ASIICTexture = new RUIFontTexture();
         RUIFontTexture.s_inited = true;
 
@@ -86,25 +95,13 @@ export class RUIFontTexture{
         let linew = 0;
 
         let ctx : CanvasRenderingContext2D = canvas2d.getContext('2d');
-        // ctx.font = '14px arial';
-        // for(var i= 33;i<=126;i++){
-        //     let c = String.fromCharCode(i);
-        //     let w = ctx.measureText('H').width;
-
-        //     console.log(w);
-            
-        //     if(linew +w > texw){
-        //         lineh += h;
-        //         linew = 0;
-        //     }
-            
-        //     ctx.fillText(c,linew,lineh);
-
-        //     linew+=w;
-        // }
-
         this.m_ctx2d = ctx;
 
         document.body.appendChild(canvas2d);
+
+        this.m_textureWidth = texw;
+        this.m_textureHeight = texh;
+
+        let gl = RUIFontTexture.s_gl;
     }
 }

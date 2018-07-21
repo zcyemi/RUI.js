@@ -19,14 +19,14 @@ export class DrawCmd{
         this.Rect = rect;
     }
 
-    public CmdRect(rect:number[],color:number[]):DrawCmd{
+    public static CmdRect(rect:number[],color:number[]):DrawCmd{
         let cmd = new DrawCmd();
         cmd.Rect = rect;
         cmd.Color = color;
         return cmd;
     }
 
-    public CmdText(text:string,cliprect:number[],color?:number[]){
+    public static CmdText(text:string,cliprect:number[],color?:number[]){
         let cmd= new DrawCmd();
         cmd.Text = text;
         cmd.Rect = cliprect;
@@ -36,8 +36,6 @@ export class DrawCmd{
     }
 
 }
-
-
 
 export class RUIDrawCall{
 
@@ -124,21 +122,32 @@ export class RUIDrawCall{
 
         if(ui.visible){
 
-            let rect = [ui._calculateX,ui._calculateY,ui._width,ui._height];
-            this.DrawRectWithColor(rect,ui.color);
+            let onDraw = ui['onDraw'];
+            if(onDraw!=null){
+                ui['onDraw'](this);
+            }
+            else{
+                let rect = [ui._calculateX,ui._calculateY,ui._width,ui._height];
+                this.DrawRectWithColor(rect,ui.color);
+            }
+
         }
 
     }
 
 
-    private DrawRect(x:number,y:number,w:number,h:number){
+    public DrawRect(x:number,y:number,w:number,h:number){
         this.drawList.push(new DrawCmd([x,y,w,h]));
     }
 
-    private DrawRectWithColor(pos:number[],color:number[]){
+    public DrawRectWithColor(pos:number[],color:number[]){
         let cmd = new DrawCmd(pos);
         cmd.Color = color;
         this.drawList.push(cmd);
     }
     
+    public DrawText(text:string,clirect:number[],color?:number[]){
+        let cmd = DrawCmd.CmdText(text,clirect,color);
+        this.drawList.push(cmd);
+    }
 }
