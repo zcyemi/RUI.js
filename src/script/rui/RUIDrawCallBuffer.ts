@@ -1,9 +1,9 @@
-import { RUIDrawCall, DrawCmdType } from "../rui/RUIDrawCall";
+import { RUIDrawCall, DrawCmdType } from "./RUIDrawCall";
 
 
 const COLOR_ERROR:number[] = [1,0,1,1];
 
-export class wglDrawCallBuffer {
+export class RUIDrawCallBuffer {
 
     public vertexBufferRect: WebGLBuffer;
     public colorBufferRect: WebGLBuffer;

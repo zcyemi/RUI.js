@@ -1,15 +1,16 @@
 import { RUIDrawCall } from "./RUIDrawCall";
 import { UIObject } from "./UIObject"
-import { WGLContext } from "../gl/wglctx";
 import { DebugUI } from "./DebugUI";
 import { RUIInput } from "./RUIInput";
 import { RUIQTree } from "./RUIQTree";
 import { RUICursor } from "./RUICursor";
+import { RUIRenderer } from "./RUIRenderer";
 
 export class RUICanvas{
     private m_canvas : HTMLCanvasElement;
     private m_drawcall: RUIDrawCall;
-    private m_gl: WGLContext;
+
+    private m_renderer: RUIRenderer;
 
     private m_rootUI: UIObject;
     private m_input : RUIInput;
@@ -22,7 +23,7 @@ export class RUICanvas{
     
     constructor(canvas:HTMLCanvasElement,UIClass?:any){
         this.m_canvas =canvas;
-        this.m_gl = WGLContext.InitWidthCanvas(canvas);
+        this.m_renderer = new RUIRenderer(this);
 
         this.m_drawcall = new RUIDrawCall();
         this.m_rootUI = new DebugUI();
@@ -31,7 +32,7 @@ export class RUICanvas{
         this.m_cursor= new RUICursor(this);
         
 
-        if(this.m_gl){
+        if(this.m_renderer.isValid){
             this.m_valid = true;
         }
 
@@ -70,7 +71,8 @@ export class RUICanvas{
     }
 
     public OnRender(){
-        if(this.m_gl) this.m_gl.Draw(this.m_drawcall);
+        let render = this.m_renderer;
+        if(render) render.Draw(this.m_drawcall);
     }
 
 
