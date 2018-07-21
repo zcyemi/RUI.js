@@ -410,7 +410,8 @@ define("rui/UIWidgets", ["require", "exports", "rui/UIObject", "rui/RUIEventSys"
         UIButton.prototype.onDraw = function (drawcall) {
             var rect = [this._calculateX, this._calculateY, this._width, this._height];
             drawcall.DrawRectWithColor(rect, this.color);
-            drawcall.DrawText('Button1', rect, null);
+            var r = [50, 50, 128, 128];
+            drawcall.DrawText('Button1', r, null);
         };
         return UIButton;
     }(UIObject_2.UIObject));
@@ -539,23 +540,87 @@ define("rui/RUIQTree", ["require", "exports", "rui/RUIEventSys"], function (requ
     }());
     exports.RUIQTree = RUIQTree;
 });
-define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall"], function (require, exports, RUIDrawCall_1) {
+define("gl/wglShaderLib", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.GLSL_FRAG_COLOR = 'precision lowp float;\n\nvarying vec4 vColor;\n\nvoid main(){\ngl_FragColor = vColor;\n}';
+    exports.GLSL_VERT_DEF = 'precision mediump float;\nattribute vec2 aPosition;\nattribute vec4 aColor;\n\nuniform vec4 uProj;\nvarying vec4 vColor;\n\nvoid main(){\nvec2 pos = aPosition * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,0,1);\nvColor = aColor;\n}';
+    exports.GLSL_FRAG_TEXT = '#version 300 es\nprecision lowp float;\n\nin vec4 vColor;\nin vec2 vUV;\n\nuniform sampler2D uSampler;\n\nout vec4 fragColor;\n\nvoid main(){\nvec4 val = texture(uSampler,vUV);\nval.rgb *= val.a;\nfragColor = val;\n}';
+    exports.GLSL_VERT_TEXT = '#version 300 es\nprecision mediump float;\nin vec2 aPosition;\nin vec4 aColor;\nin vec2 aUV;\nin vec4 aClip;\n\nuniform vec4 uProj;\nout vec4 vColor;\nout vec2 vUV;\n\nvoid main(){\nvec2 pos = aPosition * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,0,1);\nvColor = aColor;\nvUV =aUV;\n}';
+});
+define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wglShaderLib"], function (require, exports, RUIDrawCall_1, wglShaderLib_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var COLOR_ERROR = [1, 0, 1, 1];
+    var MAX_RECT_COUNT = 512;
     var RUIDrawCallBuffer = /** @class */ (function () {
-        function RUIDrawCallBuffer(gl, drawcall) {
+        function RUIDrawCallBuffer(glctx, drawcall) {
             this.drawCountRect = 0;
+            this.drawCountText = 0;
             this.isDirty = true;
+            var gl = glctx.gl;
             this.m_drawcall = drawcall;
             if (drawcall == null)
                 return;
-            var vbuffer = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, vbuffer);
-            this.vertexBufferRect = vbuffer;
-            var cbuffer = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, cbuffer);
-            this.colorBufferRect = cbuffer;
+            //Shaders
+            this.programRect = glctx.createProgram(wglShaderLib_1.GLSL_VERT_DEF, wglShaderLib_1.GLSL_FRAG_COLOR);
+            this.programText = glctx.createProgram(wglShaderLib_1.GLSL_VERT_TEXT, wglShaderLib_1.GLSL_FRAG_TEXT);
+            //IndicesBuffer
+            {
+                var ibuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibuffer);
+                var idata = [];
+                var ic = 0;
+                for (var i = 0; i < MAX_RECT_COUNT; i++) {
+                    idata.push(ic, ic + 2, ic + 1, ic, ic + 3, ic + 2);
+                    ic += 4;
+                }
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(idata), gl.STATIC_DRAW);
+                this.indicesBuffer = ibuffer;
+            }
+            //Rect
+            {
+                var program = this.programRect;
+                var vao = gl.createVertexArray();
+                this.vaoRect = vao;
+                gl.bindVertexArray(vao);
+                //position
+                var vbuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, vbuffer);
+                this.vertexBufferRect = vbuffer;
+                gl.vertexAttribPointer(program.aPosition, 2, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(program.aPosition);
+                //color
+                var cbuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, cbuffer);
+                this.colorBufferRect = cbuffer;
+                gl.vertexAttribPointer(program.aColor, 4, gl.FLOAT, true, 0, 0);
+                gl.enableVertexAttribArray(program.aColor);
+                //indices buffer
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuffer);
+                gl.bindVertexArray(null);
+            }
+            //Text
+            {
+                var program = this.programText;
+                var vao = gl.createVertexArray();
+                this.vaoText = vao;
+                gl.bindVertexArray(vao);
+                //Position
+                var vbuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, vbuffer);
+                this.vertexBufferText = vbuffer;
+                gl.vertexAttribPointer(program.aPosition, 2, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(program.aPosition);
+                //UV
+                var uvbuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, uvbuffer);
+                this.uvBufferText = uvbuffer;
+                gl.vertexAttribPointer(program.aUV, 2, gl.FLOAT, true, 0, 0);
+                gl.enableVertexAttribArray(program.aUV);
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuffer);
+                gl.bindVertexArray(null);
+            }
         }
         RUIDrawCallBuffer.prototype.SyncBuffer = function (gl) {
             this.isDirty = true;
@@ -565,42 +630,68 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall"], funct
                 return;
             }
             else {
-                var vertices = [];
-                var colorary = [];
+                var rect_vert = [];
+                var rect_color = [];
+                var text_vert = [];
+                var text_uv = [];
                 var rectCount = 0;
+                var textCount = 0;
                 for (var i = 0; i < drawlist.length; i++) {
                     var cmd = drawlist[i];
                     var rect = cmd.Rect;
                     var color = cmd.Color;
                     switch (cmd.type) {
                         case RUIDrawCall_1.DrawCmdType.rect:
-                            if (color == null)
-                                color = COLOR_ERROR;
-                            var r = color[0];
-                            var g = color[1];
-                            var b = color[2];
-                            var a = color[3];
-                            colorary.push(r, g, b, a);
-                            colorary.push(r, g, b, a);
-                            colorary.push(r, g, b, a);
-                            colorary.push(r, g, b, a);
-                            var x = rect[0];
-                            var y = rect[1];
-                            var w = rect[2];
-                            var h = rect[3];
-                            vertices.push(x, y, x + w, y, x + w, y + h, x, y + h);
-                            rectCount++;
+                            {
+                                if (color == null)
+                                    color = COLOR_ERROR;
+                                var r = color[0];
+                                var g = color[1];
+                                var b = color[2];
+                                var a = color[3];
+                                rect_color.push(r, g, b, a);
+                                rect_color.push(r, g, b, a);
+                                rect_color.push(r, g, b, a);
+                                rect_color.push(r, g, b, a);
+                                var x = rect[0];
+                                var y = rect[1];
+                                var w = rect[2];
+                                var h = rect[3];
+                                rect_vert.push(x, y, x + w, y, x + w, y + h, x, y + h);
+                                rectCount++;
+                            }
                             break;
                         case RUIDrawCall_1.DrawCmdType.text:
+                            {
+                                var x = rect[0];
+                                var y = rect[1];
+                                var w = rect[2];
+                                var h = rect[3];
+                                text_vert.push(x, y, x + w, y, x + w, y + h, x, y + h);
+                                text_uv.push(0, 0, 1, 0, 1, 1, 0, 1);
+                                textCount++;
+                            }
                             break;
                     }
                 }
-                this.drawCountRect = rectCount;
-                gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBufferRect);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-                gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBufferRect);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorary), gl.STATIC_DRAW);
-                console.log('sync vertex buffer');
+                //Rect
+                {
+                    this.drawCountRect = rectCount;
+                    if (rectCount != 0) {
+                        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBufferRect);
+                        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rect_vert), gl.STATIC_DRAW);
+                        gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBufferRect);
+                        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rect_color), gl.STATIC_DRAW);
+                    }
+                }
+                //Text{
+                this.drawCountText = textCount;
+                if (textCount != 0) {
+                    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBufferText);
+                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(text_vert), gl.STATIC_DRAW);
+                    gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBufferText);
+                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(text_uv), gl.STATIC_DRAW);
+                }
             }
         };
         return RUIDrawCallBuffer;
@@ -612,9 +703,17 @@ define("rui/RUIFontTexture", ["require", "exports", "opentype.js"], function (re
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUIFontTexture = /** @class */ (function () {
         function RUIFontTexture() {
+            this.m_textureValid = false;
             this.CrateTexture();
             this.LoadFont();
         }
+        Object.defineProperty(RUIFontTexture.prototype, "isTextureValid", {
+            get: function () {
+                return this.m_textureValid;
+            },
+            enumerable: true,
+            configurable: true
+        });
         RUIFontTexture.Init = function (gl) {
             if (RUIFontTexture.s_inited)
                 return;
@@ -630,6 +729,7 @@ define("rui/RUIFontTexture", ["require", "exports", "opentype.js"], function (re
             });
         };
         RUIFontTexture.prototype.FillTexture = function () {
+            var _this = this;
             var f = this.m_font;
             var ctx2d = this.m_ctx2d;
             var fontsize = 16.0;
@@ -654,6 +754,35 @@ define("rui/RUIFontTexture", ["require", "exports", "opentype.js"], function (re
                 linw += x;
                 maxh = Math.max(maxh, y);
             }
+            var url = ctx2d.canvas.toDataURL('image/png');
+            var glctx = RUIFontTexture.s_gl;
+            var gl = glctx.gl;
+            var gltex = this.createTextureImage(glctx, gl.RGBA, gl.RGBA, url, true, true, function () {
+                _this.m_textureValid = true;
+            });
+            this.m_glTexture = gltex;
+        };
+        RUIFontTexture.prototype.createTextureImage = function (glctx, internalFmt, format, src, linear, mipmap, callback) {
+            if (linear === void 0) { linear = true; }
+            if (mipmap === void 0) { mipmap = true; }
+            var gl = glctx.gl;
+            var img = new Image();
+            var tex = gl.createTexture();
+            img.onload = function () {
+                gl.bindTexture(gl.TEXTURE_2D, tex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, internalFmt, format, gl.UNSIGNED_BYTE, img);
+                if (mipmap)
+                    gl.generateMipmap(gl.TEXTURE_2D);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, linear ? gl.LINEAR : gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, linear ? (mipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR) : gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.bindTexture(gl.TEXTURE_2D, null);
+                if (callback != null)
+                    callback();
+            };
+            img.src = src;
+            return tex;
         };
         RUIFontTexture.prototype.CrateTexture = function () {
             var texw = 128;
@@ -667,26 +796,18 @@ define("rui/RUIFontTexture", ["require", "exports", "opentype.js"], function (re
             var linew = 0;
             var ctx = canvas2d.getContext('2d');
             this.m_ctx2d = ctx;
-            document.body.appendChild(canvas2d);
+            //document.body.appendChild(canvas2d);
             this.m_textureWidth = texw;
             this.m_textureHeight = texh;
-            var gl = RUIFontTexture.s_gl;
         };
         RUIFontTexture.s_inited = false;
         return RUIFontTexture;
     }());
     exports.RUIFontTexture = RUIFontTexture;
 });
-define("gl/wglShaderLib", ["require", "exports"], function (require, exports) {
+define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer", "rui/RUIFontTexture"], function (require, exports, wglut_1, RUIDrawCallBuffer_1, RUIFontTexture_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.GLSL_FRAG_COLOR = 'precision lowp float;\n\nvarying vec4 vColor;\n\nvoid main(){\ngl_FragColor = vColor;\n}';
-    exports.GLSL_VERT_DEF = 'precision mediump float;\nattribute vec2 aPosition;\nattribute vec4 aColor;\n\nuniform vec4 uProj;\nvarying vec4 vColor;\n\nvoid main(){\nvec2 pos = aPosition * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,0,1);\nvColor = aColor;\n}';
-});
-define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer", "rui/RUIFontTexture", "gl/wglShaderLib"], function (require, exports, wglut_1, RUIDrawCallBuffer_1, RUIFontTexture_1, wglShaderLib_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var MAX_RECT_COUNT = 512;
     var RUIRenderer = /** @class */ (function () {
         function RUIRenderer(uicanvas) {
             this.m_drawcallBuffer = null;
@@ -699,7 +820,7 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             }
             this.m_isvalid = true;
             this.gl = this.glctx.gl;
-            RUIFontTexture_1.RUIFontTexture.Init(this.gl);
+            RUIFontTexture_1.RUIFontTexture.Init(this.glctx);
             this.SetupGL();
         }
         RUIRenderer.prototype.isValid = function () {
@@ -710,20 +831,7 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             if (gl == null)
                 return;
             var glctx = this.glctx;
-            //indices buffer
-            var ibuffer = gl.createBuffer();
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibuffer);
-            var idata = [];
-            var ic = 0;
-            for (var i = 0; i < MAX_RECT_COUNT; i++) {
-                idata.push(ic, ic + 2, ic + 1, ic, ic + 3, ic + 2);
-                ic += 4;
-            }
-            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(idata), gl.STATIC_DRAW);
-            this.m_indicesBuffer = ibuffer;
             //shaders
-            this.m_programRect = glctx.createProgram(wglShaderLib_1.GLSL_VERT_DEF, wglShaderLib_1.GLSL_FRAG_COLOR);
-            console.log(this.m_programRect);
             //pipeline
             gl.disable(gl.DEPTH_TEST);
             //parameter
@@ -734,7 +842,7 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             if (drawcall == null)
                 return;
             if (this.m_drawcallBuffer == null) {
-                this.m_drawcallBuffer = new RUIDrawCallBuffer_1.RUIDrawCallBuffer(this.gl, drawcall);
+                this.m_drawcallBuffer = new RUIDrawCallBuffer_1.RUIDrawCallBuffer(this.glctx, drawcall);
             }
             if (drawcall.isDirty) {
                 this.m_drawcallBuffer.SyncBuffer(this.gl);
@@ -744,25 +852,36 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             var drawbuffer = this.m_drawcallBuffer;
             if (!drawbuffer.isDirty)
                 return;
+            drawbuffer.isDirty = false;
             var gl = this.gl;
             gl.clearColor(0.95, 0.95, 0.95, 1);
             gl.clear(gl.COLOR_BUFFER_BIT);
             //draw drawcall buffer
             var drawRectCount = drawbuffer.drawCountRect;
             if (drawRectCount > 0) {
-                gl.bindBuffer(gl.ARRAY_BUFFER, drawbuffer.vertexBufferRect);
-                gl.vertexAttribPointer(this.m_programRect.aPosition, 2, gl.FLOAT, false, 0, 0);
-                gl.enableVertexAttribArray(this.m_programRect.aPosition);
-                //color
-                gl.bindBuffer(gl.ARRAY_BUFFER, drawbuffer.colorBufferRect);
-                gl.vertexAttribPointer(this.m_programRect.aColor, 4, gl.FLOAT, true, 0, 0);
-                gl.enableVertexAttribArray(this.m_programRect.aColor);
-                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.m_indicesBuffer);
-                gl.useProgram(this.m_programRect.Program);
-                gl.uniform4fv(this.m_programRect.uProj, this.m_projectParam);
+                var programRect = drawbuffer.programRect;
+                gl.useProgram(programRect.Program);
+                gl.uniform4fv(programRect.uProj, this.m_projectParam);
+                gl.bindVertexArray(this.m_drawcallBuffer.vaoRect);
                 gl.drawElements(gl.TRIANGLES, drawRectCount * 6, gl.UNSIGNED_SHORT, 0);
             }
-            drawbuffer.isDirty = false;
+            var drawTextCount = drawbuffer.drawCountText;
+            if (drawTextCount > 0) {
+                var fonttex = RUIFontTexture_1.RUIFontTexture.ASIICTexture;
+                if (fonttex.isTextureValid) {
+                    var programText = drawbuffer.programText;
+                    gl.useProgram(programText.Program);
+                    gl.uniform4fv(programText.uProj, this.m_projectParam);
+                    gl.activeTexture(gl.TEXTURE0);
+                    gl.bindTexture(gl.TEXTURE_2D, fonttex.m_glTexture);
+                    gl.uniform1i(programText.uSampler, 0);
+                    gl.bindVertexArray(drawbuffer.vaoText);
+                    gl.drawElements(gl.TRIANGLES, drawTextCount * 6, gl.UNSIGNED_SHORT, 0);
+                }
+                else {
+                    drawbuffer.isDirty = true;
+                }
+            }
         };
         return RUIRenderer;
     }());

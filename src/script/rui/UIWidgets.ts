@@ -31,7 +31,10 @@ export class UIButton extends UIObject{
     public onDraw(drawcall:RUIDrawCall){
         let rect = [this._calculateX,this._calculateY,this._width,this._height];
         drawcall.DrawRectWithColor(rect,this.color);
-        drawcall.DrawText('Button1',rect,null);
+
+
+        let r = [50,50,128,128];
+        drawcall.DrawText('Button1',r,null);
     }
 }
 

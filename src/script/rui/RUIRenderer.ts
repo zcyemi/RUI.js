@@ -5,7 +5,6 @@ import { RUIDrawCallBuffer } from "./RUIDrawCallBuffer";
 import { RUIFontTexture } from "./RUIFontTexture";
 import { GLSL_VERT_DEF, GLSL_FRAG_COLOR } from "../gl/wglShaderLib";
 
-const MAX_RECT_COUNT = 512;
 
 export class RUIRenderer{
 
@@ -31,7 +30,7 @@ export class RUIRenderer{
         this.m_isvalid =true;
         this.gl = this.glctx.gl;
 
-        RUIFontTexture.Init(this.gl);
+        RUIFontTexture.Init(this.glctx);
         this.SetupGL();
         
     }
@@ -47,22 +46,9 @@ export class RUIRenderer{
 
         let glctx = this.glctx;
 
-        //indices buffer
-        let ibuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ibuffer);
-        let idata:number[] = [];
-
-        let ic = 0;
-        for(var i=0;i< MAX_RECT_COUNT;i++){
-            idata.push(ic,ic+2,ic+1,ic,ic+3,ic+2);
-            ic+=4;
-        }
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(idata),gl.STATIC_DRAW);
-        this.m_indicesBuffer = ibuffer;
 
         //shaders
-        this.m_programRect = glctx.createProgram(GLSL_VERT_DEF,GLSL_FRAG_COLOR);
-        console.log(this.m_programRect);
+        
 
         //pipeline
         gl.disable(gl.DEPTH_TEST);
@@ -75,7 +61,7 @@ export class RUIRenderer{
     public Draw(drawcall:RUIDrawCall){
         if(drawcall == null) return;
         if(this.m_drawcallBuffer == null){
-            this.m_drawcallBuffer = new RUIDrawCallBuffer(this.gl,drawcall);
+            this.m_drawcallBuffer = new RUIDrawCallBuffer(this.glctx,drawcall);
         }
 
         if(drawcall.isDirty){
@@ -87,6 +73,7 @@ export class RUIRenderer{
         let drawbuffer:RUIDrawCallBuffer = this.m_drawcallBuffer;
         
         if(!drawbuffer.isDirty) return;
+        drawbuffer.isDirty = false;
 
         let gl = this.gl;
 
@@ -97,22 +84,39 @@ export class RUIRenderer{
         //draw drawcall buffer
         let drawRectCount = drawbuffer.drawCountRect;
         if(drawRectCount>0){
+            let programRect : GLProgram |any = drawbuffer.programRect;
+            gl.useProgram(programRect.Program);
+            gl.uniform4fv(programRect.uProj,this.m_projectParam);
 
-            gl.bindBuffer(gl.ARRAY_BUFFER,drawbuffer.vertexBufferRect);
-            gl.vertexAttribPointer(this.m_programRect.aPosition,2,gl.FLOAT,false,0,0);
-            gl.enableVertexAttribArray(this.m_programRect.aPosition);
-
-            //color
-            gl.bindBuffer(gl.ARRAY_BUFFER,drawbuffer.colorBufferRect);
-            gl.vertexAttribPointer(this.m_programRect.aColor,4,gl.FLOAT,true,0,0);
-            gl.enableVertexAttribArray(this.m_programRect.aColor);
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,this.m_indicesBuffer);
-            gl.useProgram(this.m_programRect.Program);
-            gl.uniform4fv(this.m_programRect.uProj,this.m_projectParam);
+            gl.bindVertexArray(this.m_drawcallBuffer.vaoRect);
             gl.drawElements(gl.TRIANGLES,drawRectCount*6,gl.UNSIGNED_SHORT,0);
         }
 
-        drawbuffer.isDirty = false;
+        let drawTextCount = drawbuffer.drawCountText;
+        if(drawTextCount > 0){
+
+            let fonttex = RUIFontTexture.ASIICTexture;
+
+
+
+            if(fonttex.isTextureValid){
+                let programText: GLProgram|any = drawbuffer.programText;
+                gl.useProgram(programText.Program);
+                gl.uniform4fv(programText.uProj,this.m_projectParam);
+
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D,fonttex.m_glTexture);
+                gl.uniform1i(programText.uSampler,0);
+
+                gl.bindVertexArray(drawbuffer.vaoText);
+                gl.drawElements(gl.TRIANGLES,drawTextCount *6, gl.UNSIGNED_SHORT,0)
+            }
+            else{
+                drawbuffer.isDirty = true;
+            }
+        }
+
+        
 
     }
 }
