@@ -1,5 +1,5 @@
 import { UIUtil } from "./UIUtil";
-import { RUIMouseEvent } from "./RUIEventSys";
+import { RUIMouseEvent, RUIEvent } from "./RUIEventSys";
 
 export enum UIDisplayMode{
     Default,
@@ -87,11 +87,11 @@ export class UIObject{
         }
     }
 
-    public onMouseEnter(){
+    public onMouseEnter(e:RUIEvent){
 
     }
 
-    public onMouseLeave(){
+    public onMouseLeave(e:RUIEvent){
 
     }
 

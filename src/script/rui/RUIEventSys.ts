@@ -1,17 +1,20 @@
 import { UIObject } from "./UIObject";
+import { RUICanvas } from "./RUICanvas";
 
 
 
 export class RUIEvent{
     public eventType:string;
     public target:UIObject;
+    public canvas:RUICanvas;
 
     public isUsed:boolean = false;
     private _isPrevented: boolean = false;
 
-    public constructor(tar:UIObject,type:string){
+    public constructor(tar:UIObject,type:string,canvas?:RUICanvas){
         this.target= tar;
         this.eventType = type;
+        this.canvas = canvas;
     }
 
     public prevent(){
@@ -25,14 +28,16 @@ export class RUIEvent{
     public static readonly MOUSE_DOWN:string = "EvtMouseDown";
     public static readonly MOUSE_UP:string = "EvtMouseUp";
     public static readonly MOUSE_CLICK:string = "EvtMouseClick";
+    public static readonly MOUSE_ENTER:string = "EvtMouseEnter";
+    public static readonly MOUSE_LEAVE:string = "EvtMouseLeave";
 }
 
 export class RUIMouseEvent extends RUIEvent{
 
     public mousex:number;
     public mousey:number;
-    public constructor(tar:UIObject,type:string,x:number,y:number){
-        super(tar,type);
+    public constructor(tar:UIObject,type:string,x:number,y:number,canvas?:RUICanvas){
+        super(tar,type,canvas);
 
         this.mousex = x;
         this.mousey = y;

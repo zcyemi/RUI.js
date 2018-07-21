@@ -1,5 +1,6 @@
 import { UIObject } from "./UIObject";
-import { RUIEventEmitter, RUIMouseEvent } from "./RUIEventSys";
+import { RUIEventEmitter, RUIMouseEvent, RUIEvent } from "./RUIEventSys";
+import { RUICursorType } from "./RUICursor";
 
 
 export class UIButton extends UIObject{
@@ -14,11 +15,12 @@ export class UIButton extends UIObject{
         this.height = 23;
     }
 
-    public onMouseEnter(){
+    public onMouseEnter(e:RUIEvent){
+        e.canvas.cursor.SetCursor(RUICursorType.pointer);
     }
 
-    public onMouseLeave(){
-
+    public onMouseLeave(e:RUIEvent){
+        e.canvas.cursor.SetCursor(RUICursorType.default);
     }
 
     public onMouseClick(e:RUIMouseEvent){

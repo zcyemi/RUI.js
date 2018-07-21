@@ -4,6 +4,7 @@ import { WGLContext } from "../gl/wglctx";
 import { DebugUI } from "./DebugUI";
 import { RUIInput } from "./RUIInput";
 import { RUIQTree } from "./RUIQTree";
+import { RUICursor } from "./RUICursor";
 
 export class RUICanvas{
     private m_canvas : HTMLCanvasElement;
@@ -14,6 +15,8 @@ export class RUICanvas{
     private m_input : RUIInput;
     private m_qtree: RUIQTree;
 
+    private m_cursor:RUICursor;
+
     private m_valid :boolean = false;
     
     
@@ -23,8 +26,9 @@ export class RUICanvas{
 
         this.m_drawcall = new RUIDrawCall();
         this.m_rootUI = new DebugUI();
-        this.m_qtree = new RUIQTree(this.m_rootUI);
+        this.m_qtree = new RUIQTree(this);
         this.m_input = new RUIInput(this);
+        this.m_cursor= new RUICursor(this);
         
 
         if(this.m_gl){
@@ -42,6 +46,12 @@ export class RUICanvas{
     }
     public get qtree():RUIQTree{
         return this.m_qtree;
+    }
+    public get input():RUIInput{
+        return this.m_input;
+    }
+    public get cursor():RUICursor{
+        return this.m_cursor;
     }
 
     public OnBuild(){

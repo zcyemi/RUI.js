@@ -1,5 +1,6 @@
 import { UIObject } from "./UIObject";
 import { RUIEventEmitter, RUIEvent, RUIMouseEvent } from "./RUIEventSys";
+import { RUICanvas } from "./RUICanvas";
 
 
 
@@ -16,8 +17,10 @@ if(Array.prototype['includes'] == null){
 export class RUIQTree{
 
     private m_ui :UIObject;
-    constructor(uiroot:UIObject){
-        this.m_ui= uiroot;
+    private m_tar:RUICanvas;
+    constructor(canvas:RUICanvas){
+        this.m_tar = canvas;
+        this.m_ui = canvas.rootui;
     }
 
 
@@ -41,7 +44,7 @@ export class RUIQTree{
         for(var i=hovlist.length-1;i>=0;i--){
             let c= hovlist[i];
             if(curlist.indexOf(c) == -1){
-                c.onMouseLeave();
+                c.onMouseLeave(new RUIEvent(c,RUIEvent.MOUSE_LEAVE,this.m_tar));
                 hovlist.splice(i,1);
             }
         }
@@ -49,7 +52,7 @@ export class RUIQTree{
         for(var i=0,len = curlist.length;i<len;i++){
             let c = curlist[i];
             if(hovlist.indexOf(c)>=0) continue;
-            c.onMouseEnter();
+            c.onMouseEnter(new RUIEvent(c,RUIEvent.MOUSE_ENTER,this.m_tar));
             hovlist.push(c);
         }
     }
