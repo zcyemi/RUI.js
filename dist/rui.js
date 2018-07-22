@@ -260,6 +260,7 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
                 this.ExecNodes(cu, f);
             }
         };
+        //needs refactoring
         RUIDrawCall.prototype.RebuildUINode = function (ui, isResize) {
             if (isResize === void 0) { isResize = false; }
             var children = ui.children;
@@ -276,18 +277,20 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
                 ui.height = canvas.m_height;
                 ui._width = ui.width;
                 ui._height = ui.height;
+                if (isFlex) {
+                    ui._flexWidth = ui.width;
+                    ui._flexHeight = ui.height;
+                }
             }
             else {
                 if (isFlex) {
                     if (isVertical) {
-                        ui.width = ui.parent.width;
-                        if (ui.height == undefined)
-                            ui.height = ui._height;
+                        ui._flexWidth = ui.parent.width;
+                        ui._flexHeight = ui.height == undefined ? ui._height : ui.height;
                     }
                     else {
-                        ui.height = ui.parent.height;
-                        if (ui.width == undefined)
-                            ui.width = ui._width;
+                        ui._flexHeight = ui.parent.height;
+                        ui._flexWidth = ui.width == undefined ? ui._width : ui._width;
                     }
                 }
             }
@@ -321,10 +324,10 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
                                     fiexSize += fsize == undefined ? 0 : fsize;
                                 }
                             }
-                            var sizePerFlex = flexCount == 0 ? 0 : ((isVertical ? ui.height : ui.width) - fiexSize) / flexCount;
+                            var sizePerFlex = flexCount == 0 ? 0 : ((isVertical ? ui._flexHeight : ui._flexWidth) - fiexSize) / flexCount;
                             for (var i = 0; i < childCount; i++) {
                                 var c = children[i];
-                                if (c.isDirty) {
+                                if (c.isDirty || true) { //temp for resize update
                                     var cflex = c.flex;
                                     var cfsize = isVertical ? c.height : c.width;
                                     if (cflex != undefined) {
@@ -332,11 +335,11 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
                                     }
                                     if (isVertical) {
                                         c._height = cfsize;
-                                        c._width = ui.width;
+                                        c._width = ui._flexWidth;
                                     }
                                     else {
                                         c._width = cfsize;
-                                        c._height = ui.height;
+                                        c._height = ui._flexHeight;
                                     }
                                     this.RebuildUINode(c);
                                     c._offsetX = isVertical ? 0 : offset;

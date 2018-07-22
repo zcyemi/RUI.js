@@ -35,6 +35,9 @@ export class UIObject{
     public _offsetY:number;
     public _calculateX:number;
     public _calculateY:number;
+    public _flexWidth:number;
+    public _flexHeight:number;
+
     public _level: number;
 
     public _canvas: RUICanvas;
