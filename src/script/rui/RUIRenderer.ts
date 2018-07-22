@@ -22,8 +22,11 @@ export class RUIRenderer{
 
     private m_isResized: boolean = false;
 
+    private m_uicanvas:RUICanvas;
+
 
     public constructor(uicanvas: RUICanvas){
+        this.m_uicanvas = uicanvas;
         this.glctx = GLContext.createFromCanvas(uicanvas.canvas);
 
         window.addEventListener('resize',()=>{
@@ -50,6 +53,8 @@ export class RUIRenderer{
     public resizeCanvas(w:number,h:number){
         this.gl.canvas.width =w;
         this.gl.canvas.height = h;
+
+        this.m_uicanvas.setSize(w,h);
 
         this.m_projectParam = [2.0/w,2.0/h,0,0];
         this.gl.viewport(0,0,w,h);

@@ -20,6 +20,11 @@ export class RUICanvas{
 
     private m_valid :boolean = false;
     
+
+    public m_width:number;
+    public m_height:number;
+
+    private m_isResized:boolean = false;
     
     constructor(canvas:HTMLCanvasElement,UIClass?:any){
         this.m_canvas =canvas;
@@ -27,6 +32,7 @@ export class RUICanvas{
 
         this.m_drawcall = new RUIDrawCall();
         this.m_rootUI = new DebugUI();
+        this.m_rootUI._canvas = this;
         this.m_qtree = new RUIQTree(this);
         this.m_input = new RUIInput(this);
         this.m_cursor= new RUICursor(this);
@@ -55,6 +61,17 @@ export class RUICanvas{
         return this.m_cursor;
     }
 
+    public setSize(w:number,h:number){
+        if(this.m_width != w || this.m_height != h){
+            this.m_width =w;
+            this.m_height = h;
+
+            this.m_isResized = true;
+
+            if(this.m_rootUI != null) this.m_rootUI.isDirty = true;
+        }
+    }
+
     public OnBuild(){
         this.m_rootUI._dispatchOnBuild();
         this.m_drawcall.Rebuild(this.m_rootUI);
@@ -67,13 +84,9 @@ export class RUICanvas{
         let rootUI = this.m_rootUI;
         let renderer = this.m_renderer;
 
-        if(renderer.isResized){
-            rootUI.isDirty = true;
-            renderer.useResized();
-        }
-
         if(rootUI.isDirty){
-            this.m_drawcall.Rebuild(rootUI);
+            this.m_drawcall.Rebuild(rootUI,this.m_isResized);
+            this.m_isResized = false;
         }
 
         this.OnRender();

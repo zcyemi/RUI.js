@@ -140,6 +140,9 @@ define("rui/UIObject", ["require", "exports", "rui/UIUtil"], function (require, 
                 return;
             ui.parent = this;
             this.children.push(ui);
+            if (this._canvas != null) {
+                ui.setCanvas(this._canvas);
+            }
             ui.isDirty = true;
             this.isDirty = true;
         };
@@ -151,7 +154,11 @@ define("rui/UIObject", ["require", "exports", "rui/UIUtil"], function (require, 
                 return;
             this.children.splice(index, 1);
             ui.parent = null;
+            ui.setCanvas(null);
             this.isDirty = true;
+        };
+        UIObject.prototype.setCanvas = function (canvas) {
+            this.execRecursive(function (u) { return u._canvas = canvas; });
         };
         UIObject.prototype.execRecursive = function (f) {
             f(this);
@@ -236,9 +243,10 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
             this.drawList = [];
             this.isDirty = true;
         }
-        RUIDrawCall.prototype.Rebuild = function (ui) {
+        RUIDrawCall.prototype.Rebuild = function (ui, isResize) {
+            if (isResize === void 0) { isResize = false; }
             this.drawList = [];
-            this.RebuildUINode(ui);
+            this.RebuildUINode(ui, isResize);
             this.ExecNodes(ui, this.PostRebuild.bind(this));
             ui.isDirty = false;
             this.isDirty = true;
@@ -252,31 +260,114 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
                 this.ExecNodes(cu, f);
             }
         };
-        RUIDrawCall.prototype.RebuildUINode = function (ui) {
+        RUIDrawCall.prototype.RebuildUINode = function (ui, isResize) {
+            if (isResize === void 0) { isResize = false; }
             var children = ui.children;
             var childCount = children.length;
+            var isRoot = ui.parent == null;
+            var canvas = ui._canvas;
+            var parent = ui.parent;
             var isVertical = ui.orientation == UIObject_1.UIOrientation.Vertical;
+            var isFlex = ui.displayMode == UIObject_1.UIDisplayMode.Flex;
             var maxsize = isVertical ? ui.width : ui.height;
             var offset = 0;
-            if (childCount != 0) {
-                for (var i = 0; i < childCount; i++) {
-                    var c = children[i];
-                    if (c.isDirty) {
-                        this.RebuildUINode(c);
-                        c._offsetX = isVertical ? 0 : offset;
-                        c._offsetY = isVertical ? offset : 0;
-                    }
-                    offset += isVertical ? c._height : c._width;
-                    maxsize = Math.max(maxsize, isVertical ? c._width : c._height);
-                }
-                if (ui.width == undefined)
-                    ui._width = isVertical ? maxsize : offset;
-                if (ui.height == undefined)
-                    ui._height = isVertical ? offset : maxsize;
+            if (isRoot) {
+                ui.width = canvas.m_width;
+                ui.height = canvas.m_height;
+                ui._width = ui.width;
+                ui._height = ui.height;
             }
             else {
-                ui._width = ui.width == null ? 20 : ui.width;
-                ui._height = ui.height == null ? 20 : ui.height;
+                if (isFlex) {
+                    if (isVertical) {
+                        ui.width = ui.parent.width;
+                        if (ui.height == undefined)
+                            ui.height = ui._height;
+                    }
+                    else {
+                        ui.height = ui.parent.height;
+                        if (ui.width == undefined)
+                            ui.width = ui._width;
+                    }
+                }
+            }
+            if (childCount != 0) {
+                switch (ui.displayMode) {
+                    case UIObject_1.UIDisplayMode.Default:
+                        {
+                            for (var i = 0; i < childCount; i++) {
+                                var c = children[i];
+                                if (c.isDirty) {
+                                    this.RebuildUINode(c);
+                                    c._offsetX = isVertical ? 0 : offset;
+                                    c._offsetY = isVertical ? offset : 0;
+                                }
+                                offset += isVertical ? c._height : c._width;
+                                maxsize = Math.max(maxsize, isVertical ? c._width : c._height);
+                            }
+                        }
+                        break;
+                    case UIObject_1.UIDisplayMode.Flex:
+                        {
+                            var flexCount = 0;
+                            var fiexSize = 0;
+                            for (var i = 0; i < childCount; i++) {
+                                var c = children[i];
+                                if (c.flex != null) {
+                                    flexCount += c.flex;
+                                }
+                                else {
+                                    var fsize = (isVertical ? c.height : c.width);
+                                    fiexSize += fsize == undefined ? 0 : fsize;
+                                }
+                            }
+                            var sizePerFlex = flexCount == 0 ? 0 : ((isVertical ? ui.height : ui.width) - fiexSize) / flexCount;
+                            for (var i = 0; i < childCount; i++) {
+                                var c = children[i];
+                                if (c.isDirty) {
+                                    var cflex = c.flex;
+                                    var cfsize = isVertical ? c.height : c.width;
+                                    if (cflex != undefined) {
+                                        cfsize = cflex * sizePerFlex;
+                                    }
+                                    if (isVertical) {
+                                        c._height = cfsize;
+                                        c._width = ui.width;
+                                    }
+                                    else {
+                                        c._width = cfsize;
+                                        c._height = ui.height;
+                                    }
+                                    this.RebuildUINode(c);
+                                    c._offsetX = isVertical ? 0 : offset;
+                                    c._offsetY = isVertical ? offset : 0;
+                                }
+                                offset += isVertical ? c._height : c._width;
+                                maxsize = Math.max(maxsize, isVertical ? c._width : c._height);
+                            }
+                        }
+                        break;
+                }
+                if (isRoot || parent.displayMode != UIObject_1.UIDisplayMode.Flex) {
+                    if (ui.width == undefined) {
+                        ui._width = isVertical ? maxsize : offset;
+                    }
+                    else {
+                        ui._width = ui.width;
+                    }
+                    if (ui.height == undefined) {
+                        ui._height = isVertical ? offset : maxsize;
+                    }
+                    else {
+                        ui._height = ui.height;
+                    }
+                }
+            }
+            else {
+                if (isRoot || parent.displayMode != UIObject_1.UIDisplayMode.Flex) {
+                    ui._width = ui.width == null ? 20 : ui.width;
+                    ui._height = ui.height == null ? 20 : ui.height;
+                }
             }
             ui.isDirty = false;
         };
@@ -466,8 +557,6 @@ define("rui/UIWidgets", ["require", "exports", "rui/UIObject", "rui/RUIEventSys"
         }
         UIRect.prototype.onBuild = function () {
             this.visible = true;
-            this.width = 50;
-            this.height = 50;
         };
         UIRect.prototype.onDraw = function (drawcall) {
             var rect = [this._calculateX, this._calculateY, this._width, this._height];
@@ -486,17 +575,38 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/UIWidgets"], f
             return _super !== null && _super.apply(this, arguments) || this;
         }
         DebugUI.prototype.onBuild = function () {
-            var btn1 = new UIWidgets_1.UIButton();
-            btn1.EvtMouseClick.on(function (e) {
-                console.log('btn1 click');
-            });
-            this.addChild(btn1);
-            var c = new UIObject_3.UIObject();
-            c.orientation = UIObject_3.UIOrientation.Horizontal;
-            c.addChild(new UIWidgets_1.UIRect());
-            c.addChild(new UIWidgets_1.UIRect());
-            this.addChild(c);
-            this.addChild(new UIWidgets_1.UIRect());
+            this.visible = true;
+            this.displayMode = UIObject_3.UIDisplayMode.Flex;
+            var header = new UIWidgets_1.UIRect();
+            header.height = 23;
+            this.m_header = header;
+            this.addChild(header);
+            var main = new UIWidgets_1.UIRect();
+            main.flex = 1;
+            main.displayMode = UIObject_3.UIDisplayMode.Flex;
+            main.orientation = UIObject_3.UIOrientation.Horizontal;
+            this.addChild(main);
+            var c = new UIWidgets_1.UIRect();
+            c.flex = 2;
+            main.addChild(c);
+            var x = new UIWidgets_1.UIRect();
+            x.flex = 3;
+            main.addChild(x);
+            // let btn1 = new UIButton();
+            // btn1.EvtMouseClick.on((e)=>{
+            //     console.log('btn1 click');
+            // });
+            // this.addChild(btn1);
+            // let c = new UIObject();
+            // c.orientation = UIOrientation.Horizontal;
+            // c.addChild(new UIRect());
+            // c.addChild(new UIRect());
+            // this.addChild(c);
+            // this.addChild(new UIRect());
+        };
+        DebugUI.prototype.onDraw = function (drawcall) {
+            var rect = [this._calculateX, this._calculateY, this._width, this._height];
+            drawcall.DrawRectWithColor(rect, this.color);
         };
         return DebugUI;
     }(UIObject_3.UIObject));
@@ -924,6 +1034,7 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             this.m_projectParam = [0, 0, 0, 0];
             this.m_isvalid = false;
             this.m_isResized = false;
+            this.m_uicanvas = uicanvas;
             this.glctx = wglut_1.GLContext.createFromCanvas(uicanvas.canvas);
             window.addEventListener('resize', function () {
                 _this.resizeCanvas(window.innerWidth, window.innerHeight);
@@ -941,6 +1052,7 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
         RUIRenderer.prototype.resizeCanvas = function (w, h) {
             this.gl.canvas.width = w;
             this.gl.canvas.height = h;
+            this.m_uicanvas.setSize(w, h);
             this.m_projectParam = [2.0 / w, 2.0 / h, 0, 0];
             this.gl.viewport(0, 0, w, h);
             this.m_isResized = true;
@@ -1025,10 +1137,12 @@ define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "rui/DebugUI",
     var RUICanvas = /** @class */ (function () {
         function RUICanvas(canvas, UIClass) {
             this.m_valid = false;
+            this.m_isResized = false;
             this.m_canvas = canvas;
             this.m_renderer = new RUIRenderer_1.RUIRenderer(this);
             this.m_drawcall = new RUIDrawCall_2.RUIDrawCall();
             this.m_rootUI = new DebugUI_1.DebugUI();
+            this.m_rootUI._canvas = this;
             this.m_qtree = new RUIQTree_1.RUIQTree(this);
             this.m_input = new RUIInput_1.RUIInput(this);
             this.m_cursor = new RUICursor_2.RUICursor(this);
@@ -1072,6 +1186,15 @@ define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "rui/DebugUI",
             enumerable: true,
             configurable: true
         });
+        RUICanvas.prototype.setSize = function (w, h) {
+            if (this.m_width != w || this.m_height != h) {
+                this.m_width = w;
+                this.m_height = h;
+                this.m_isResized = true;
+                if (this.m_rootUI != null)
+                    this.m_rootUI.isDirty = true;
+            }
+        };
         RUICanvas.prototype.OnBuild = function () {
             this.m_rootUI._dispatchOnBuild();
             this.m_drawcall.Rebuild(this.m_rootUI);
@@ -1080,12 +1203,9 @@ define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "rui/DebugUI",
         RUICanvas.prototype.OnFrame = function (ts) {
             var rootUI = this.m_rootUI;
             var renderer = this.m_renderer;
-            if (renderer.isResized) {
-                rootUI.isDirty = true;
-                renderer.useResized();
-            }
             if (rootUI.isDirty) {
-                this.m_drawcall.Rebuild(rootUI);
+                this.m_drawcall.Rebuild(rootUI, this.m_isResized);
+                this.m_isResized = false;
             }
             this.OnRender();
         };

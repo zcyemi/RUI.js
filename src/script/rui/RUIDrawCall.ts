@@ -1,4 +1,4 @@
-import { UIObject, UIOrientation } from "./UIObject";
+import { UIObject, UIOrientation, UIDisplayMode } from "./UIObject";
 
 
 
@@ -48,11 +48,10 @@ export class RUIDrawCall{
 
     }
 
-    public Rebuild(ui:UIObject){
-
+    public Rebuild(ui:UIObject,isResize:boolean = false){
         this.drawList = [];
-        
-        this.RebuildUINode(ui);
+
+        this.RebuildUINode(ui,isResize);
 
         this.ExecNodes(ui,this.PostRebuild.bind(this));
 
@@ -70,38 +69,126 @@ export class RUIDrawCall{
         }
     }
 
-    private RebuildUINode(ui:UIObject){
+    private RebuildUINode(ui:UIObject,isResize:boolean = false){
         let children = ui.children;
         let childCount = children.length;
+        let isRoot = ui.parent == null;
+        let canvas = ui._canvas;
+        let parent = ui.parent;
 
         let isVertical = ui.orientation == UIOrientation.Vertical;
+        let isFlex = ui.displayMode == UIDisplayMode.Flex;
+
         
         let maxsize:number = isVertical ? ui.width : ui.height;
         let offset:number = 0;
         
-        if(childCount != 0){
-
-            for(var i=0;i< childCount;i++){
-
-                let c = children[i];
-                if(c.isDirty){
-                    this.RebuildUINode(c);
-
-                    c._offsetX = isVertical ? 0 : offset;
-                    c._offsetY = isVertical ? offset : 0;
-                }
-
-                offset += isVertical ? c._height : c._width;
-                maxsize = Math.max(maxsize, isVertical ? c._width : c._height);
-
-            }
-
-            if(ui.width == undefined) ui._width = isVertical ? maxsize : offset;
-            if(ui.height == undefined) ui._height = isVertical ? offset : maxsize;
+        if(isRoot){
+            ui.width= canvas.m_width;
+            ui.height = canvas.m_height;
+            ui._width = ui.width;
+            ui._height = ui.height;
         }
         else{
-            ui._width = ui.width == null ? 20 :ui.width;
-            ui._height = ui.height == null? 20 : ui.height;
+            if(isFlex){
+                if(isVertical){
+                    ui.width = ui.parent.width;
+                    if(ui.height == undefined) ui.height = ui._height;
+                }
+                else{
+                    ui.height = ui.parent.height;
+                    if(ui.width == undefined) ui.width = ui._width;
+                }
+            }
+        }
+        
+        if(childCount != 0){
+
+            switch(ui.displayMode){
+                case UIDisplayMode.Default:
+                {
+                    for(var i=0;i< childCount;i++){
+
+                        let c = children[i];
+                        if(c.isDirty){
+                            this.RebuildUINode(c);
+        
+                            c._offsetX = isVertical ? 0 : offset;
+                            c._offsetY = isVertical ? offset : 0;
+                        }
+                        offset += isVertical ? c._height : c._width;
+                        maxsize = Math.max(maxsize, isVertical ? c._width : c._height);
+                    }
+                }
+                break;
+                case UIDisplayMode.Flex:
+                {
+                    let flexCount =0;
+                    let fiexSize = 0;
+                    for(var i=0;i< childCount;i++){
+                        let c = children[i];
+                        if(c.flex != null){
+                            flexCount += c.flex;
+                        }
+                        else{
+                            let fsize = (isVertical? c.height : c.width);
+                            fiexSize += fsize == undefined ? 0 : fsize;
+                        }
+                    }
+
+                    let sizePerFlex = flexCount == 0? 0: ((isVertical ? ui.height : ui.width) - fiexSize ) / flexCount;
+
+                    for(var i=0;i< childCount;i++){
+
+                        let c = children[i];
+                        if(c.isDirty){
+                            let cflex = c.flex;
+                            let cfsize = isVertical ? c.height : c.width;
+                            if(cflex != undefined){
+                                cfsize = cflex * sizePerFlex;
+                            }
+                            
+                            if(isVertical){
+                                c._height = cfsize;
+                                c._width = ui.width;
+                            }
+                            else{
+                                c._width = cfsize;
+                                c._height = ui.height;
+                            }
+                            this.RebuildUINode(c);
+        
+                            c._offsetX = isVertical ? 0 : offset;
+                            c._offsetY = isVertical ? offset : 0;
+                        }
+        
+                        offset += isVertical ? c._height : c._width;
+                        maxsize = Math.max(maxsize, isVertical ? c._width : c._height);
+                    }
+                }
+                break;
+            }
+
+            if(isRoot || parent.displayMode != UIDisplayMode.Flex){
+                if(ui.width == undefined){
+                    ui._width = isVertical ? maxsize : offset;
+                }
+                else{
+                    ui._width = ui.width;
+                }
+                if(ui.height == undefined){
+                    ui._height = isVertical ? offset : maxsize;
+                }
+                else{
+                    ui._height = ui.height;
+                }
+            }
+        }
+        else{
+            if(isRoot || parent.displayMode != UIDisplayMode.Flex){
+                ui._width = ui.width == null ? 20 :ui.width;
+                ui._height = ui.height == null? 20 : ui.height;
+            }
         }
         ui.isDirty= false;
     }

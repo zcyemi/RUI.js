@@ -1,5 +1,6 @@
 import { UIUtil } from "./UIUtil";
 import { RUIMouseEvent, RUIEvent } from "./RUIEventSys";
+import { RUICanvas } from "./RUICanvas";
 
 export enum UIDisplayMode{
     Default,
@@ -36,6 +37,8 @@ export class UIObject{
     public _calculateY:number;
     public _level: number;
 
+    public _canvas: RUICanvas;
+
     public extra:{[key:string]:any} = {};
 
     constructor(){
@@ -63,6 +66,11 @@ export class UIObject{
         ui.parent = this;
         this.children.push(ui);
 
+        if(this._canvas != null){
+            ui.setCanvas(this._canvas);
+        }
+        
+
         ui.isDirty= true;
         this.isDirty = true;
     }
@@ -75,7 +83,12 @@ export class UIObject{
 
         this.children.splice(index,1);
         ui.parent = null;
+        ui.setCanvas(null);
         this.isDirty= true;
+    }
+
+    public setCanvas(canvas:RUICanvas){
+        this.execRecursive((u)=>u._canvas = canvas);
     }
 
     public execRecursive(f:(ui:UIObject)=>void){

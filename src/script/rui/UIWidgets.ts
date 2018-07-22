@@ -47,8 +47,6 @@ export class UIRect extends UIObject{
 
     public onBuild(){
         this.visible= true;
-        this.width = 50;
-        this.height = 50;
     }
     public onDraw(drawcall:RUIDrawCall) {
         let rect = [this._calculateX,this._calculateY,this._width,this._height];
