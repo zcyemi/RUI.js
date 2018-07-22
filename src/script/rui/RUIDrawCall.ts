@@ -50,7 +50,6 @@ export class RUIDrawCall{
 
     public Rebuild(ui:UIObject){
 
-        console.log('rebuild');
         this.drawList = [];
         
         this.RebuildUINode(ui);
@@ -58,6 +57,7 @@ export class RUIDrawCall{
         this.ExecNodes(ui,this.PostRebuild.bind(this));
 
         ui.isDirty =false;
+        this.isDirty =true;
     }
 
     private ExecNodes(uiobj:UIObject,f:(ui:UIObject)=>void){

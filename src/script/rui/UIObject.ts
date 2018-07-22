@@ -114,6 +114,25 @@ export class UIObject{
         if(y < this._calculateY || y > this._calculateY + this._height) return false;
         return true;
     }
+
+    public setDirty(isdirty:boolean){
+        if(!isdirty){
+            this.isDirty = false;
+        }
+        else{
+            this.isDirty = true;
+            this.bubbleDirty();
+        }
+    }
+
+    private bubbleDirty(){
+        if(this.parent == null){
+            this.isDirty =true;
+        }
+        else{
+            this.parent.bubbleDirty();
+        }
+    }
     
     
 }

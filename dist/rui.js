@@ -17,6 +17,10 @@ define("rui/UIUtil", ["require", "exports"], function (require, exports) {
         UIUtil.RandomColor = function () {
             return [Math.random(), Math.random(), Math.random(), 1.0];
         };
+        UIUtil.ColorUNorm = function (r, g, b, a) {
+            if (a === void 0) { a = 255; }
+            return [r / 255.0, g / 255.0, b / 255.0, a / 255.0];
+        };
         return UIUtil;
     }());
     exports.UIUtil = UIUtil;
@@ -175,6 +179,23 @@ define("rui/UIObject", ["require", "exports", "rui/UIUtil"], function (require, 
                 return false;
             return true;
         };
+        UIObject.prototype.setDirty = function (isdirty) {
+            if (!isdirty) {
+                this.isDirty = false;
+            }
+            else {
+                this.isDirty = true;
+                this.bubbleDirty();
+            }
+        };
+        UIObject.prototype.bubbleDirty = function () {
+            if (this.parent == null) {
+                this.isDirty = true;
+            }
+            else {
+                this.parent.bubbleDirty();
+            }
+        };
         return UIObject;
     }());
     exports.UIObject = UIObject;
@@ -216,11 +237,11 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
             this.isDirty = true;
         }
         RUIDrawCall.prototype.Rebuild = function (ui) {
-            console.log('rebuild');
             this.drawList = [];
             this.RebuildUINode(ui);
             this.ExecNodes(ui, this.PostRebuild.bind(this));
             ui.isDirty = false;
+            this.isDirty = true;
         };
         RUIDrawCall.prototype.ExecNodes = function (uiobj, f) {
             f(uiobj);
@@ -382,7 +403,25 @@ define("rui/RUICursor", ["require", "exports"], function (require, exports) {
     }());
     exports.RUICursor = RUICursor;
 });
-define("rui/UIWidgets", ["require", "exports", "rui/UIObject", "rui/RUIEventSys", "rui/RUICursor"], function (require, exports, UIObject_2, RUIEventSys_2, RUICursor_1) {
+define("rui/RUIStyle", ["require", "exports", "rui/UIUtil"], function (require, exports, UIUtil_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUIStyle = /** @class */ (function () {
+        function RUIStyle() {
+            this.background0 = UIUtil_2.UIUtil.ColorUNorm(30, 30, 30, 255);
+            this.background1 = UIUtil_2.UIUtil.ColorUNorm(37, 37, 38);
+            this.background2 = UIUtil_2.UIUtil.ColorUNorm(51, 51, 51);
+            this.primary = UIUtil_2.UIUtil.ColorUNorm(0, 122, 204);
+            this.primary0 = UIUtil_2.UIUtil.ColorUNorm(9, 71, 113);
+            this.inactive = UIUtil_2.UIUtil.ColorUNorm(63, 63, 70);
+            this.border0 = UIUtil_2.UIUtil.ColorUNorm(3, 3, 3);
+        }
+        RUIStyle.Default = new RUIStyle();
+        return RUIStyle;
+    }());
+    exports.RUIStyle = RUIStyle;
+});
+define("rui/UIWidgets", ["require", "exports", "rui/UIObject", "rui/RUIEventSys", "rui/RUICursor", "rui/RUIStyle"], function (require, exports, UIObject_2, RUIEventSys_2, RUICursor_1, RUIStyle_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var UIButton = /** @class */ (function (_super) {
@@ -397,12 +436,17 @@ define("rui/UIWidgets", ["require", "exports", "rui/UIObject", "rui/RUIEventSys"
             this.visible = true;
             this.width = 100;
             this.height = 23;
+            this.color = RUIStyle_1.RUIStyle.Default.background1;
         };
         UIButton.prototype.onMouseEnter = function (e) {
             e.canvas.cursor.SetCursor(RUICursor_1.RUICursorType.pointer);
+            this.color = RUIStyle_1.RUIStyle.Default.background2;
+            this.setDirty(true);
         };
         UIButton.prototype.onMouseLeave = function (e) {
             e.canvas.cursor.SetCursor(RUICursor_1.RUICursorType.default);
+            this.color = RUIStyle_1.RUIStyle.Default.background1;
+            this.setDirty(true);
         };
         UIButton.prototype.onMouseClick = function (e) {
             this.EvtMouseClick.emit(e);
