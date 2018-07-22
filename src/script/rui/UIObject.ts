@@ -1,6 +1,8 @@
 import { UIUtil } from "./UIUtil";
 import { RUIMouseEvent, RUIEvent } from "./RUIEventSys";
 import { RUICanvas } from "./RUICanvas";
+import { RUIDrawCall } from "./RUIDrawCall";
+import { RUIStyle } from "./RUIStyle";
 
 export enum UIDisplayMode{
     Default,
@@ -24,7 +26,7 @@ export class UIObject{
     public displayMode: UIDisplayMode = UIDisplayMode.Default;
     public orientation: UIOrientation = UIOrientation.Vertical;
 
-    public color: number[] = UIUtil.RandomColor();
+    public color: number[] = RUIStyle.Default.background0;
     public width?:number = null;
     public height?:number = null;
     public flex?:number;
@@ -35,6 +37,8 @@ export class UIObject{
     public _offsetY:number;
     public _calculateX:number;
     public _calculateY:number;
+
+    //calculated flex size;
     public _flexWidth:number;
     public _flexHeight:number;
 
@@ -123,6 +127,10 @@ export class UIObject{
 
     public onMouseClick(e:RUIMouseEvent){
 
+    }
+
+    public onDraw(cmd:RUIDrawCall){
+        
     }
 
     public rectContains(x:number,y:number):boolean{

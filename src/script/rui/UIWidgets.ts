@@ -11,6 +11,13 @@ export class UIButton extends UIObject{
     public EvtMouseUp: RUIEventEmitter;
     public EvtMouseClick:RUIEventEmitter = new RUIEventEmitter();
 
+    public label:string;
+
+    public constructor(label:string){
+        super();
+        this.label =label;
+    }
+
     public onBuild(){
         this.visible = true;
         this.width = 100;

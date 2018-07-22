@@ -96,7 +96,25 @@ define("rui/RUIEventSys", ["require", "exports"], function (require, exports) {
     }());
     exports.RUIEventEmitter = RUIEventEmitter;
 });
-define("rui/UIObject", ["require", "exports", "rui/UIUtil"], function (require, exports, UIUtil_1) {
+define("rui/RUIStyle", ["require", "exports", "rui/UIUtil"], function (require, exports, UIUtil_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUIStyle = /** @class */ (function () {
+        function RUIStyle() {
+            this.background0 = UIUtil_1.UIUtil.ColorUNorm(30, 30, 30, 255);
+            this.background1 = UIUtil_1.UIUtil.ColorUNorm(37, 37, 38);
+            this.background2 = UIUtil_1.UIUtil.ColorUNorm(51, 51, 51);
+            this.primary = UIUtil_1.UIUtil.ColorUNorm(0, 122, 204);
+            this.primary0 = UIUtil_1.UIUtil.ColorUNorm(9, 71, 113);
+            this.inactive = UIUtil_1.UIUtil.ColorUNorm(63, 63, 70);
+            this.border0 = UIUtil_1.UIUtil.ColorUNorm(3, 3, 3);
+        }
+        RUIStyle.Default = new RUIStyle();
+        return RUIStyle;
+    }());
+    exports.RUIStyle = RUIStyle;
+});
+define("rui/UIObject", ["require", "exports", "rui/RUIStyle"], function (require, exports, RUIStyle_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var UIDisplayMode;
@@ -118,7 +136,7 @@ define("rui/UIObject", ["require", "exports", "rui/UIUtil"], function (require, 
             this.visible = false;
             this.displayMode = UIDisplayMode.Default;
             this.orientation = UIOrientation.Vertical;
-            this.color = UIUtil_1.UIUtil.RandomColor();
+            this.color = RUIStyle_1.RUIStyle.Default.background0;
             this.width = null;
             this.height = null;
             this.extra = {};
@@ -178,6 +196,8 @@ define("rui/UIObject", ["require", "exports", "rui/UIUtil"], function (require, 
         UIObject.prototype.onMouseUp = function () {
         };
         UIObject.prototype.onMouseClick = function (e) {
+        };
+        UIObject.prototype.onDraw = function (cmd) {
         };
         UIObject.prototype.rectContains = function (x, y) {
             if (x < this._calculateX || x > this._calculateX + this._width)
@@ -246,7 +266,7 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
         RUIDrawCall.prototype.Rebuild = function (ui, isResize) {
             if (isResize === void 0) { isResize = false; }
             this.drawList = [];
-            this.RebuildUINode(ui, isResize);
+            this.RebuildNode(ui);
             this.ExecNodes(ui, this.PostRebuild.bind(this));
             ui.isDirty = false;
             this.isDirty = true;
@@ -260,119 +280,142 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
                 this.ExecNodes(cu, f);
             }
         };
-        //needs refactoring
-        RUIDrawCall.prototype.RebuildUINode = function (ui, isResize) {
-            if (isResize === void 0) { isResize = false; }
-            var children = ui.children;
-            var childCount = children.length;
-            var isRoot = ui.parent == null;
-            var canvas = ui._canvas;
-            var parent = ui.parent;
-            var isVertical = ui.orientation == UIObject_1.UIOrientation.Vertical;
-            var isFlex = ui.displayMode == UIObject_1.UIDisplayMode.Flex;
-            var maxsize = isVertical ? ui.width : ui.height;
-            var offset = 0;
-            if (isRoot) {
-                ui.width = canvas.m_width;
-                ui.height = canvas.m_height;
-                ui._width = ui.width;
+        //Process all child ui and self rect
+        RUIDrawCall.prototype.RebuildNode = function (ui) {
+            switch (ui.displayMode) {
+                case UIObject_1.UIDisplayMode.Default:
+                    this.RebuildNodeDefault(ui);
+                    break;
+                case UIObject_1.UIDisplayMode.Flex:
+                    this.RebuildNodeFlex(ui);
+                    break;
+            }
+        };
+        RUIDrawCall.prototype.fillFlexSize = function (ui) {
+            if (ui._flexHeight != null) {
+                ui._height = ui._flexHeight;
+            }
+            else {
                 ui._height = ui.height;
-                if (isFlex) {
-                    ui._flexWidth = ui.width;
-                    ui._flexHeight = ui.height;
-                }
+            }
+            if (ui._flexWidth != null) {
+                ui._width = ui._flexWidth;
             }
             else {
-                if (isFlex) {
-                    if (isVertical) {
-                        ui._flexWidth = ui.parent.width;
-                        ui._flexHeight = ui.height == undefined ? ui._height : ui.height;
+                ui._width = ui.width;
+            }
+        };
+        //Post process rect
+        RUIDrawCall.prototype.RebuildNodeDefault = function (ui) {
+            this.fillFlexSize(ui);
+            var children = ui.children;
+            var isVertical = ui.orientation == UIObject_1.UIOrientation.Vertical;
+            var childOffset = 0;
+            var childMaxSecond = 0;
+            for (var i = 0, len = children.length; i < len; i++) {
+                var c = children[i];
+                c._flexWidth = null;
+                c._flexHeight = null;
+                //TODO: set size for flex child
+                this.RebuildNode(c);
+                var cwidth = c._width;
+                var cheight = c._height;
+                if (cwidth == undefined || cheight == undefined)
+                    throw new Error('child size not full calculated!');
+                if (isVertical) {
+                    c._offsetX = 0;
+                    c._offsetY = childOffset;
+                    childOffset += c._height;
+                    childMaxSecond = Math.max(childMaxSecond, c._width);
+                }
+                else {
+                    c._offsetX = childOffset;
+                    c._offsetY = 0;
+                    childOffset += c._width;
+                    childMaxSecond = Math.max(childMaxSecond, c._height);
+                }
+            }
+            //set ui size
+            if (ui._width == undefined) {
+                ui._width = isVertical ? childMaxSecond : childOffset;
+            }
+            if (ui._height == undefined) {
+                ui._height = isVertical ? childOffset : childMaxSecond;
+            }
+        };
+        //Pre process rect
+        RUIDrawCall.prototype.RebuildNodeFlex = function (ui) {
+            this.fillFlexSize(ui);
+            //checkfor root
+            if (ui.parent == null) {
+                var canvas = ui._canvas;
+                ui._width = canvas.m_width;
+                ui._height = canvas.m_height;
+            }
+            var isVertical = ui.orientation == UIObject_1.UIOrientation.Vertical;
+            //check size
+            if (ui._height == null) {
+                if (ui.height != null) {
+                    ui._height = ui.height;
+                }
+                else {
+                    throw new Error('flex proces error');
+                }
+            }
+            if (ui._width == null) {
+                if (ui.width != null) {
+                    ui._width = ui.width;
+                }
+                else {
+                    throw new Error('flex proces error');
+                }
+            }
+            var fsizeTotal = isVertical ? ui._height : ui._width;
+            var fsizeSecond = isVertical ? ui._width : ui._height;
+            var children = ui.children;
+            var clen = children.length;
+            var flexCount = 0;
+            var flexSize = 0;
+            //calculate size
+            for (var i = 0; i < clen; i++) {
+                var c = children[i];
+                if (c.flex != null) {
+                    flexCount += c.flex;
+                }
+                else {
+                    var cfsize = isVertical ? c.height : c.width;
+                    if (cfsize == null) {
+                        throw new Error('flexed child has invalid flex or size');
                     }
                     else {
-                        ui._flexHeight = ui.parent.height;
-                        ui._flexWidth = ui.width == undefined ? ui._width : ui._width;
+                        flexSize += cfsize;
                     }
                 }
             }
-            if (childCount != 0) {
-                switch (ui.displayMode) {
-                    case UIObject_1.UIDisplayMode.Default:
-                        {
-                            for (var i = 0; i < childCount; i++) {
-                                var c = children[i];
-                                if (c.isDirty) {
-                                    this.RebuildUINode(c);
-                                    c._offsetX = isVertical ? 0 : offset;
-                                    c._offsetY = isVertical ? offset : 0;
-                                }
-                                offset += isVertical ? c._height : c._width;
-                                maxsize = Math.max(maxsize, isVertical ? c._width : c._height);
-                            }
-                        }
-                        break;
-                    case UIObject_1.UIDisplayMode.Flex:
-                        {
-                            var flexCount = 0;
-                            var fiexSize = 0;
-                            for (var i = 0; i < childCount; i++) {
-                                var c = children[i];
-                                if (c.flex != null) {
-                                    flexCount += c.flex;
-                                }
-                                else {
-                                    var fsize = (isVertical ? c.height : c.width);
-                                    fiexSize += fsize == undefined ? 0 : fsize;
-                                }
-                            }
-                            var sizePerFlex = flexCount == 0 ? 0 : ((isVertical ? ui._flexHeight : ui._flexWidth) - fiexSize) / flexCount;
-                            for (var i = 0; i < childCount; i++) {
-                                var c = children[i];
-                                if (c.isDirty || true) { //temp for resize update
-                                    var cflex = c.flex;
-                                    var cfsize = isVertical ? c.height : c.width;
-                                    if (cflex != undefined) {
-                                        cfsize = cflex * sizePerFlex;
-                                    }
-                                    if (isVertical) {
-                                        c._height = cfsize;
-                                        c._width = ui._flexWidth;
-                                    }
-                                    else {
-                                        c._width = cfsize;
-                                        c._height = ui._flexHeight;
-                                    }
-                                    this.RebuildUINode(c);
-                                    c._offsetX = isVertical ? 0 : offset;
-                                    c._offsetY = isVertical ? offset : 0;
-                                }
-                                offset += isVertical ? c._height : c._width;
-                                maxsize = Math.max(maxsize, isVertical ? c._width : c._height);
-                            }
-                        }
-                        break;
+            var sizePerFlex = (fsizeTotal - flexSize) / flexCount;
+            var childOffsetY = 0;
+            var childOffsetX = 0;
+            for (var i = 0; i < clen; i++) {
+                var c = children[i];
+                var flexval = c.flex != null;
+                if (isVertical) {
+                    c._flexWidth = fsizeSecond;
+                    c._flexHeight = flexval ? c.flex * sizePerFlex : c.height;
                 }
-                if (isRoot || parent.displayMode != UIObject_1.UIDisplayMode.Flex) {
-                    if (ui.width == undefined) {
-                        ui._width = isVertical ? maxsize : offset;
-                    }
-                    else {
-                        ui._width = ui.width;
-                    }
-                    if (ui.height == undefined) {
-                        ui._height = isVertical ? offset : maxsize;
-                    }
-                    else {
-                        ui._height = ui.height;
-                    }
+                else {
+                    c._flexHeight = fsizeSecond;
+                    c._flexWidth = flexval ? c.flex * sizePerFlex : c.width;
+                }
+                this.RebuildNode(c);
+                c._offsetX = childOffsetX;
+                c._offsetY = childOffsetY;
+                if (isVertical) {
+                    childOffsetY += c._height;
+                }
+                else {
+                    childOffsetX += c._width;
                 }
             }
-            else {
-                if (isRoot || parent.displayMode != UIObject_1.UIDisplayMode.Flex) {
-                    ui._width = ui.width == null ? 20 : ui.width;
-                    ui._height = ui.height == null ? 20 : ui.height;
-                }
-            }
-            ui.isDirty = false;
         };
         RUIDrawCall.prototype.PostRebuild = function (ui) {
             var p = ui.parent;
@@ -497,49 +540,32 @@ define("rui/RUICursor", ["require", "exports"], function (require, exports) {
     }());
     exports.RUICursor = RUICursor;
 });
-define("rui/RUIStyle", ["require", "exports", "rui/UIUtil"], function (require, exports, UIUtil_2) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var RUIStyle = /** @class */ (function () {
-        function RUIStyle() {
-            this.background0 = UIUtil_2.UIUtil.ColorUNorm(30, 30, 30, 255);
-            this.background1 = UIUtil_2.UIUtil.ColorUNorm(37, 37, 38);
-            this.background2 = UIUtil_2.UIUtil.ColorUNorm(51, 51, 51);
-            this.primary = UIUtil_2.UIUtil.ColorUNorm(0, 122, 204);
-            this.primary0 = UIUtil_2.UIUtil.ColorUNorm(9, 71, 113);
-            this.inactive = UIUtil_2.UIUtil.ColorUNorm(63, 63, 70);
-            this.border0 = UIUtil_2.UIUtil.ColorUNorm(3, 3, 3);
-        }
-        RUIStyle.Default = new RUIStyle();
-        return RUIStyle;
-    }());
-    exports.RUIStyle = RUIStyle;
-});
-define("rui/UIWidgets", ["require", "exports", "rui/UIObject", "rui/RUIEventSys", "rui/RUICursor", "rui/RUIStyle"], function (require, exports, UIObject_2, RUIEventSys_2, RUICursor_1, RUIStyle_1) {
+define("rui/UIWidgets", ["require", "exports", "rui/UIObject", "rui/RUIEventSys", "rui/RUICursor", "rui/RUIStyle"], function (require, exports, UIObject_2, RUIEventSys_2, RUICursor_1, RUIStyle_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var UIButton = /** @class */ (function (_super) {
         __extends(UIButton, _super);
-        function UIButton() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+        function UIButton(label) {
+            var _this = _super.call(this) || this;
             _this.EvtMouseDown = new RUIEventSys_2.RUIEventEmitter();
             _this.EvtMouseClick = new RUIEventSys_2.RUIEventEmitter();
+            _this.label = label;
             return _this;
         }
         UIButton.prototype.onBuild = function () {
             this.visible = true;
             this.width = 100;
             this.height = 23;
-            this.color = RUIStyle_1.RUIStyle.Default.background1;
+            this.color = RUIStyle_2.RUIStyle.Default.background1;
         };
         UIButton.prototype.onMouseEnter = function (e) {
             e.canvas.cursor.SetCursor(RUICursor_1.RUICursorType.pointer);
-            this.color = RUIStyle_1.RUIStyle.Default.background2;
+            this.color = RUIStyle_2.RUIStyle.Default.background2;
             this.setDirty(true);
         };
         UIButton.prototype.onMouseLeave = function (e) {
             e.canvas.cursor.SetCursor(RUICursor_1.RUICursorType.default);
-            this.color = RUIStyle_1.RUIStyle.Default.background1;
+            this.color = RUIStyle_2.RUIStyle.Default.background1;
             this.setDirty(true);
         };
         UIButton.prototype.onMouseClick = function (e) {
@@ -569,9 +595,45 @@ define("rui/UIWidgets", ["require", "exports", "rui/UIObject", "rui/RUIEventSys"
     }(UIObject_2.UIObject));
     exports.UIRect = UIRect;
 });
-define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/UIWidgets"], function (require, exports, UIObject_3, UIWidgets_1) {
+define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/UIWidgets", "rui/RUIStyle"], function (require, exports, UIObject_3, UIWidgets_1, RUIStyle_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var HeaderUI = /** @class */ (function (_super) {
+        __extends(HeaderUI, _super);
+        function HeaderUI() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.btnNew = new UIWidgets_1.UIButton("New");
+            _this.btnOpen = new UIWidgets_1.UIButton("Open");
+            return _this;
+        }
+        HeaderUI.prototype.onBuild = function () {
+            this.visible = false;
+            this.displayMode = UIObject_3.UIDisplayMode.Flex;
+            this.orientation = UIObject_3.UIOrientation.Horizontal;
+            this.addChild(this.btnNew);
+            this.addChild(this.btnOpen);
+        };
+        HeaderUI.prototype.onDraw = function (cmd) {
+        };
+        return HeaderUI;
+    }(UIObject_3.UIObject));
+    exports.HeaderUI = HeaderUI;
+    var EditorUI = /** @class */ (function (_super) {
+        __extends(EditorUI, _super);
+        function EditorUI() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        EditorUI.prototype.onBuild = function () {
+            this.visible = true;
+            this.color = RUIStyle_3.RUIStyle.Default.primary;
+        };
+        EditorUI.prototype.onDraw = function (cmd) {
+            var rect = [this._calculateX, this._calculateY, this._width, this._height];
+            cmd.DrawRectWithColor(rect, this.color);
+        };
+        return EditorUI;
+    }(UIObject_3.UIObject));
+    exports.EditorUI = EditorUI;
     var DebugUI = /** @class */ (function (_super) {
         __extends(DebugUI, _super);
         function DebugUI() {
@@ -580,18 +642,19 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/UIWidgets"], f
         DebugUI.prototype.onBuild = function () {
             this.visible = true;
             this.displayMode = UIObject_3.UIDisplayMode.Flex;
-            var header = new UIWidgets_1.UIRect();
+            var header = new HeaderUI();
             header.height = 23;
             this.m_header = header;
             this.addChild(header);
-            var main = new UIWidgets_1.UIRect();
+            var main = new UIObject_3.UIObject();
             main.flex = 1;
             main.displayMode = UIObject_3.UIDisplayMode.Flex;
             main.orientation = UIObject_3.UIOrientation.Horizontal;
             this.addChild(main);
-            var c = new UIWidgets_1.UIRect();
-            c.flex = 2;
-            main.addChild(c);
+            var editorui = new EditorUI();
+            editorui.flex = 2;
+            main.addChild(editorui);
+            this.m_editor = editorui;
             var x = new UIWidgets_1.UIRect();
             x.flex = 3;
             main.addChild(x);
@@ -1026,7 +1089,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
     }());
     exports.RUIDrawCallBuffer = RUIDrawCallBuffer;
 });
-define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer", "rui/RUIFontTexture", "rui/RUIStyle"], function (require, exports, wglut_1, RUIDrawCallBuffer_1, RUIFontTexture_2, RUIStyle_2) {
+define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer", "rui/RUIFontTexture", "rui/RUIStyle"], function (require, exports, wglut_1, RUIDrawCallBuffer_1, RUIFontTexture_2, RUIStyle_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUIRenderer = /** @class */ (function () {
@@ -1082,7 +1145,7 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             gl.disable(gl.DEPTH_TEST);
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-            var clearColor = RUIStyle_2.RUIStyle.Default.background0;
+            var clearColor = RUIStyle_4.RUIStyle.Default.background0;
             gl.clearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
         };
         RUIRenderer.prototype.Draw = function (drawcall) {

@@ -2,11 +2,51 @@ import { UIObject, UIOrientation, UIDisplayMode } from "./UIObject";
 import { UIButton, UIRect } from "./UIWidgets";
 import { RUIDrawCall } from "./RUIDrawCall";
 import { UIUtil } from "./UIUtil";
+import { RUIStyle } from "./RUIStyle";
+
+
+export class HeaderUI extends UIObject{
+
+    public btnNew: UIButton =new UIButton("New");
+    public btnOpen:UIButton = new UIButton("Open");
+    public onBuild(){
+
+        this.visible = false;
+        this.displayMode = UIDisplayMode.Flex;
+        this.orientation = UIOrientation.Horizontal;
+
+        this.addChild(this.btnNew);
+        this.addChild(this.btnOpen);
+    }
+
+    public onDraw(cmd:RUIDrawCall){
+        
+    }
+}
+
+export class EditorUI extends UIObject{
+
+
+    public onBuild(){
+
+        this.visible = true;
+        this.color = RUIStyle.Default.primary;
+    }
+
+    public onDraw(cmd:RUIDrawCall){
+        let rect = [this._calculateX,this._calculateY,this._width,this._height];
+        cmd.DrawRectWithColor(rect,this.color);
+    }
+
+
+}
 
 
 export class DebugUI extends UIObject{
 
-    private m_header:UIObject;
+    private m_header:HeaderUI;
+    private m_editor: EditorUI;
+    private m_renderer:UIObject;
 
     public onBuild(){
 
@@ -15,22 +55,24 @@ export class DebugUI extends UIObject{
 
         this.displayMode = UIDisplayMode.Flex;
 
-        let header =new UIRect();
+        let header =new HeaderUI();
         header.height = 23;
         this.m_header = header;
         this.addChild(header);
 
         
-        let main = new UIRect();
+        let main = new UIObject();
         main.flex = 1;
         main.displayMode = UIDisplayMode.Flex;
         main.orientation=  UIOrientation.Horizontal;
         this.addChild(main);
 
 
-        let c = new UIRect();
-        c.flex = 2;
-        main.addChild(c);
+        let editorui = new EditorUI();
+        editorui.flex = 2;
+        main.addChild(editorui);
+
+        this.m_editor = editorui;
 
         let x = new UIRect();
         x.flex = 3;
