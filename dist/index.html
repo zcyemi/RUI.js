@@ -6,11 +6,13 @@
             body,html{
                 padding: 0;
                 margin: 0;
+                width: 100%;
+                height: 100%;
             }
         </style>
     </head>
     <body>
-        <canvas id="ruicanvas" style="width: 800px;height: 600px; background-color:#333" width="800" height="600"></canvas>
+        <canvas id="ruicanvas" style="width:100%;height:100%; background-color:#333"></canvas>
         <script>
             require(['rui'],rui=>{
                 let canvas = document.getElementById('ruicanvas');

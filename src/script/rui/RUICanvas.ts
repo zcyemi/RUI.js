@@ -63,8 +63,17 @@ export class RUICanvas{
     }
 
     public OnFrame(ts:number){
-        if(this.m_rootUI.isDirty){
-            this.m_drawcall.Rebuild(this.m_rootUI);
+
+        let rootUI = this.m_rootUI;
+        let renderer = this.m_renderer;
+
+        if(renderer.isResized){
+            rootUI.isDirty = true;
+            renderer.useResized();
+        }
+
+        if(rootUI.isDirty){
+            this.m_drawcall.Rebuild(rootUI);
         }
 
         this.OnRender();

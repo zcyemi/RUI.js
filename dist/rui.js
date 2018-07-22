@@ -913,16 +913,21 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
     }());
     exports.RUIDrawCallBuffer = RUIDrawCallBuffer;
 });
-define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer", "rui/RUIFontTexture"], function (require, exports, wglut_1, RUIDrawCallBuffer_1, RUIFontTexture_2) {
+define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer", "rui/RUIFontTexture", "rui/RUIStyle"], function (require, exports, wglut_1, RUIDrawCallBuffer_1, RUIFontTexture_2, RUIStyle_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUIRenderer = /** @class */ (function () {
         function RUIRenderer(uicanvas) {
+            var _this = this;
             this.m_drawcallBuffer = null;
             this.m_indicesBuffer = null;
             this.m_projectParam = [0, 0, 0, 0];
             this.m_isvalid = false;
+            this.m_isResized = false;
             this.glctx = wglut_1.GLContext.createFromCanvas(uicanvas.canvas);
+            window.addEventListener('resize', function () {
+                _this.resizeCanvas(window.innerWidth, window.innerHeight);
+            });
             if (!this.glctx) {
                 return;
             }
@@ -930,7 +935,26 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             this.gl = this.glctx.gl;
             RUIFontTexture_2.RUIFontTexture.Init(this.glctx);
             this.SetupGL();
+            var canvas = uicanvas.canvas;
+            this.resizeCanvas(window.innerWidth, window.innerHeight);
         }
+        RUIRenderer.prototype.resizeCanvas = function (w, h) {
+            this.gl.canvas.width = w;
+            this.gl.canvas.height = h;
+            this.m_projectParam = [2.0 / w, 2.0 / h, 0, 0];
+            this.gl.viewport(0, 0, w, h);
+            this.m_isResized = true;
+        };
+        Object.defineProperty(RUIRenderer.prototype, "isResized", {
+            get: function () {
+                return this.m_isResized;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        RUIRenderer.prototype.useResized = function () {
+            this.m_isResized = false;
+        };
         RUIRenderer.prototype.isValid = function () {
             return true;
         };
@@ -939,14 +963,12 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             if (gl == null)
                 return;
             var glctx = this.glctx;
-            //shaders
             //pipeline
             gl.disable(gl.DEPTH_TEST);
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-            //parameter
-            this.m_projectParam = [2 / 800.0, 2 / 600.0, 0, 0];
-            gl.viewport(0, 0, 800.0, 600.0);
+            var clearColor = RUIStyle_2.RUIStyle.Default.background0;
+            gl.clearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
         };
         RUIRenderer.prototype.Draw = function (drawcall) {
             if (drawcall == null)
@@ -966,7 +988,6 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
                 return;
             drawbuffer.isDirty = false;
             var gl = this.gl;
-            gl.clearColor(0.95, 0.95, 0.95, 1);
             gl.clear(gl.COLOR_BUFFER_BIT);
             //draw drawcall buffer
             var drawRectCount = drawbuffer.drawCountRect;
@@ -1057,8 +1078,14 @@ define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "rui/DebugUI",
             console.log(this.m_rootUI);
         };
         RUICanvas.prototype.OnFrame = function (ts) {
-            if (this.m_rootUI.isDirty) {
-                this.m_drawcall.Rebuild(this.m_rootUI);
+            var rootUI = this.m_rootUI;
+            var renderer = this.m_renderer;
+            if (renderer.isResized) {
+                rootUI.isDirty = true;
+                renderer.useResized();
+            }
+            if (rootUI.isDirty) {
+                this.m_drawcall.Rebuild(rootUI);
             }
             this.OnRender();
         };

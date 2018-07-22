@@ -4,6 +4,7 @@ import { GLContext, GLProgram } from "wglut";
 import { RUIDrawCallBuffer } from "./RUIDrawCallBuffer";
 import { RUIFontTexture } from "./RUIFontTexture";
 import { GLSL_VERT_DEF, GLSL_FRAG_COLOR } from "../gl/wglShaderLib";
+import { RUIStyle } from "./RUIStyle";
 
 
 export class RUIRenderer{
@@ -19,9 +20,17 @@ export class RUIRenderer{
 
     private m_isvalid :boolean = false;
 
+    private m_isResized: boolean = false;
+
 
     public constructor(uicanvas: RUICanvas){
         this.glctx = GLContext.createFromCanvas(uicanvas.canvas);
+
+        window.addEventListener('resize',()=>{
+            this.resizeCanvas(window.innerWidth,window.innerHeight);
+        })
+
+
 
         if(!this.glctx){
             return;
@@ -32,7 +41,28 @@ export class RUIRenderer{
 
         RUIFontTexture.Init(this.glctx);
         this.SetupGL();
+
+        let canvas = uicanvas.canvas;
+        this.resizeCanvas(window.innerWidth,window.innerHeight);
         
+    }
+
+    public resizeCanvas(w:number,h:number){
+        this.gl.canvas.width =w;
+        this.gl.canvas.height = h;
+
+        this.m_projectParam = [2.0/w,2.0/h,0,0];
+        this.gl.viewport(0,0,w,h);
+
+        this.m_isResized = true;
+    }
+
+    public get isResized():boolean{
+        return this.m_isResized;
+    }
+
+    public useResized(){
+        this.m_isResized = false;
     }
 
     public isValid():boolean{
@@ -46,18 +76,13 @@ export class RUIRenderer{
 
         let glctx = this.glctx;
 
-
-        //shaders
-        
-
         //pipeline
         gl.disable(gl.DEPTH_TEST);
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
-        //parameter
-        this.m_projectParam = [2/800.0,2/600.0,0,0];
 
-        gl.viewport(0,0,800.0,600.0);
+        let clearColor = RUIStyle.Default.background0;
+        gl.clearColor(clearColor[0],clearColor[1],clearColor[2],clearColor[3]);
     }
 
     public Draw(drawcall:RUIDrawCall){
@@ -84,7 +109,7 @@ export class RUIRenderer{
 
         let gl = this.gl;
 
-        gl.clearColor(0.95,0.95,0.95,1);
+       
         gl.clear(gl.COLOR_BUFFER_BIT);
         
 
