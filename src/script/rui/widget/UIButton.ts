@@ -30,12 +30,14 @@ export class UIButton extends UIObject{
         e.canvas.cursor.SetCursor(RUICursorType.pointer);
         this.color = RUIStyle.Default.background2;
         this.setDirty(true);
+        e.prevent();
     }
 
     public onMouseLeave(e:RUIEvent){
         e.canvas.cursor.SetCursor(RUICursorType.default);
         this.color = RUIStyle.Default.background1;
         this.setDirty(true);
+        e.prevent();
     }
 
     public onMouseClick(e:RUIMouseEvent){

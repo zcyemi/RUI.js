@@ -17,7 +17,7 @@ export enum UIOrientation{
 
 
 
-export class UIObject{
+export abstract class UIObject{
     public parent: UIObject = null;
     public children: UIObject[] = [];
     public isDirty:boolean = true;
@@ -117,13 +117,9 @@ export class UIObject{
 
     }
 
-    public onMouseDown(){
-
+    public onMouseDown(e:RUIEvent){
     }
-
-    public onMouseUp(){
-
-    }
+    public onMouseUp(e:RUIEvent){}
 
     public onMouseClick(e:RUIMouseEvent){
 
@@ -159,4 +155,9 @@ export class UIObject{
     }
     
     
+    
+}
+
+export class UIDiv extends UIObject{
+
 }

@@ -2,27 +2,25 @@ import { UIObject } from "../UIObject";
 import { RUIDrawCall } from "../RUIDrawCall";
 import { RUIFontTexture } from "../RUIFontTexture";
 import { RUIStyle } from "../RUIStyle";
+import { RUIEvent } from "../RUIEventSys";
+import { RUICursorType } from "../RUICursor";
 
 
 export class UIInput extends UIObject {
 
-    public m_label: string;
     public m_text: string;
 
-    public constructor(label: string, content?: string) {
+    public m_isFocuesd: boolean =false;
+
+    public constructor(content?: string) {
         super();
         this.height = 23;
-        this.m_label = label;
         this.m_text = content;
+
+        this.color = RUIStyle.Default.background0;
     }
 
-    public get label(): string {
-        return this.m_label;
-    }
-    public set label(val: string) {
-        this.m_label = val;
-        this.setDirty(true);
-    }
+
     public get text(): string {
         return this.m_text;
     }
@@ -35,25 +33,33 @@ export class UIInput extends UIObject {
         this.visible = true;
     }
 
+    // public onMouseDown(){
+    //     this.color = RUIStyle.Default.background2;
+    //     this.m_isFocuesd= true;
+
+    //     console.log('mouse down');
+    // }
+
+    public onMouseEnter(e:RUIEvent){
+        e.canvas.cursor.SetCursor(RUICursorType.text);
+        this.color = RUIStyle.Default.background1;
+        this.setDirty(true);
+    }
+
+    public onMouseLeave(e:RUIEvent){
+        e.canvas.cursor.SetCursor(RUICursorType.default);
+        this.color = RUIStyle.Default.background0;
+        this.m_isFocuesd= false;
+        this.setDirty(true);
+    }
+
     public onDraw(cmd: RUIDrawCall) {
         let rect = [this._calculateX,this._calculateY,this._width,this._height];
 
-        let totalWidth = this._width;
-        let labelsize = 0;
-        let label = this.m_label;
-        if(label != null && label != ''){
-            labelsize = RUIFontTexture.ASIICTexture.MeasureTextWith(label);
-            labelsize = Math.min(labelsize + 10,Math.max(150,totalWidth *0.5));
-            let labelRect = [rect[0],rect[1],labelsize,rect[3]];
-            cmd.DrawText(label,labelRect);
-        }
-
-        let fieldrect = [rect[0] + labelsize,rect[1] + 1,rect[2] - labelsize - 3,rect[3]-2];
-
-        cmd.DrawRectWithColor(fieldrect,RUIStyle.Default.background0);
+        cmd.DrawRectWithColor(rect,this.color);
         let text = this.m_text;
         if(text != null && text != ''){
-            cmd.DrawText(text,fieldrect);
+            cmd.DrawText(text,rect);
         }
 
         

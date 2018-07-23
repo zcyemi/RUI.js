@@ -1,4 +1,4 @@
-import { UIObject, UIOrientation, UIDisplayMode } from "./UIObject";
+import { UIObject, UIOrientation, UIDisplayMode, UIDiv } from "./UIObject";
 import { RUIDrawCall } from "./RUIDrawCall";
 import {UIButton} from './widget/UIButton';
 import {UIRect} from './widget/UIRect';
@@ -34,8 +34,8 @@ export class EditorUI extends UIObject{
         this.visible = true;
         this.color = RUIStyle.Default.background1;
 
-        this.addChild(new UIInput('Name','TestName'));
-        this.addChild(new UIInput('Id','1232'));
+        this.addChild(new UIInput('TestName'));
+        this.addChild(new UIInput('1232'));
         this.addChild(new UIButton('Clear'));
     }
 
@@ -67,7 +67,7 @@ export class DebugUI extends UIObject{
         this.addChild(header);
 
         
-        let main = new UIObject();
+        let main = new UIDiv();
         main.flex = 1;
         main.displayMode = UIDisplayMode.Flex;
         main.orientation=  UIOrientation.Horizontal;

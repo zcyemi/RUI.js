@@ -25,11 +25,11 @@ export class RUIEvent{
         this.isUsed = true;
     }
 
-    public static readonly MOUSE_DOWN:string = "EvtMouseDown";
-    public static readonly MOUSE_UP:string = "EvtMouseUp";
-    public static readonly MOUSE_CLICK:string = "EvtMouseClick";
-    public static readonly MOUSE_ENTER:string = "EvtMouseEnter";
-    public static readonly MOUSE_LEAVE:string = "EvtMouseLeave";
+    public static readonly MOUSE_DOWN:string = "onMouseDown";
+    public static readonly MOUSE_UP:string = "onMouseUp";
+    public static readonly MOUSE_CLICK:string = "onMouseClick";
+    public static readonly MOUSE_ENTER:string = "onMouseEnter";
+    public static readonly MOUSE_LEAVE:string = "onMouseLeave";
 }
 
 export class RUIMouseEvent extends RUIEvent{
