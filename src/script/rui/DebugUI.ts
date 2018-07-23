@@ -1,13 +1,15 @@
 import { UIObject, UIOrientation, UIDisplayMode } from "./UIObject";
-import { UIButton, UIRect } from "./UIWidgets";
 import { RUIDrawCall } from "./RUIDrawCall";
+import {UIButton} from './widget/UIButton';
+import {UIRect} from './widget/UIRect';
 import { UIUtil } from "./UIUtil";
 import { RUIStyle } from "./RUIStyle";
+import { UIInput } from "./widget/UIInput";
 
 
 export class HeaderUI extends UIObject{
 
-    public btnNew: UIButton =new UIButton("New");
+    public btnNew:UIButton =new UIButton("New");
     public btnOpen:UIButton = new UIButton("Open");
     public onBuild(){
 
@@ -30,7 +32,11 @@ export class EditorUI extends UIObject{
     public onBuild(){
 
         this.visible = true;
-        this.color = RUIStyle.Default.primary;
+        this.color = RUIStyle.Default.background2;
+
+        this.addChild(new UIInput('Name','TestName'));
+        this.addChild(new UIInput('Id','1232'));
+        this.addChild(new UIButton('Clear'));
     }
 
     public onDraw(cmd:RUIDrawCall){

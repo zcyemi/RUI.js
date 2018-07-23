@@ -18,7 +18,7 @@
   "homepage": "https://github.com/soyemi/RUI.js#readme",
   "devDependencies": {
     "@types/opentype.js": "^0.7.0",
-    "browser-sync": "^2.24.5",
+    "browser-sync": "^2.24.6",
     "gulp": "^3.9.1",
     "gulp-glsl": "^1.2.4",
     "gulp-sequence": "^1.0.0",

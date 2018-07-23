@@ -1,4 +1,5 @@
 import { UIObject, UIOrientation, UIDisplayMode } from "./UIObject";
+import { UIInput } from "./widget/UIInput";
 
 
 
@@ -100,13 +101,16 @@ export class RUIDrawCall {
         this.fillFlexSize(ui);
 
         let children = ui.children;
+        let parent = ui.parent;
 
         let isVertical = ui.orientation == UIOrientation.Vertical;
         let childOffset = 0;
 
         let childMaxSecond = 0;
 
-        for (var i = 0, len = children.length; i < len; i++) {
+        let clen = children.length;
+
+        for (var i = 0, len = clen; i < len; i++) {
             let c = children[i];
 
             c._flexWidth = null;
@@ -116,6 +120,7 @@ export class RUIDrawCall {
             //TODO: set size for flex child
             this.RebuildNode(c);
 
+
             let cwidth = c._width;
             let cheight = c._height;
             if(cwidth == undefined || cheight == undefined) throw new Error('child size not full calculated!');
@@ -124,6 +129,8 @@ export class RUIDrawCall {
                 c._offsetX = 0;
                 c._offsetY = childOffset;
                 childOffset += c._height;
+
+                
                 childMaxSecond = Math.max(childMaxSecond,c._width);
             }else{
                 c._offsetX = childOffset;
@@ -133,14 +140,25 @@ export class RUIDrawCall {
             }
         }
 
-        //set ui size
-        if(ui._width == undefined){
-            ui._width = isVertical? childMaxSecond: childOffset;
+        if(clen > 0){
+            //set ui size
+            if(ui._width == undefined){
+                ui._width = isVertical? childMaxSecond: childOffset;
+            }
+            if(ui._height == undefined){
+                ui._height = isVertical ? childOffset : childMaxSecond;
+            }
         }
-        if(ui._height == undefined){
-            ui._height = isVertical ? childOffset : childMaxSecond;
-        }
+        else{
 
+            let pisVertical = parent.orientation == UIOrientation.Vertical;
+            if(ui._width == undefined){
+                ui._width = pisVertical? parent._width: 100;
+            }
+            if(ui._height == undefined){
+                ui._height = pisVertical ? 23 : parent._height;
+            }
+        }
     }
 
     //Pre process rect

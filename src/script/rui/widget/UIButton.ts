@@ -1,8 +1,8 @@
-import { UIObject } from "./UIObject";
-import { RUIEventEmitter, RUIMouseEvent, RUIEvent } from "./RUIEventSys";
-import { RUICursorType } from "./RUICursor";
-import { RUIDrawCall } from "./RUIDrawCall";
-import { RUIStyle } from "./RUIStyle";
+import { UIObject } from "./../UIObject";
+import { RUIEventEmitter, RUIMouseEvent, RUIEvent } from "./../RUIEventSys";
+import { RUICursorType } from "./../RUICursor";
+import { RUIDrawCall } from "./../RUIDrawCall";
+import { RUIStyle } from "./../RUIStyle";
 
 
 export class UIButton extends UIObject{
@@ -47,16 +47,5 @@ export class UIButton extends UIObject{
         drawcall.DrawRectWithColor(rect,this.color);
 
         drawcall.DrawText('Button1',rect,null);
-    }
-}
-
-export class UIRect extends UIObject{
-
-    public onBuild(){
-        this.visible= true;
-    }
-    public onDraw(drawcall:RUIDrawCall) {
-        let rect = [this._calculateX,this._calculateY,this._width,this._height];
-        drawcall.DrawRectWithColor(rect,this.color);
     }
 }

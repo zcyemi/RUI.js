@@ -227,7 +227,218 @@ define("rui/UIObject", ["require", "exports", "rui/RUIStyle"], function (require
     }());
     exports.UIObject = UIObject;
 });
-define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (require, exports, UIObject_1) {
+define("rui/RUIFontTexture", ["require", "exports", "opentype.js"], function (require, exports, opentype) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUIGlyph = /** @class */ (function () {
+        function RUIGlyph() {
+        }
+        return RUIGlyph;
+    }());
+    exports.RUIGlyph = RUIGlyph;
+    var RUIFontTexture = /** @class */ (function () {
+        function RUIFontTexture() {
+            this.m_textureValid = false;
+            this.glyphs = {};
+            this.glyphsWidth = [];
+            this.m_isDirty = false;
+            this.fontSize = 16;
+            this.CrateTexture();
+            this.LoadFont();
+        }
+        Object.defineProperty(RUIFontTexture.prototype, "isTextureValid", {
+            get: function () {
+                return this.m_textureValid;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RUIFontTexture.prototype, "isDirty", {
+            get: function () {
+                return this.m_isDirty;
+            },
+            set: function (d) {
+                this.m_isDirty = d;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        RUIFontTexture.Init = function (gl) {
+            if (RUIFontTexture.s_inited)
+                return;
+            RUIFontTexture.s_gl = gl;
+            RUIFontTexture.ASIICTexture = new RUIFontTexture();
+            RUIFontTexture.s_inited = true;
+        };
+        RUIFontTexture.prototype.LoadFont = function () {
+            var _this = this;
+            opentype.load('arial.ttf', function (e, f) {
+                _this.m_font = f;
+                _this.FillTexture();
+            });
+        };
+        RUIFontTexture.prototype.MeasureTextWith = function (content) {
+            var w = 0;
+            var gw = this.glyphsWidth;
+            for (var i = 0, len = content.length; i < len; i++) {
+                w += gw[content.charCodeAt(i)];
+            }
+            return w;
+        };
+        RUIFontTexture.prototype.FillTexture = function () {
+            var _this = this;
+            var f = this.m_font;
+            var ctx2d = this.m_ctx2d;
+            var fontsize = this.fontSize;
+            var upx = fontsize / f.unitsPerEm;
+            var linh = 0;
+            var linw = 0;
+            var maxh = 0;
+            var uvunit = 1.0 / this.m_textureWidth;
+            var glyphWidth = this.glyphsWidth;
+            for (i = 0; i < 33; i++) {
+                glyphWidth.push(5);
+            }
+            for (var i = 33; i <= 126; i++) {
+                var c = String.fromCharCode(i);
+                var g = f.charToGlyph(c);
+                var m = g.getMetrics();
+                var y = Math.ceil(upx * (m.yMax));
+                var x = Math.ceil(upx * (m.xMax - m.xMin)) + 1;
+                if (linw + x > 128) {
+                    linw = 0;
+                    linh += fontsize;
+                    maxh = 0;
+                }
+                var glyph = new RUIGlyph();
+                glyph.width = x;
+                glyph.height = y;
+                glyph.offsetY = (upx * -m.yMax);
+                glyphWidth.push(x);
+                var uvx1 = linw * uvunit;
+                var uvx2 = (linw + x) * uvunit;
+                var uvy1 = linh * uvunit;
+                var uvy2 = (linh + y) * uvunit;
+                glyph.uv = [uvx1, uvy1, uvx2, uvy1, uvx2, uvy2, uvx1, uvy2];
+                this.glyphs[i] = glyph;
+                var p = g.getPath(linw, linh + y, fontsize);
+                p['fill'] = "white";
+                p.draw(ctx2d);
+                linw += x;
+                maxh = Math.max(maxh, y);
+            }
+            var url = ctx2d.canvas.toDataURL('image/png');
+            var glctx = RUIFontTexture.s_gl;
+            var gl = glctx.gl;
+            var gltex = this.createTextureImage(glctx, gl.RGBA, gl.RGBA, url, true, true, function () {
+                _this.m_textureValid = true;
+                _this.m_isDirty = true;
+            });
+            this.m_glTexture = gltex;
+        };
+        RUIFontTexture.prototype.createTextureImage = function (glctx, internalFmt, format, src, linear, mipmap, callback) {
+            if (linear === void 0) { linear = true; }
+            if (mipmap === void 0) { mipmap = true; }
+            var gl = glctx.gl;
+            var img = new Image();
+            var tex = gl.createTexture();
+            img.onload = function () {
+                gl.bindTexture(gl.TEXTURE_2D, tex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, internalFmt, format, gl.UNSIGNED_BYTE, img);
+                if (mipmap)
+                    gl.generateMipmap(gl.TEXTURE_2D);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, linear ? gl.LINEAR : gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, linear ? (mipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR) : gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.bindTexture(gl.TEXTURE_2D, null);
+                if (callback != null)
+                    callback();
+            };
+            img.src = src;
+            return tex;
+        };
+        RUIFontTexture.prototype.CrateTexture = function () {
+            var texw = 128;
+            var texh = 128;
+            var canvas2d = document.createElement("canvas");
+            canvas2d.style.backgroundColor = "#000";
+            canvas2d.width = texw;
+            canvas2d.height = texh;
+            var h = this.fontSize;
+            var lineh = h;
+            var linew = 0;
+            var ctx = canvas2d.getContext('2d');
+            this.m_ctx2d = ctx;
+            //document.body.appendChild(canvas2d);
+            this.m_textureWidth = texw;
+            this.m_textureHeight = texh;
+        };
+        RUIFontTexture.s_inited = false;
+        return RUIFontTexture;
+    }());
+    exports.RUIFontTexture = RUIFontTexture;
+});
+define("rui/widget/UIInput", ["require", "exports", "rui/UIObject", "rui/RUIFontTexture", "rui/RUIStyle"], function (require, exports, UIObject_1, RUIFontTexture_1, RUIStyle_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var UIInput = /** @class */ (function (_super) {
+        __extends(UIInput, _super);
+        function UIInput(label, content) {
+            var _this = _super.call(this) || this;
+            _this.height = 23;
+            _this.m_label = label;
+            _this.m_text = content;
+            return _this;
+        }
+        Object.defineProperty(UIInput.prototype, "label", {
+            get: function () {
+                return this.m_label;
+            },
+            set: function (val) {
+                this.m_label = val;
+                this.setDirty(true);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIInput.prototype, "text", {
+            get: function () {
+                return this.m_text;
+            },
+            set: function (val) {
+                this.m_text = val;
+                this.setDirty(true);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        UIInput.prototype.onBuild = function () {
+            this.visible = true;
+        };
+        UIInput.prototype.onDraw = function (cmd) {
+            var rect = [this._calculateX, this._calculateY, this._width, this._height];
+            var totalWidth = this._width;
+            var labelsize = 0;
+            var label = this.m_label;
+            if (label != null && label != '') {
+                labelsize = RUIFontTexture_1.RUIFontTexture.ASIICTexture.MeasureTextWith(label);
+                labelsize = Math.min(labelsize + 10, Math.max(150, totalWidth * 0.5));
+                var labelRect = [rect[0], rect[1], labelsize, rect[3]];
+                cmd.DrawText(label, labelRect);
+            }
+            var fieldrect = [rect[0] + labelsize, rect[1] + 1, rect[2] - labelsize - 3, rect[3] - 2];
+            cmd.DrawRectWithColor(fieldrect, RUIStyle_2.RUIStyle.Default.background1);
+            var text = this.m_text;
+            if (text != null && text != '') {
+                cmd.DrawText(text, fieldrect);
+            }
+        };
+        return UIInput;
+    }(UIObject_1.UIObject));
+    exports.UIInput = UIInput;
+});
+define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (require, exports, UIObject_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var DrawCmdType;
@@ -283,10 +494,10 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
         //Process all child ui and self rect
         RUIDrawCall.prototype.RebuildNode = function (ui) {
             switch (ui.displayMode) {
-                case UIObject_1.UIDisplayMode.Default:
+                case UIObject_2.UIDisplayMode.Default:
                     this.RebuildNodeDefault(ui);
                     break;
-                case UIObject_1.UIDisplayMode.Flex:
+                case UIObject_2.UIDisplayMode.Flex:
                     this.RebuildNodeFlex(ui);
                     break;
             }
@@ -309,10 +520,12 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
         RUIDrawCall.prototype.RebuildNodeDefault = function (ui) {
             this.fillFlexSize(ui);
             var children = ui.children;
-            var isVertical = ui.orientation == UIObject_1.UIOrientation.Vertical;
+            var parent = ui.parent;
+            var isVertical = ui.orientation == UIObject_2.UIOrientation.Vertical;
             var childOffset = 0;
             var childMaxSecond = 0;
-            for (var i = 0, len = children.length; i < len; i++) {
+            var clen = children.length;
+            for (var i = 0, len = clen; i < len; i++) {
                 var c = children[i];
                 c._flexWidth = null;
                 c._flexHeight = null;
@@ -335,12 +548,23 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
                     childMaxSecond = Math.max(childMaxSecond, c._height);
                 }
             }
-            //set ui size
-            if (ui._width == undefined) {
-                ui._width = isVertical ? childMaxSecond : childOffset;
+            if (clen > 0) {
+                //set ui size
+                if (ui._width == undefined) {
+                    ui._width = isVertical ? childMaxSecond : childOffset;
+                }
+                if (ui._height == undefined) {
+                    ui._height = isVertical ? childOffset : childMaxSecond;
+                }
             }
-            if (ui._height == undefined) {
-                ui._height = isVertical ? childOffset : childMaxSecond;
+            else {
+                var pisVertical = parent.orientation == UIObject_2.UIOrientation.Vertical;
+                if (ui._width == undefined) {
+                    ui._width = pisVertical ? parent._width : 100;
+                }
+                if (ui._height == undefined) {
+                    ui._height = pisVertical ? 23 : parent._height;
+                }
             }
         };
         //Pre process rect
@@ -352,7 +576,7 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
                 ui._width = canvas.m_width;
                 ui._height = canvas.m_height;
             }
-            var isVertical = ui.orientation == UIObject_1.UIOrientation.Vertical;
+            var isVertical = ui.orientation == UIObject_2.UIOrientation.Vertical;
             //check size
             if (ui._height == null) {
                 if (ui.height != null) {
@@ -540,7 +764,7 @@ define("rui/RUICursor", ["require", "exports"], function (require, exports) {
     }());
     exports.RUICursor = RUICursor;
 });
-define("rui/UIWidgets", ["require", "exports", "rui/UIObject", "rui/RUIEventSys", "rui/RUICursor", "rui/RUIStyle"], function (require, exports, UIObject_2, RUIEventSys_2, RUICursor_1, RUIStyle_2) {
+define("rui/widget/UIButton", ["require", "exports", "rui/UIObject", "rui/RUIEventSys", "rui/RUICursor", "rui/RUIStyle"], function (require, exports, UIObject_3, RUIEventSys_2, RUICursor_1, RUIStyle_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var UIButton = /** @class */ (function (_super) {
@@ -556,16 +780,16 @@ define("rui/UIWidgets", ["require", "exports", "rui/UIObject", "rui/RUIEventSys"
             this.visible = true;
             this.width = 100;
             this.height = 23;
-            this.color = RUIStyle_2.RUIStyle.Default.background1;
+            this.color = RUIStyle_3.RUIStyle.Default.background1;
         };
         UIButton.prototype.onMouseEnter = function (e) {
             e.canvas.cursor.SetCursor(RUICursor_1.RUICursorType.pointer);
-            this.color = RUIStyle_2.RUIStyle.Default.background2;
+            this.color = RUIStyle_3.RUIStyle.Default.background2;
             this.setDirty(true);
         };
         UIButton.prototype.onMouseLeave = function (e) {
             e.canvas.cursor.SetCursor(RUICursor_1.RUICursorType.default);
-            this.color = RUIStyle_2.RUIStyle.Default.background1;
+            this.color = RUIStyle_3.RUIStyle.Default.background1;
             this.setDirty(true);
         };
         UIButton.prototype.onMouseClick = function (e) {
@@ -577,8 +801,12 @@ define("rui/UIWidgets", ["require", "exports", "rui/UIObject", "rui/RUIEventSys"
             drawcall.DrawText('Button1', rect, null);
         };
         return UIButton;
-    }(UIObject_2.UIObject));
+    }(UIObject_3.UIObject));
     exports.UIButton = UIButton;
+});
+define("rui/widget/UIRect", ["require", "exports", "rui/UIObject"], function (require, exports, UIObject_4) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var UIRect = /** @class */ (function (_super) {
         __extends(UIRect, _super);
         function UIRect() {
@@ -592,31 +820,31 @@ define("rui/UIWidgets", ["require", "exports", "rui/UIObject", "rui/RUIEventSys"
             drawcall.DrawRectWithColor(rect, this.color);
         };
         return UIRect;
-    }(UIObject_2.UIObject));
+    }(UIObject_4.UIObject));
     exports.UIRect = UIRect;
 });
-define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/UIWidgets", "rui/RUIStyle"], function (require, exports, UIObject_3, UIWidgets_1, RUIStyle_3) {
+define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButton", "rui/widget/UIRect", "rui/RUIStyle", "rui/widget/UIInput"], function (require, exports, UIObject_5, UIButton_1, UIRect_1, RUIStyle_4, UIInput_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var HeaderUI = /** @class */ (function (_super) {
         __extends(HeaderUI, _super);
         function HeaderUI() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.btnNew = new UIWidgets_1.UIButton("New");
-            _this.btnOpen = new UIWidgets_1.UIButton("Open");
+            _this.btnNew = new UIButton_1.UIButton("New");
+            _this.btnOpen = new UIButton_1.UIButton("Open");
             return _this;
         }
         HeaderUI.prototype.onBuild = function () {
             this.visible = false;
-            this.displayMode = UIObject_3.UIDisplayMode.Flex;
-            this.orientation = UIObject_3.UIOrientation.Horizontal;
+            this.displayMode = UIObject_5.UIDisplayMode.Flex;
+            this.orientation = UIObject_5.UIOrientation.Horizontal;
             this.addChild(this.btnNew);
             this.addChild(this.btnOpen);
         };
         HeaderUI.prototype.onDraw = function (cmd) {
         };
         return HeaderUI;
-    }(UIObject_3.UIObject));
+    }(UIObject_5.UIObject));
     exports.HeaderUI = HeaderUI;
     var EditorUI = /** @class */ (function (_super) {
         __extends(EditorUI, _super);
@@ -625,14 +853,17 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/UIWidgets", "r
         }
         EditorUI.prototype.onBuild = function () {
             this.visible = true;
-            this.color = RUIStyle_3.RUIStyle.Default.primary;
+            this.color = RUIStyle_4.RUIStyle.Default.background2;
+            this.addChild(new UIInput_1.UIInput('Name', 'TestName'));
+            this.addChild(new UIInput_1.UIInput('Id', '1232'));
+            this.addChild(new UIButton_1.UIButton('Clear'));
         };
         EditorUI.prototype.onDraw = function (cmd) {
             var rect = [this._calculateX, this._calculateY, this._width, this._height];
             cmd.DrawRectWithColor(rect, this.color);
         };
         return EditorUI;
-    }(UIObject_3.UIObject));
+    }(UIObject_5.UIObject));
     exports.EditorUI = EditorUI;
     var DebugUI = /** @class */ (function (_super) {
         __extends(DebugUI, _super);
@@ -641,21 +872,21 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/UIWidgets", "r
         }
         DebugUI.prototype.onBuild = function () {
             this.visible = true;
-            this.displayMode = UIObject_3.UIDisplayMode.Flex;
+            this.displayMode = UIObject_5.UIDisplayMode.Flex;
             var header = new HeaderUI();
             header.height = 23;
             this.m_header = header;
             this.addChild(header);
-            var main = new UIObject_3.UIObject();
+            var main = new UIObject_5.UIObject();
             main.flex = 1;
-            main.displayMode = UIObject_3.UIDisplayMode.Flex;
-            main.orientation = UIObject_3.UIOrientation.Horizontal;
+            main.displayMode = UIObject_5.UIDisplayMode.Flex;
+            main.orientation = UIObject_5.UIOrientation.Horizontal;
             this.addChild(main);
             var editorui = new EditorUI();
             editorui.flex = 2;
             main.addChild(editorui);
             this.m_editor = editorui;
-            var x = new UIWidgets_1.UIRect();
+            var x = new UIRect_1.UIRect();
             x.flex = 3;
             main.addChild(x);
             // let btn1 = new UIButton();
@@ -675,7 +906,7 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/UIWidgets", "r
             drawcall.DrawRectWithColor(rect, this.color);
         };
         return DebugUI;
-    }(UIObject_3.UIObject));
+    }(UIObject_5.UIObject));
     exports.DebugUI = DebugUI;
 });
 define("rui/RUIQTree", ["require", "exports", "rui/RUIEventSys"], function (require, exports, RUIEventSys_3) {
@@ -767,159 +998,7 @@ define("gl/wglShaderLib", ["require", "exports"], function (require, exports) {
     exports.GLSL_FRAG_TEXT = '#version 300 es\nprecision lowp float;\n\nin vec4 vColor;\nin vec2 vUV;\n\nuniform sampler2D uSampler;\n\nout vec4 fragColor;\n\nvoid main(){\nfragColor = texture(uSampler,vUV);\n}';
     exports.GLSL_VERT_TEXT = '#version 300 es\nprecision mediump float;\nin vec2 aPosition;\nin vec4 aColor;\nin vec2 aUV;\nin vec4 aClip;\n\nuniform vec4 uProj;\nout vec4 vColor;\nout vec2 vUV;\n\nvoid main(){\nvec2 pos = aPosition * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,0,1);\nvColor = aColor;\nvUV =aUV;\n}';
 });
-define("rui/RUIFontTexture", ["require", "exports", "opentype.js"], function (require, exports, opentype) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var RUIGlyph = /** @class */ (function () {
-        function RUIGlyph() {
-        }
-        return RUIGlyph;
-    }());
-    exports.RUIGlyph = RUIGlyph;
-    var RUIFontTexture = /** @class */ (function () {
-        function RUIFontTexture() {
-            this.m_textureValid = false;
-            this.glyphs = {};
-            this.glyphsWidth = [];
-            this.m_isDirty = false;
-            this.fontSize = 16;
-            this.CrateTexture();
-            this.LoadFont();
-        }
-        Object.defineProperty(RUIFontTexture.prototype, "isTextureValid", {
-            get: function () {
-                return this.m_textureValid;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(RUIFontTexture.prototype, "isDirty", {
-            get: function () {
-                return this.m_isDirty;
-            },
-            set: function (d) {
-                this.m_isDirty = d;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        RUIFontTexture.Init = function (gl) {
-            if (RUIFontTexture.s_inited)
-                return;
-            RUIFontTexture.s_gl = gl;
-            RUIFontTexture.ASIICTexture = new RUIFontTexture();
-            RUIFontTexture.s_inited = true;
-        };
-        RUIFontTexture.prototype.LoadFont = function () {
-            var _this = this;
-            opentype.load('arial.ttf', function (e, f) {
-                _this.m_font = f;
-                _this.FillTexture();
-            });
-        };
-        RUIFontTexture.prototype.MeasureTextWith = function (content) {
-            var w = 0;
-            var gw = this.glyphsWidth;
-            for (var i = 0, len = content.length; i < len; i++) {
-                w += gw[content.charCodeAt(i)];
-            }
-            return w;
-        };
-        RUIFontTexture.prototype.FillTexture = function () {
-            var _this = this;
-            var f = this.m_font;
-            var ctx2d = this.m_ctx2d;
-            var fontsize = this.fontSize;
-            var upx = fontsize / f.unitsPerEm;
-            var linh = 0;
-            var linw = 0;
-            var maxh = 0;
-            var uvunit = 1.0 / this.m_textureWidth;
-            var glyphWidth = this.glyphsWidth;
-            for (i = 0; i < 33; i++) {
-                glyphWidth.push(5);
-            }
-            for (var i = 33; i <= 126; i++) {
-                var c = String.fromCharCode(i);
-                var g = f.charToGlyph(c);
-                var m = g.getMetrics();
-                var y = Math.ceil(upx * (m.yMax));
-                var x = Math.ceil(upx * (m.xMax - m.xMin)) + 1;
-                if (linw + x > 128) {
-                    linw = 0;
-                    linh += fontsize;
-                    maxh = 0;
-                }
-                var glyph = new RUIGlyph();
-                glyph.width = x;
-                glyph.height = y;
-                glyph.offsetY = (upx * -m.yMax);
-                glyphWidth.push(x);
-                var uvx1 = linw * uvunit;
-                var uvx2 = (linw + x) * uvunit;
-                var uvy1 = linh * uvunit;
-                var uvy2 = (linh + y) * uvunit;
-                glyph.uv = [uvx1, uvy1, uvx2, uvy1, uvx2, uvy2, uvx1, uvy2];
-                this.glyphs[i] = glyph;
-                var p = g.getPath(linw, linh + y, fontsize);
-                p['fill'] = "white";
-                p.draw(ctx2d);
-                linw += x;
-                maxh = Math.max(maxh, y);
-            }
-            var url = ctx2d.canvas.toDataURL('image/png');
-            var glctx = RUIFontTexture.s_gl;
-            var gl = glctx.gl;
-            var gltex = this.createTextureImage(glctx, gl.RGBA, gl.RGBA, url, true, true, function () {
-                _this.m_textureValid = true;
-                _this.m_isDirty = true;
-            });
-            this.m_glTexture = gltex;
-        };
-        RUIFontTexture.prototype.createTextureImage = function (glctx, internalFmt, format, src, linear, mipmap, callback) {
-            if (linear === void 0) { linear = true; }
-            if (mipmap === void 0) { mipmap = true; }
-            var gl = glctx.gl;
-            var img = new Image();
-            var tex = gl.createTexture();
-            img.onload = function () {
-                gl.bindTexture(gl.TEXTURE_2D, tex);
-                gl.texImage2D(gl.TEXTURE_2D, 0, internalFmt, format, gl.UNSIGNED_BYTE, img);
-                if (mipmap)
-                    gl.generateMipmap(gl.TEXTURE_2D);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, linear ? gl.LINEAR : gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, linear ? (mipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR) : gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                gl.bindTexture(gl.TEXTURE_2D, null);
-                if (callback != null)
-                    callback();
-            };
-            img.src = src;
-            return tex;
-        };
-        RUIFontTexture.prototype.CrateTexture = function () {
-            var texw = 128;
-            var texh = 128;
-            var canvas2d = document.createElement("canvas");
-            canvas2d.style.backgroundColor = "#000";
-            canvas2d.width = texw;
-            canvas2d.height = texh;
-            var h = this.fontSize;
-            var lineh = h;
-            var linew = 0;
-            var ctx = canvas2d.getContext('2d');
-            this.m_ctx2d = ctx;
-            //document.body.appendChild(canvas2d);
-            this.m_textureWidth = texw;
-            this.m_textureHeight = texh;
-        };
-        RUIFontTexture.s_inited = false;
-        return RUIFontTexture;
-    }());
-    exports.RUIFontTexture = RUIFontTexture;
-});
-define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wglShaderLib", "rui/RUIFontTexture"], function (require, exports, RUIDrawCall_1, wglShaderLib_1, RUIFontTexture_1) {
+define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wglShaderLib", "rui/RUIFontTexture"], function (require, exports, RUIDrawCall_1, wglShaderLib_1, RUIFontTexture_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var COLOR_ERROR = [1, 0, 1, 1];
@@ -997,7 +1076,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
             this.isDirty = true;
             var drawcall = this.m_drawcall;
             var drawlist = drawcall.drawList;
-            var fonttex = RUIFontTexture_1.RUIFontTexture.ASIICTexture;
+            var fonttex = RUIFontTexture_2.RUIFontTexture.ASIICTexture;
             if (drawlist.length == 0) {
                 return;
             }
@@ -1089,7 +1168,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
     }());
     exports.RUIDrawCallBuffer = RUIDrawCallBuffer;
 });
-define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer", "rui/RUIFontTexture", "rui/RUIStyle"], function (require, exports, wglut_1, RUIDrawCallBuffer_1, RUIFontTexture_2, RUIStyle_4) {
+define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer", "rui/RUIFontTexture", "rui/RUIStyle"], function (require, exports, wglut_1, RUIDrawCallBuffer_1, RUIFontTexture_3, RUIStyle_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUIRenderer = /** @class */ (function () {
@@ -1110,7 +1189,7 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             }
             this.m_isvalid = true;
             this.gl = this.glctx.gl;
-            RUIFontTexture_2.RUIFontTexture.Init(this.glctx);
+            RUIFontTexture_3.RUIFontTexture.Init(this.glctx);
             this.SetupGL();
             var canvas = uicanvas.canvas;
             this.resizeCanvas(window.innerWidth, window.innerHeight);
@@ -1145,7 +1224,7 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             gl.disable(gl.DEPTH_TEST);
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-            var clearColor = RUIStyle_4.RUIStyle.Default.background0;
+            var clearColor = RUIStyle_5.RUIStyle.Default.background0;
             gl.clearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
         };
         RUIRenderer.prototype.Draw = function (drawcall) {
@@ -1154,7 +1233,7 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             if (this.m_drawcallBuffer == null) {
                 this.m_drawcallBuffer = new RUIDrawCallBuffer_1.RUIDrawCallBuffer(this.glctx, drawcall);
             }
-            var fonttex = RUIFontTexture_2.RUIFontTexture.ASIICTexture;
+            var fonttex = RUIFontTexture_3.RUIFontTexture.ASIICTexture;
             if (drawcall.isDirty || fonttex.isDirty) {
                 this.m_drawcallBuffer.SyncBuffer(this.gl);
                 drawcall.isDirty = false;
