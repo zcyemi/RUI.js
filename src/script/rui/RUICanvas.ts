@@ -87,7 +87,7 @@ export class RUICanvas{
         if(rootUI.isDirty){
             let startTime = Date.now();
             this.m_drawcall.Rebuild(rootUI,this.m_isResized);
-            console.log('rebuildui: '+(Date.now() -startTime) +'ms');
+            //console.log('rebuildui: '+(Date.now() -startTime) +'ms');
             this.m_isResized = false;
         }
 

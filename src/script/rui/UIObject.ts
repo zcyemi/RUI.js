@@ -17,7 +17,7 @@ export enum UIOrientation{
 
 
 
-export abstract class UIObject{
+export class UIObject{
     public parent: UIObject = null;
     public children: UIObject[] = [];
     public isDirty:boolean = true;
@@ -110,20 +110,17 @@ export abstract class UIObject{
     }
 
     public onMouseEnter(e:RUIEvent){
-
     }
-
     public onMouseLeave(e:RUIEvent){
-
     }
-
     public onMouseDown(e:RUIEvent){
     }
     public onMouseUp(e:RUIEvent){}
 
     public onMouseClick(e:RUIMouseEvent){
-
     }
+    public onActive(){}
+    public onInactive(){}
 
     public onDraw(cmd:RUIDrawCall){
         
@@ -141,7 +138,7 @@ export abstract class UIObject{
         }
         else{
             this.isDirty = true;
-            this.bubbleDirty();
+            if(this.parent != null) this.parent.bubbleDirty();
         }
     }
 

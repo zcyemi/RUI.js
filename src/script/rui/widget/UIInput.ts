@@ -11,6 +11,7 @@ export class UIInput extends UIObject {
     public m_text: string;
 
     public m_isFocuesd: boolean =false;
+    private m_isOnHover:boolean = false;
 
     public constructor(content?: string) {
         super();
@@ -33,24 +34,39 @@ export class UIInput extends UIObject {
         this.visible = true;
     }
 
-    // public onMouseDown(){
-    //     this.color = RUIStyle.Default.background2;
-    //     this.m_isFocuesd= true;
-
-    //     console.log('mouse down');
-    // }
+    public onActive(){
+        this.m_isFocuesd= true;
+        this.setColor();
+        this.setDirty(true);
+    }
+    public onInactive(){
+        this.m_isFocuesd= false;
+        this.setColor();
+        this.setDirty(true);
+    }
 
     public onMouseEnter(e:RUIEvent){
         e.canvas.cursor.SetCursor(RUICursorType.text);
-        this.color = RUIStyle.Default.background1;
+        this.m_isOnHover = true;
+        this.setColor();
         this.setDirty(true);
     }
 
     public onMouseLeave(e:RUIEvent){
         e.canvas.cursor.SetCursor(RUICursorType.default);
-        this.color = RUIStyle.Default.background0;
-        this.m_isFocuesd= false;
+        this.m_isOnHover = false;
+        this.setColor();
         this.setDirty(true);
+    }
+
+    private setColor(){
+        let style = RUIStyle.Default;
+        if(this.m_isFocuesd){
+            this.color = style.background2;
+        }
+        else{
+            this.color = this.m_isOnHover? style.background1: style.background0;
+        }
     }
 
     public onDraw(cmd: RUIDrawCall) {

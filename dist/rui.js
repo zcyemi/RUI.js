@@ -196,6 +196,8 @@ define("rui/UIObject", ["require", "exports", "rui/RUIStyle"], function (require
         UIObject.prototype.onMouseUp = function (e) { };
         UIObject.prototype.onMouseClick = function (e) {
         };
+        UIObject.prototype.onActive = function () { };
+        UIObject.prototype.onInactive = function () { };
         UIObject.prototype.onDraw = function (cmd) {
         };
         UIObject.prototype.rectContains = function (x, y) {
@@ -211,7 +213,8 @@ define("rui/UIObject", ["require", "exports", "rui/RUIStyle"], function (require
             }
             else {
                 this.isDirty = true;
-                this.bubbleDirty();
+                if (this.parent != null)
+                    this.parent.bubbleDirty();
             }
         };
         UIObject.prototype.bubbleDirty = function () {
@@ -403,7 +406,16 @@ define("rui/RUIInput", ["require", "exports", "rui/RUIEventSys"], function (requ
             var tar = this.m_target;
             c.addEventListener('mousedown', function (e) {
                 var tar = _this.m_target;
-                _this.m_activeMouseUI = tar.qtree.DispatchEvtMouseEvent(e.offsetX, e.offsetY, RUIEventSys_1.RUIEvent.MOUSE_DOWN);
+                var newActiveUI = tar.qtree.DispatchEvtMouseEvent(e.offsetX, e.offsetY, RUIEventSys_1.RUIEvent.MOUSE_DOWN);
+                var curActiveUI = _this.m_activeMouseUI;
+                if (curActiveUI == newActiveUI)
+                    return;
+                if (curActiveUI != null)
+                    curActiveUI.onInactive();
+                if (newActiveUI != null) {
+                    newActiveUI.onActive();
+                    _this.m_activeMouseUI = newActiveUI;
+                }
             });
             c.addEventListener('mouseup', function (e) {
                 var tar = _this.m_target;
@@ -478,6 +490,7 @@ define("rui/widget/UIInput", ["require", "exports", "rui/UIObject", "rui/RUIStyl
         function UIInput(content) {
             var _this = _super.call(this) || this;
             _this.m_isFocuesd = false;
+            _this.m_isOnHover = false;
             _this.height = 23;
             _this.m_text = content;
             _this.color = RUIStyle_2.RUIStyle.Default.background0;
@@ -497,21 +510,36 @@ define("rui/widget/UIInput", ["require", "exports", "rui/UIObject", "rui/RUIStyl
         UIInput.prototype.onBuild = function () {
             this.visible = true;
         };
-        // public onMouseDown(){
-        //     this.color = RUIStyle.Default.background2;
-        //     this.m_isFocuesd= true;
-        //     console.log('mouse down');
-        // }
+        UIInput.prototype.onActive = function () {
+            this.m_isFocuesd = true;
+            this.setColor();
+            this.setDirty(true);
+        };
+        UIInput.prototype.onInactive = function () {
+            this.m_isFocuesd = false;
+            this.setColor();
+            this.setDirty(true);
+        };
         UIInput.prototype.onMouseEnter = function (e) {
             e.canvas.cursor.SetCursor(RUICursor_1.RUICursorType.text);
-            this.color = RUIStyle_2.RUIStyle.Default.background1;
+            this.m_isOnHover = true;
+            this.setColor();
             this.setDirty(true);
         };
         UIInput.prototype.onMouseLeave = function (e) {
             e.canvas.cursor.SetCursor(RUICursor_1.RUICursorType.default);
-            this.color = RUIStyle_2.RUIStyle.Default.background0;
-            this.m_isFocuesd = false;
+            this.m_isOnHover = false;
+            this.setColor();
             this.setDirty(true);
+        };
+        UIInput.prototype.setColor = function () {
+            var style = RUIStyle_2.RUIStyle.Default;
+            if (this.m_isFocuesd) {
+                this.color = style.background2;
+            }
+            else {
+                this.color = this.m_isOnHover ? style.background1 : style.background0;
+            }
         };
         UIInput.prototype.onDraw = function (cmd) {
             var rect = [this._calculateX, this._calculateY, this._width, this._height];
@@ -937,13 +965,7 @@ define("rui/RUIQTree", ["require", "exports", "rui/RUIEventSys"], function (requ
             var target = this.TraversalTree(x, y);
             if (target == null)
                 return null;
-            var f = target[type];
-            if (f)
-                f(new RUIEventSys_3.RUIMouseEvent(target, type, x, y));
-            // let d = target[type];
-            // if(d){
-            //     (<RUIEventEmitter>d).emit(new RUIMouseEvent(target,type,x,y));
-            // }
+            target[type].call(target, new RUIEventSys_3.RUIMouseEvent(target, type, x, y));
             return target;
         };
         RUIQTree.prototype.DispatchEvtMouseMove = function (x, y) {
@@ -1409,7 +1431,7 @@ define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "rui/DebugUI",
             if (rootUI.isDirty) {
                 var startTime = Date.now();
                 this.m_drawcall.Rebuild(rootUI, this.m_isResized);
-                console.log('rebuildui: ' + (Date.now() - startTime) + 'ms');
+                //console.log('rebuildui: '+(Date.now() -startTime) +'ms');
                 this.m_isResized = false;
             }
             this.OnRender();

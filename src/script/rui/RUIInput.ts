@@ -27,7 +27,16 @@ export class RUIInput{
 
         c.addEventListener('mousedown',(e)=>{
             let tar = this.m_target;
-            this.m_activeMouseUI = tar.qtree.DispatchEvtMouseEvent(e.offsetX,e.offsetY,RUIEvent.MOUSE_DOWN);
+            let newActiveUI = tar.qtree.DispatchEvtMouseEvent(e.offsetX,e.offsetY,RUIEvent.MOUSE_DOWN);
+            let curActiveUI = this.m_activeMouseUI;
+
+            if(curActiveUI == newActiveUI) return;
+
+            if(curActiveUI != null) curActiveUI.onInactive();
+            if(newActiveUI != null){
+                newActiveUI.onActive();
+                this.m_activeMouseUI = newActiveUI;
+            }
         });
         c.addEventListener('mouseup',(e)=>{
             let tar = this.m_target;

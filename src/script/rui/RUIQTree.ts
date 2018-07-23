@@ -27,16 +27,7 @@ export class RUIQTree{
     public DispatchEvtMouseEvent(x:number,y:number,type:string): UIObject{
         let target = this.TraversalTree(x,y);
         if(target == null) return null;
-        
-        let f = target[type];
-
-
-        if(f) f(new RUIMouseEvent(target,type,x,y));
-
-        // let d = target[type];
-        // if(d){
-        //     (<RUIEventEmitter>d).emit(new RUIMouseEvent(target,type,x,y));
-        // }
+        target[type].call(target,new RUIMouseEvent(target,type,x,y));
         return target;
     }
 
