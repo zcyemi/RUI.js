@@ -7,6 +7,56 @@ import { RUIFontTexture } from "./RUIFontTexture";
 const COLOR_ERROR: number[] = [1, 0, 1, 1];
 const MAX_RECT_COUNT = 512;
 
+
+type TypedArray = ArrayLike<any> & {
+    set(array:ArrayLike<any>, offset?:number):void;
+}
+
+type TypedArrayConstructor<T> = {
+    new () :T;
+    new (len:number) :T;
+}
+
+class RUIArrayBuffer<T extends TypedArray>{
+    public buffer: T;
+    private m_size:number;
+    public pos:number = 0;
+
+    private m_tctor: {new (s:number): T};
+    public constructor(TCtor:{new(s:number):T},size:number = 512){
+        this.m_size= size;
+        this.m_tctor = TCtor;
+        this.buffer = new this.m_tctor(size);
+    }
+    
+    public push(ary:number[]){
+        let len = ary.length;
+
+        let newpos = this.pos + len;
+        this.checkExten(newpos);
+        this.buffer.set(ary,this.pos);
+        this.pos = newpos;
+    }
+
+    public checkExten(size:number){
+        let cursize = this.m_size;
+        if(size>= cursize){
+            let newbuffer = new this.m_tctor(cursize *2);
+            newbuffer.set(this.buffer,0);
+            this.buffer = newbuffer;
+            this.m_size = cursize * 2;
+        }
+    }
+
+    public resetPos():RUIArrayBuffer<T>{
+        this.pos = 0;
+        return this;
+    }
+}
+
+class RUIArrayBufferF32 extends RUIArrayBuffer<Float32Array>{}
+class RUIArrayBufferUI16 extends RUIArrayBuffer<Uint16Array>{}
+
 export class RUIDrawCallBuffer {
 
     // v0 -- v1
@@ -35,6 +85,13 @@ export class RUIDrawCallBuffer {
     public programRect: GLProgram;
     public programText: GLProgram;
 
+    private m_indicesBufferArray:RUIArrayBufferUI16 = new RUIArrayBufferUI16(Uint16Array);
+
+    private m_aryBufferRectColor :RUIArrayBufferF32 = new RUIArrayBufferF32(Float32Array);
+    private m_aryBufferRectPos : RUIArrayBufferF32 = new RUIArrayBufferF32(Float32Array);
+
+    private m_aryBufferTextPos: RUIArrayBufferF32 = new RUIArrayBufferF32(Float32Array);
+    private m_aryBufferTextUV: RUIArrayBufferF32 = new RUIArrayBufferF32(Float32Array);
 
 
     constructor(glctx: GLContext, drawcall: RUIDrawCall) {
@@ -51,14 +108,14 @@ export class RUIDrawCallBuffer {
         {
             let ibuffer = gl.createBuffer();
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibuffer);
-            let idata: number[] = [];
+            let idata : RUIArrayBufferUI16 = this.m_indicesBufferArray;
 
             let ic = 0;
             for (var i = 0; i < MAX_RECT_COUNT; i++) {
-                idata.push(ic, ic + 2, ic + 1, ic, ic + 3, ic + 2);
+                idata.push([ic, ic + 2, ic + 1, ic, ic + 3, ic + 2]);
                 ic += 4;
             }
-            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(idata), gl.STATIC_DRAW);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idata.buffer, gl.STATIC_DRAW);
             this.indicesBuffer = ibuffer;
         }
 
@@ -88,7 +145,6 @@ export class RUIDrawCallBuffer {
 
             gl.bindVertexArray(null);
         }
-
         //Text
         {
 
@@ -132,11 +188,11 @@ export class RUIDrawCallBuffer {
             return;
         }
         else {
-            let rect_vert = [];
-            let rect_color = [];
+            let rect_vert = this.m_aryBufferRectPos.resetPos();
+            let rect_color = this.m_aryBufferRectColor.resetPos();
 
-            let text_vert = [];
-            let text_uv = [];
+            let text_vert = this.m_aryBufferTextPos.resetPos();
+            let text_uv = this.m_aryBufferTextUV.resetPos();
 
             let rectCount = 0;
             let textCount = 0;
@@ -154,16 +210,18 @@ export class RUIDrawCallBuffer {
                             let g = color[1];
                             let b = color[2];
                             let a = color[3];
-                            rect_color.push(r, g, b, a);
-                            rect_color.push(r, g, b, a);
-                            rect_color.push(r, g, b, a);
-                            rect_color.push(r, g, b, a);
+
+                            let c = [r,g,b,a];
+                            rect_color.push(c);
+                            rect_color.push(c);
+                            rect_color.push(c);
+                            rect_color.push(c);
 
                             let x = rect[0];
                             let y = rect[1];
                             let w = rect[2];
                             let h = rect[3];
-                            rect_vert.push(x, y, x + w, y, x + w, y + h, x, y + h);
+                            rect_vert.push([x, y, x + w, y, x + w, y + h, x, y + h]);
                             rectCount++;
                         }
                         break;
@@ -196,8 +254,8 @@ export class RUIDrawCallBuffer {
                                     let drawy1 = drawy + glyph.height;
                                     let drawx1 = x + glyph.width;
 
-                                    text_vert.push(x, drawy, drawx1, drawy, drawx1, drawy1, x, drawy1);
-                                    text_uv = text_uv.concat(glyph.uv);
+                                    text_vert.push([x, drawy, drawx1, drawy, drawx1, drawy1, x, drawy1]);
+                                    text_uv.push(glyph.uv);
 
                                     x += glyph.width;
                                     textCount++;
@@ -216,10 +274,10 @@ export class RUIDrawCallBuffer {
 
                 if (rectCount != 0) {
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBufferRect);
-                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rect_vert), gl.STATIC_DRAW);
+                    gl.bufferData(gl.ARRAY_BUFFER, rect_vert.buffer, gl.STATIC_DRAW);
 
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBufferRect);
-                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rect_color), gl.STATIC_DRAW);
+                    gl.bufferData(gl.ARRAY_BUFFER, rect_color.buffer, gl.STATIC_DRAW);
                 }
             }
 
@@ -227,10 +285,10 @@ export class RUIDrawCallBuffer {
             this.drawCountText = textCount;
             if (textCount != 0) {
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBufferText);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(text_vert), gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER, text_vert.buffer, gl.STATIC_DRAW);
 
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBufferText);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(text_uv), gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER, text_uv.buffer, gl.STATIC_DRAW);
             }
         }
 

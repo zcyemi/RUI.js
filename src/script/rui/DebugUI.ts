@@ -32,7 +32,7 @@ export class EditorUI extends UIObject{
     public onBuild(){
 
         this.visible = true;
-        this.color = RUIStyle.Default.background2;
+        this.color = RUIStyle.Default.background1;
 
         this.addChild(new UIInput('Name','TestName'));
         this.addChild(new UIInput('Id','1232'));

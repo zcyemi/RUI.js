@@ -428,7 +428,7 @@ define("rui/widget/UIInput", ["require", "exports", "rui/UIObject", "rui/RUIFont
                 cmd.DrawText(label, labelRect);
             }
             var fieldrect = [rect[0] + labelsize, rect[1] + 1, rect[2] - labelsize - 3, rect[3] - 2];
-            cmd.DrawRectWithColor(fieldrect, RUIStyle_2.RUIStyle.Default.background1);
+            cmd.DrawRectWithColor(fieldrect, RUIStyle_2.RUIStyle.Default.background0);
             var text = this.m_text;
             if (text != null && text != '') {
                 cmd.DrawText(text, fieldrect);
@@ -853,7 +853,7 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButto
         }
         EditorUI.prototype.onBuild = function () {
             this.visible = true;
-            this.color = RUIStyle_4.RUIStyle.Default.background2;
+            this.color = RUIStyle_4.RUIStyle.Default.background1;
             this.addChild(new UIInput_1.UIInput('Name', 'TestName'));
             this.addChild(new UIInput_1.UIInput('Id', '1232'));
             this.addChild(new UIButton_1.UIButton('Clear'));
@@ -1003,11 +1003,60 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
     Object.defineProperty(exports, "__esModule", { value: true });
     var COLOR_ERROR = [1, 0, 1, 1];
     var MAX_RECT_COUNT = 512;
+    var RUIArrayBuffer = /** @class */ (function () {
+        function RUIArrayBuffer(TCtor, size) {
+            if (size === void 0) { size = 512; }
+            this.pos = 0;
+            this.m_size = size;
+            this.m_tctor = TCtor;
+            this.buffer = new this.m_tctor(size);
+        }
+        RUIArrayBuffer.prototype.push = function (ary) {
+            var len = ary.length;
+            var newpos = this.pos + len;
+            this.checkExten(newpos);
+            this.buffer.set(ary, this.pos);
+            this.pos = newpos;
+        };
+        RUIArrayBuffer.prototype.checkExten = function (size) {
+            var cursize = this.m_size;
+            if (size >= cursize) {
+                var newbuffer = new this.m_tctor(cursize * 2);
+                newbuffer.set(this.buffer, 0);
+                this.buffer = newbuffer;
+                this.m_size = cursize * 2;
+            }
+        };
+        RUIArrayBuffer.prototype.resetPos = function () {
+            this.pos = 0;
+            return this;
+        };
+        return RUIArrayBuffer;
+    }());
+    var RUIArrayBufferF32 = /** @class */ (function (_super) {
+        __extends(RUIArrayBufferF32, _super);
+        function RUIArrayBufferF32() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return RUIArrayBufferF32;
+    }(RUIArrayBuffer));
+    var RUIArrayBufferUI16 = /** @class */ (function (_super) {
+        __extends(RUIArrayBufferUI16, _super);
+        function RUIArrayBufferUI16() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return RUIArrayBufferUI16;
+    }(RUIArrayBuffer));
     var RUIDrawCallBuffer = /** @class */ (function () {
         function RUIDrawCallBuffer(glctx, drawcall) {
             this.drawCountRect = 0;
             this.drawCountText = 0;
             this.isDirty = true;
+            this.m_indicesBufferArray = new RUIArrayBufferUI16(Uint16Array);
+            this.m_aryBufferRectColor = new RUIArrayBufferF32(Float32Array);
+            this.m_aryBufferRectPos = new RUIArrayBufferF32(Float32Array);
+            this.m_aryBufferTextPos = new RUIArrayBufferF32(Float32Array);
+            this.m_aryBufferTextUV = new RUIArrayBufferF32(Float32Array);
             var gl = glctx.gl;
             this.m_drawcall = drawcall;
             if (drawcall == null)
@@ -1019,13 +1068,13 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
             {
                 var ibuffer = gl.createBuffer();
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibuffer);
-                var idata = [];
+                var idata = this.m_indicesBufferArray;
                 var ic = 0;
                 for (var i = 0; i < MAX_RECT_COUNT; i++) {
-                    idata.push(ic, ic + 2, ic + 1, ic, ic + 3, ic + 2);
+                    idata.push([ic, ic + 2, ic + 1, ic, ic + 3, ic + 2]);
                     ic += 4;
                 }
-                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(idata), gl.STATIC_DRAW);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idata.buffer, gl.STATIC_DRAW);
                 this.indicesBuffer = ibuffer;
             }
             //Rect
@@ -1081,10 +1130,10 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                 return;
             }
             else {
-                var rect_vert = [];
-                var rect_color = [];
-                var text_vert = [];
-                var text_uv = [];
+                var rect_vert = this.m_aryBufferRectPos.resetPos();
+                var rect_color = this.m_aryBufferRectColor.resetPos();
+                var text_vert = this.m_aryBufferTextPos.resetPos();
+                var text_uv = this.m_aryBufferTextUV.resetPos();
                 var rectCount = 0;
                 var textCount = 0;
                 for (var i = 0, cmdlen = drawlist.length; i < cmdlen; i++) {
@@ -1100,15 +1149,16 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                                 var g = color[1];
                                 var b = color[2];
                                 var a = color[3];
-                                rect_color.push(r, g, b, a);
-                                rect_color.push(r, g, b, a);
-                                rect_color.push(r, g, b, a);
-                                rect_color.push(r, g, b, a);
+                                var c = [r, g, b, a];
+                                rect_color.push(c);
+                                rect_color.push(c);
+                                rect_color.push(c);
+                                rect_color.push(c);
                                 var x = rect[0];
                                 var y = rect[1];
                                 var w = rect[2];
                                 var h = rect[3];
-                                rect_vert.push(x, y, x + w, y, x + w, y + h, x, y + h);
+                                rect_vert.push([x, y, x + w, y, x + w, y + h, x, y + h]);
                                 rectCount++;
                             }
                             break;
@@ -1134,8 +1184,8 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                                         var drawy = y + glyph.offsetY;
                                         var drawy1 = drawy + glyph.height;
                                         var drawx1 = x + glyph.width;
-                                        text_vert.push(x, drawy, drawx1, drawy, drawx1, drawy1, x, drawy1);
-                                        text_uv = text_uv.concat(glyph.uv);
+                                        text_vert.push([x, drawy, drawx1, drawy, drawx1, drawy1, x, drawy1]);
+                                        text_uv.push(glyph.uv);
                                         x += glyph.width;
                                         textCount++;
                                     }
@@ -1149,18 +1199,18 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                     this.drawCountRect = rectCount;
                     if (rectCount != 0) {
                         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBufferRect);
-                        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rect_vert), gl.STATIC_DRAW);
+                        gl.bufferData(gl.ARRAY_BUFFER, rect_vert.buffer, gl.STATIC_DRAW);
                         gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBufferRect);
-                        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rect_color), gl.STATIC_DRAW);
+                        gl.bufferData(gl.ARRAY_BUFFER, rect_color.buffer, gl.STATIC_DRAW);
                     }
                 }
                 //Text{
                 this.drawCountText = textCount;
                 if (textCount != 0) {
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBufferText);
-                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(text_vert), gl.STATIC_DRAW);
+                    gl.bufferData(gl.ARRAY_BUFFER, text_vert.buffer, gl.STATIC_DRAW);
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBufferText);
-                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(text_uv), gl.STATIC_DRAW);
+                    gl.bufferData(gl.ARRAY_BUFFER, text_uv.buffer, gl.STATIC_DRAW);
                 }
             }
         };
@@ -1349,7 +1399,9 @@ define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "rui/DebugUI",
             var rootUI = this.m_rootUI;
             var renderer = this.m_renderer;
             if (rootUI.isDirty) {
+                var startTime = Date.now();
                 this.m_drawcall.Rebuild(rootUI, this.m_isResized);
+                console.log('rebuildui: ' + (Date.now() - startTime) + 'ms');
                 this.m_isResized = false;
             }
             this.OnRender();

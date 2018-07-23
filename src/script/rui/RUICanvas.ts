@@ -85,11 +85,15 @@ export class RUICanvas{
         let renderer = this.m_renderer;
 
         if(rootUI.isDirty){
+            let startTime = Date.now();
             this.m_drawcall.Rebuild(rootUI,this.m_isResized);
+            console.log('rebuildui: '+(Date.now() -startTime) +'ms');
             this.m_isResized = false;
         }
 
         this.OnRender();
+
+        
     }
 
     public OnRender(){

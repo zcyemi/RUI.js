@@ -50,7 +50,7 @@ export class UIInput extends UIObject {
 
         let fieldrect = [rect[0] + labelsize,rect[1] + 1,rect[2] - labelsize - 3,rect[3]-2];
 
-        cmd.DrawRectWithColor(fieldrect,RUIStyle.Default.background1);
+        cmd.DrawRectWithColor(fieldrect,RUIStyle.Default.background0);
         let text = this.m_text;
         if(text != null && text != ''){
             cmd.DrawText(text,fieldrect);
