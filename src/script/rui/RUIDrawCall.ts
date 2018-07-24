@@ -5,7 +5,9 @@ import { UIInput } from "./widget/UIInput";
 
 export enum DrawCmdType {
     rect,
-    text
+    text,
+    border,
+    line
 }
 
 export class DrawCmd {
@@ -33,6 +35,22 @@ export class DrawCmd {
         cmd.Rect = cliprect;
         cmd.Color = color;
         cmd.type = DrawCmdType.text;
+        return cmd;
+    }
+
+    public static CmdBorder(rect:number[],color:number[]):DrawCmd{
+        let cmd = new DrawCmd();
+        cmd.Rect = rect;
+        cmd.Color = color;
+        cmd.type = DrawCmdType.rect;
+        return cmd;
+    }
+
+    public static CmdLine(x1:number,y1:number,x2:number,y2:number,color:number[]){
+        let cmd= new DrawCmd();
+        cmd.Rect = [x1,y1,x2,y2];
+        cmd.Color = color;
+        cmd.type = DrawCmdType.line;
         return cmd;
     }
 
@@ -286,5 +304,13 @@ export class RUIDrawCall {
     public DrawText(text: string, clirect: number[], color?: number[]) {
         let cmd = DrawCmd.CmdText(text, clirect, color);
         this.drawList.push(cmd);
+    }
+
+    public DrawBorder(rect:number[],color:number[]){
+
+    }
+    
+    public DrawLine(x1:number,y1:number,x2:number,y2:number,color:number[]){
+
     }
 }

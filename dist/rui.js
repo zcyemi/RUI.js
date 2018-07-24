@@ -560,6 +560,8 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
     (function (DrawCmdType) {
         DrawCmdType[DrawCmdType["rect"] = 0] = "rect";
         DrawCmdType[DrawCmdType["text"] = 1] = "text";
+        DrawCmdType[DrawCmdType["border"] = 2] = "border";
+        DrawCmdType[DrawCmdType["line"] = 3] = "line";
     })(DrawCmdType = exports.DrawCmdType || (exports.DrawCmdType = {}));
     var DrawCmd = /** @class */ (function () {
         function DrawCmd(rect) {
@@ -579,6 +581,20 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
             cmd.Rect = cliprect;
             cmd.Color = color;
             cmd.type = DrawCmdType.text;
+            return cmd;
+        };
+        DrawCmd.CmdBorder = function (rect, color) {
+            var cmd = new DrawCmd();
+            cmd.Rect = rect;
+            cmd.Color = color;
+            cmd.type = DrawCmdType.rect;
+            return cmd;
+        };
+        DrawCmd.CmdLine = function (x1, y1, x2, y2, color) {
+            var cmd = new DrawCmd();
+            cmd.Rect = [x1, y1, x2, y2];
+            cmd.Color = color;
+            cmd.type = DrawCmdType.line;
             return cmd;
         };
         return DrawCmd;
@@ -790,6 +806,10 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
         RUIDrawCall.prototype.DrawText = function (text, clirect, color) {
             var cmd = DrawCmd.CmdText(text, clirect, color);
             this.drawList.push(cmd);
+        };
+        RUIDrawCall.prototype.DrawBorder = function (rect, color) {
+        };
+        RUIDrawCall.prototype.DrawLine = function (x1, y1, x2, y2, color) {
         };
         return RUIDrawCall;
     }());
@@ -1028,7 +1048,19 @@ define("gl/wglShaderLib", ["require", "exports"], function (require, exports) {
     exports.GLSL_FRAG_TEXT = '#version 300 es\nprecision lowp float;\n\nin vec4 vColor;\nin vec2 vUV;\n\nuniform sampler2D uSampler;\n\nout vec4 fragColor;\n\nvoid main(){\nfragColor = texture(uSampler,vUV);\n}';
     exports.GLSL_VERT_TEXT = '#version 300 es\nprecision mediump float;\nin vec2 aPosition;\nin vec4 aColor;\nin vec2 aUV;\nin vec4 aClip;\n\nuniform vec4 uProj;\nout vec4 vColor;\nout vec2 vUV;\n\nvoid main(){\nvec2 pos = aPosition * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,0,1);\nvColor = aColor;\nvUV =aUV;\n}';
 });
-define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wglShaderLib", "rui/RUIFontTexture"], function (require, exports, RUIDrawCall_1, wglShaderLib_1, RUIFontTexture_1) {
+define("rui/RUIColor", ["require", "exports", "rui/UIUtil"], function (require, exports, UIUtil_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUIColor = /** @class */ (function () {
+        function RUIColor() {
+        }
+        RUIColor.White = [1, 1, 1, 0];
+        RUIColor.Grey = UIUtil_2.UIUtil.ColorUNorm(200, 200, 200, 255);
+        return RUIColor;
+    }());
+    exports.RUIColor = RUIColor;
+});
+define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wglShaderLib", "rui/RUIFontTexture", "rui/RUIColor"], function (require, exports, RUIDrawCall_1, wglShaderLib_1, RUIFontTexture_1, RUIColor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var COLOR_ERROR = [1, 0, 1, 1];
@@ -1175,21 +1207,26 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                             {
                                 if (color == null)
                                     color = COLOR_ERROR;
-                                var r = color[0];
-                                var g = color[1];
-                                var b = color[2];
-                                var a = color[3];
-                                var c = [r, g, b, a];
-                                rect_color.push(c);
-                                rect_color.push(c);
-                                rect_color.push(c);
-                                rect_color.push(c);
+                                rect_color.push(color);
+                                rect_color.push(color);
+                                rect_color.push(color);
+                                rect_color.push(color);
                                 var x = rect[0];
                                 var y = rect[1];
                                 var w = rect[2];
                                 var h = rect[3];
                                 rect_vert.push([x, y, x + w, y, x + w, y + h, x, y + h]);
                                 rectCount++;
+                            }
+                            break;
+                        case RUIDrawCall_1.DrawCmdType.line:
+                            {
+                                if (color == null)
+                                    color = RUIColor_1.RUIColor.Grey;
+                            }
+                            break;
+                        case RUIDrawCall_1.DrawCmdType.border:
+                            {
                             }
                             break;
                         case RUIDrawCall_1.DrawCmdType.text:

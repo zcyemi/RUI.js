@@ -2,6 +2,7 @@ import { RUIDrawCall, DrawCmdType } from "./RUIDrawCall";
 import { GLProgram, GLContext } from "wglut";
 import { GLSL_VERT_DEF, GLSL_FRAG_COLOR, GLSL_VERT_TEXT, GLSL_FRAG_TEXT } from "../gl/wglShaderLib";
 import { RUIFontTexture } from "./RUIFontTexture";
+import { RUIColor } from "./RUIColor";
 
 
 const COLOR_ERROR: number[] = [1, 0, 1, 1];
@@ -9,53 +10,53 @@ const MAX_RECT_COUNT = 512;
 
 
 type TypedArray = ArrayLike<any> & {
-    set(array:ArrayLike<any>, offset?:number):void;
+    set(array: ArrayLike<any>, offset?: number): void;
 }
 
 type TypedArrayConstructor<T> = {
-    new () :T;
-    new (len:number) :T;
+    new(): T;
+    new(len: number): T;
 }
 
 class RUIArrayBuffer<T extends TypedArray>{
     public buffer: T;
-    private m_size:number;
-    public pos:number = 0;
+    private m_size: number;
+    public pos: number = 0;
 
-    private m_tctor: {new (s:number): T};
-    public constructor(TCtor:{new(s:number):T},size:number = 512){
-        this.m_size= size;
+    private m_tctor: { new(s: number): T };
+    public constructor(TCtor: { new(s: number): T }, size: number = 512) {
+        this.m_size = size;
         this.m_tctor = TCtor;
         this.buffer = new this.m_tctor(size);
     }
-    
-    public push(ary:number[]){
+
+    public push(ary: number[]) {
         let len = ary.length;
 
         let newpos = this.pos + len;
         this.checkExten(newpos);
-        this.buffer.set(ary,this.pos);
+        this.buffer.set(ary, this.pos);
         this.pos = newpos;
     }
 
-    public checkExten(size:number){
+    public checkExten(size: number) {
         let cursize = this.m_size;
-        if(size>= cursize){
-            let newbuffer = new this.m_tctor(cursize *2);
-            newbuffer.set(this.buffer,0);
+        if (size >= cursize) {
+            let newbuffer = new this.m_tctor(cursize * 2);
+            newbuffer.set(this.buffer, 0);
             this.buffer = newbuffer;
             this.m_size = cursize * 2;
         }
     }
 
-    public resetPos():RUIArrayBuffer<T>{
+    public resetPos(): RUIArrayBuffer<T> {
         this.pos = 0;
         return this;
     }
 }
 
-class RUIArrayBufferF32 extends RUIArrayBuffer<Float32Array>{}
-class RUIArrayBufferUI16 extends RUIArrayBuffer<Uint16Array>{}
+class RUIArrayBufferF32 extends RUIArrayBuffer<Float32Array>{ }
+class RUIArrayBufferUI16 extends RUIArrayBuffer<Uint16Array>{ }
 
 export class RUIDrawCallBuffer {
 
@@ -85,10 +86,10 @@ export class RUIDrawCallBuffer {
     public programRect: GLProgram;
     public programText: GLProgram;
 
-    private m_indicesBufferArray:RUIArrayBufferUI16 = new RUIArrayBufferUI16(Uint16Array);
+    private m_indicesBufferArray: RUIArrayBufferUI16 = new RUIArrayBufferUI16(Uint16Array);
 
-    private m_aryBufferRectColor :RUIArrayBufferF32 = new RUIArrayBufferF32(Float32Array);
-    private m_aryBufferRectPos : RUIArrayBufferF32 = new RUIArrayBufferF32(Float32Array);
+    private m_aryBufferRectColor: RUIArrayBufferF32 = new RUIArrayBufferF32(Float32Array);
+    private m_aryBufferRectPos: RUIArrayBufferF32 = new RUIArrayBufferF32(Float32Array);
 
     private m_aryBufferTextPos: RUIArrayBufferF32 = new RUIArrayBufferF32(Float32Array);
     private m_aryBufferTextUV: RUIArrayBufferF32 = new RUIArrayBufferF32(Float32Array);
@@ -108,7 +109,7 @@ export class RUIDrawCallBuffer {
         {
             let ibuffer = gl.createBuffer();
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibuffer);
-            let idata : RUIArrayBufferUI16 = this.m_indicesBufferArray;
+            let idata: RUIArrayBufferUI16 = this.m_indicesBufferArray;
 
             let ic = 0;
             for (var i = 0; i < MAX_RECT_COUNT; i++) {
@@ -197,7 +198,7 @@ export class RUIDrawCallBuffer {
             let rectCount = 0;
             let textCount = 0;
 
-            for (var i = 0,cmdlen = drawlist.length; i < cmdlen; i++) {
+            for (var i = 0, cmdlen = drawlist.length; i < cmdlen; i++) {
                 let cmd = drawlist[i];
                 let rect = cmd.Rect;
                 let color = cmd.Color;
@@ -206,16 +207,10 @@ export class RUIDrawCallBuffer {
                     case DrawCmdType.rect:
                         {
                             if (color == null) color = COLOR_ERROR;
-                            let r = color[0];
-                            let g = color[1];
-                            let b = color[2];
-                            let a = color[3];
-
-                            let c = [r,g,b,a];
-                            rect_color.push(c);
-                            rect_color.push(c);
-                            rect_color.push(c);
-                            rect_color.push(c);
+                            rect_color.push(color);
+                            rect_color.push(color);
+                            rect_color.push(color);
+                            rect_color.push(color);
 
                             let x = rect[0];
                             let y = rect[1];
@@ -223,6 +218,18 @@ export class RUIDrawCallBuffer {
                             let h = rect[3];
                             rect_vert.push([x, y, x + w, y, x + w, y + h, x, y + h]);
                             rectCount++;
+                        }
+                        break;
+                    case DrawCmdType.line:
+                        {
+                            if(color == null) color = RUIColor.Grey;
+                            
+
+                        }
+                        break;
+                    case DrawCmdType.border:
+                        {
+
                         }
                         break;
                     case DrawCmdType.text:
@@ -237,7 +244,7 @@ export class RUIDrawCallBuffer {
 
                             let contentW = fonttex.MeasureTextWith(content);
 
-                            x += Math.max(3,Math.floor((w - contentW)/2.0));
+                            x += Math.max(3, Math.floor((w - contentW) / 2.0));
                             y = y + h - (h - fonttex.fontSize);
 
                             for (var j = 0, len = content.length; j < len; j++) {
@@ -263,7 +270,6 @@ export class RUIDrawCallBuffer {
                             }
                         }
                         break;
-                        
                 }
 
             }
