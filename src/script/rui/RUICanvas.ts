@@ -1,7 +1,7 @@
 import { RUIDrawCall } from "./RUIDrawCall";
 import { UIObject } from "./UIObject"
 import { DebugUI } from "./DebugUI";
-import { RUIInput } from "./RUIInput";
+import { RUIInput, IInputUI } from "./RUIInput";
 import { RUIQTree } from "./RUIQTree";
 import { RUICursor } from "./RUICursor";
 import { RUIRenderer } from "./RUIRenderer";
@@ -19,6 +19,8 @@ export class RUICanvas{
     private m_cursor:RUICursor;
 
     private m_valid :boolean = false;
+
+    private m_activeUI:IInputUI = null;
     
 
     public m_width:number;
@@ -60,6 +62,9 @@ export class RUICanvas{
     public get cursor():RUICursor{
         return this.m_cursor;
     }
+    public get activeUI():IInputUI{
+        return this.m_activeUI;
+    }
 
     public setSize(w:number,h:number){
         if(this.m_width != w || this.m_height != h){
@@ -69,6 +74,15 @@ export class RUICanvas{
             this.m_isResized = true;
 
             if(this.m_rootUI != null) this.m_rootUI.isDirty = true;
+        }
+    }
+
+    public setActiveInputUI(ui:IInputUI){
+        this.m_activeUI = ui;
+    }
+    public setInActiveInputUI(ui:IInputUI){
+        if(this.m_activeUI == ui){
+            this.m_activeUI = null;
         }
     }
 

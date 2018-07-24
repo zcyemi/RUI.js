@@ -3,6 +3,18 @@ import { RUICanvas } from "./RUICanvas";
 import { RUIEvent, RUIMouseEvent, RUIEventEmitter } from "./RUIEventSys";
 
 
+export class IInputUI{
+
+    public onKeyPress(e:KeyboardEvent){
+
+    }
+
+    public onKeyDown(e:KeyboardEvent){
+
+    }
+}
+
+
 export class RUIInput{
 
     private m_target : RUICanvas;
@@ -11,6 +23,7 @@ export class RUIInput{
 
     public EvtMouseEnter: RUIEventEmitter;
     public EvtMouseLeave: RUIEventEmitter;
+
 
     public constructor(uicanvas:RUICanvas){
 
@@ -24,6 +37,9 @@ export class RUIInput{
     private RegisterEvent(){
         let c = this.m_target.canvas;
         let tar = this.m_target;
+
+        window.addEventListener('keypress',this.onKeyboardEvent.bind(this));
+        window.addEventListener('keydown',this.onKeyboardDown.bind(this));
 
         c.addEventListener('mousedown',(e)=>{
             let tar = this.m_target;
@@ -57,5 +73,29 @@ export class RUIInput{
         c.addEventListener('mouseleave',(e)=>{
             this.EvtMouseLeave.emit(new RUIEvent(this.m_target.rootui,RUIEvent.MOUSE_LEAVE,tar));
         });
+    }
+
+    private onKeyboardEvent(e:KeyboardEvent){
+        let activeUI = this.m_target.activeUI;
+        if(activeUI != null) activeUI.onKeyPress(e);
+    }
+    private onKeyboardDown(e:KeyboardEvent){
+        let activeUI = this.m_target.activeUI;
+        if(activeUI != null) activeUI.onKeyDown(e);
+    }
+
+    public static ProcessTextKeyPress(text:string,e:KeyboardEvent):string{
+        return text +e.key;
+    }
+
+    public static ProcessTextKeyDown(text:string,e:KeyboardEvent): string{
+        if(text == null || text.length == 0) return text;
+        if(e.key == 'Backspace'){
+            if(e.shiftKey){
+                return '';
+            }
+            text = text.slice(0,text.length-1);
+        }
+        return text;
     }
 }

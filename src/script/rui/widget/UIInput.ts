@@ -4,9 +4,11 @@ import { RUIFontTexture } from "../RUIFontTexture";
 import { RUIStyle } from "../RUIStyle";
 import { RUIEvent } from "../RUIEventSys";
 import { RUICursorType } from "../RUICursor";
+import { IInputUI, RUIInput } from "../RUIInput";
 
 
-export class UIInput extends UIObject {
+export class UIInput extends UIObject implements IInputUI {
+
 
     public m_text: string;
 
@@ -38,10 +40,22 @@ export class UIInput extends UIObject {
         this.m_isFocuesd= true;
         this.setColor();
         this.setDirty(true);
+        this._canvas.setActiveInputUI(this);
     }
     public onInactive(){
         this.m_isFocuesd= false;
         this.setColor();
+        this.setDirty(true);
+        this._canvas.setInActiveInputUI(this);
+    }
+
+    public onKeyPress(e:KeyboardEvent): void {
+        this.m_text = RUIInput.ProcessTextKeyPress(this.m_text,e);
+        this.setDirty(true);
+    }
+
+    public onKeyDown(e:KeyboardEvent):void{
+        this.m_text = RUIInput.ProcessTextKeyDown(this.m_text,e);
         this.setDirty(true);
     }
 
