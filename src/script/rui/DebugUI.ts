@@ -36,6 +36,7 @@ export class EditorUI extends UIObject{
 
         this.addChild(new UIInput('TestName'));
         this.addChild(new UIInput('1232'));
+        this.addChild(new UIInput('1232'));
         this.addChild(new UIButton('Clear'));
     }
 

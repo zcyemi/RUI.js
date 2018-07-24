@@ -78,6 +78,12 @@ export class UIInput extends UIObject {
             cmd.DrawText(text,rect);
         }
 
+        if(this.m_isFocuesd){
+            let offset = 1;
+            let borderR = [rect[0]+offset,rect[1]+offset,rect[2]-2 * offset,rect[3]-2* offset];
+            cmd.DrawBorder(borderR,RUIStyle.Default.primary);
+        }
+
         
     }
 }

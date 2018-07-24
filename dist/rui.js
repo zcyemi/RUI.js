@@ -548,6 +548,11 @@ define("rui/widget/UIInput", ["require", "exports", "rui/UIObject", "rui/RUIStyl
             if (text != null && text != '') {
                 cmd.DrawText(text, rect);
             }
+            if (this.m_isFocuesd) {
+                var offset = 1;
+                var borderR = [rect[0] + offset, rect[1] + offset, rect[2] - 2 * offset, rect[3] - 2 * offset];
+                cmd.DrawBorder(borderR, RUIStyle_2.RUIStyle.Default.primary);
+            }
         };
         return UIInput;
     }(UIObject_1.UIObject));
@@ -587,7 +592,7 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
             var cmd = new DrawCmd();
             cmd.Rect = rect;
             cmd.Color = color;
-            cmd.type = DrawCmdType.rect;
+            cmd.type = DrawCmdType.border;
             return cmd;
         };
         DrawCmd.CmdLine = function (x1, y1, x2, y2, color) {
@@ -808,6 +813,8 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
             this.drawList.push(cmd);
         };
         RUIDrawCall.prototype.DrawBorder = function (rect, color) {
+            var cmd = DrawCmd.CmdBorder(rect, color);
+            this.drawList.push(cmd);
         };
         RUIDrawCall.prototype.DrawLine = function (x1, y1, x2, y2, color) {
         };
@@ -908,6 +915,7 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButto
             this.visible = true;
             this.color = RUIStyle_4.RUIStyle.Default.background1;
             this.addChild(new UIInput_1.UIInput('TestName'));
+            this.addChild(new UIInput_1.UIInput('1232'));
             this.addChild(new UIInput_1.UIInput('1232'));
             this.addChild(new UIButton_1.UIButton('Clear'));
         };
@@ -1223,10 +1231,39 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                             {
                                 if (color == null)
                                     color = RUIColor_1.RUIColor.Grey;
+                                rect_color.push(color);
+                                rect_color.push(color);
+                                rect_color.push(color);
+                                rect_color.push(color);
+                                var x1 = rect[0];
+                                var y1 = rect[1];
+                                var x2 = rect[2];
+                                var y2 = rect[3];
+                                var dx = x2 - x1;
+                                var dy = y2 - y1;
+                                var len_1 = Math.sqrt(dx * dx + dy * dy) * 2;
+                                dx = dx / len_1;
+                                dy = dy / len_1;
+                                rect_vert.push([x1 + dx, y1 + dy, x2 + dx, y2 + dy, x2 - dx, y2 - dy, x1 - dx, y1 - dy]);
+                                rectCount++;
                             }
                             break;
                         case RUIDrawCall_1.DrawCmdType.border:
                             {
+                                if (color == null)
+                                    color = COLOR_ERROR;
+                                for (var n = 0; n < 16; n++) {
+                                    rect_color.push(color);
+                                }
+                                var x1 = rect[0];
+                                var y1 = rect[1];
+                                var x2 = x1 + rect[2];
+                                var y2 = y1 + rect[3];
+                                rect_vert.push([x1, y1, x2, y1, x2, y1 + 1, x1, y1 + 1]);
+                                rect_vert.push([x2 - 1, y1, x2, y1, x2, y2, x2 - 1, y2]);
+                                rect_vert.push([x1, y2 - 1, x2, y2 - 1, x2, y2, x1, y2]);
+                                rect_vert.push([x1, y1, x1 + 1, y1, x1 + 1, y2, x1, y2]);
+                                rectCount += 4;
                             }
                             break;
                         case RUIDrawCall_1.DrawCmdType.text:

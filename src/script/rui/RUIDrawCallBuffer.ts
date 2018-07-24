@@ -222,14 +222,48 @@ export class RUIDrawCallBuffer {
                         break;
                     case DrawCmdType.line:
                         {
-                            if(color == null) color = RUIColor.Grey;
-                            
+                            if (color == null) color = RUIColor.Grey;
 
+                            rect_color.push(color);
+                            rect_color.push(color);
+                            rect_color.push(color);
+                            rect_color.push(color);
+
+                            let x1 = rect[0];
+                            let y1 = rect[1];
+                            let x2 = rect[2];
+                            let y2 = rect[3];
+
+                            let dx = x2 - x1;
+                            let dy = y2 - y1;
+
+                            let len = Math.sqrt(dx * dx + dy * dy) * 2;
+
+                            dx = dx / len;
+                            dy = dy / len;
+
+                            rect_vert.push([x1 + dx, y1 + dy, x2 + dx, y2 + dy, x2 - dx, y2 - dy, x1 - dx, y1 - dy]);
+                            rectCount++;
                         }
                         break;
                     case DrawCmdType.border:
                         {
+                            if (color == null) color = COLOR_ERROR;
 
+                            for (let n = 0; n < 16; n++) {
+                                rect_color.push(color);
+                            }
+
+                            let x1 = rect[0];
+                            let y1 = rect[1];
+                            let x2 = x1 + rect[2];
+                            let y2 = y1 + rect[3];
+                            rect_vert.push([x1, y1, x2, y1, x2, y1 + 1, x1, y1 + 1]);
+                            rect_vert.push([x2 - 1, y1, x2, y1, x2, y2, x2 - 1, y2]);
+                            rect_vert.push([x1, y2 - 1, x2, y2 - 1, x2, y2, x1, y2]);
+                            rect_vert.push([x1, y1, x1 + 1, y1, x1 + 1, y2, x1, y2]);
+
+                            rectCount+=4;
                         }
                         break;
                     case DrawCmdType.text:

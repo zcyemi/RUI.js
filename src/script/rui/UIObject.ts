@@ -150,8 +150,7 @@ export class UIObject{
             this.parent.bubbleDirty();
         }
     }
-    
-    
+
     
 }
 

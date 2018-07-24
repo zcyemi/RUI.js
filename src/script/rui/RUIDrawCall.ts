@@ -42,7 +42,7 @@ export class DrawCmd {
         let cmd = new DrawCmd();
         cmd.Rect = rect;
         cmd.Color = color;
-        cmd.type = DrawCmdType.rect;
+        cmd.type = DrawCmdType.border;
         return cmd;
     }
 
@@ -307,7 +307,8 @@ export class RUIDrawCall {
     }
 
     public DrawBorder(rect:number[],color:number[]){
-
+        let cmd = DrawCmd.CmdBorder(rect,color);
+        this.drawList.push(cmd);
     }
     
     public DrawLine(x1:number,y1:number,x2:number,y2:number,color:number[]){
