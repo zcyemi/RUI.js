@@ -5,6 +5,7 @@ import {UIRect} from './widget/UIRect';
 import { UIUtil } from "./UIUtil";
 import { RUIStyle } from "./RUIStyle";
 import { UIInput } from "./widget/UIInput";
+import { UISlider } from "./widget/UISlider";
 
 
 export class HeaderUI extends UIObject{
@@ -38,6 +39,7 @@ export class EditorUI extends UIObject{
         this.addChild(new UIInput('1232'));
         this.addChild(new UIInput('1232'));
         this.addChild(new UIButton('Clear'));
+        this.addChild(new UISlider(0.5));
     }
 
     public onDraw(cmd:RUIDrawCall){

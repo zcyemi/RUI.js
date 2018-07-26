@@ -30,6 +30,8 @@ export class RUIEvent{
     public static readonly MOUSE_CLICK:string = "onMouseClick";
     public static readonly MOUSE_ENTER:string = "onMouseEnter";
     public static readonly MOUSE_LEAVE:string = "onMouseLeave";
+    public static readonly MOUSE_DRAG:string = "onMouseDrag";
+    public static readonly MOUSE_DROP:string = "onMouseDrop";
 }
 
 export class RUIMouseEvent extends RUIEvent{
@@ -41,6 +43,16 @@ export class RUIMouseEvent extends RUIEvent{
 
         this.mousex = x;
         this.mousey = y;
+    }
+}
+
+export class RUIMouseDragEvent extends RUIMouseEvent{
+
+    public isDragEnd:boolean = false;
+
+    public constructor(tar:UIObject,type:string,x:number,y:number,dragEnd:boolean,canvas?:RUICanvas){
+        super(tar,type,x,y,canvas);
+        this.isDragEnd= dragEnd;
     }
 }
 

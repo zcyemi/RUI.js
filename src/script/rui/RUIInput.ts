@@ -1,6 +1,6 @@
 import { UIObject } from "./UIObject";
 import { RUICanvas } from "./RUICanvas";
-import { RUIEvent, RUIMouseEvent, RUIEventEmitter } from "./RUIEventSys";
+import { RUIEvent, RUIMouseEvent, RUIEventEmitter, RUIMouseDragEvent } from "./RUIEventSys";
 
 
 export class IInputUI{
@@ -20,6 +20,7 @@ export class RUIInput{
     private m_target : RUICanvas;
 
     private m_activeMouseUI: UIObject = null;
+    private m_activeMouseUIDrag:boolean = false;
 
     public EvtMouseEnter: RUIEventEmitter;
     public EvtMouseLeave: RUIEventEmitter;
@@ -53,17 +54,32 @@ export class RUIInput{
                 newActiveUI.onActive();
                 this.m_activeMouseUI = newActiveUI;
             }
+
+            this.m_activeMouseUIDrag =false;
         });
         c.addEventListener('mouseup',(e)=>{
             let tar = this.m_target;
             let tarui = tar.qtree.DispatchEvtMouseEvent(e.offsetX,e.offsetY,RUIEvent.MOUSE_UP);
+
+            let activeUI = this.m_activeMouseUI;
             
             if(tarui && tarui == this.m_activeMouseUI){
-                tarui.onMouseClick(new RUIMouseEvent(tarui,RUIEvent.MOUSE_CLICK,e.offsetX,e.offsetY,tar));
+                tarui.onMouseClick(new RUIMouseDragEvent(tarui,RUIEvent.MOUSE_CLICK,e.offsetX,e.offsetY,true,tar));
             }
+
+            if(activeUI != null && this.m_activeMouseUIDrag){
+                activeUI.onMouseDrag(new RUIMouseDragEvent(activeUI,RUIEvent.MOUSE_DRAG,e.offsetX,e.offsetY,true,tar));
+            }
+            this.m_activeMouseUI = null;
         });
         c.addEventListener('mousemove',(e)=>{
             this.m_target.qtree.DispatchEvtMouseMove(e.offsetX,e.offsetY);
+
+            let activeUI = this.m_activeMouseUI;
+            if(activeUI != null){
+                activeUI.onMouseDrag(new RUIMouseDragEvent(activeUI,RUIEvent.MOUSE_DRAG,e.offsetX,e.offsetY,false,tar));
+                this.m_activeMouseUIDrag = true;
+            }
         })
 
         c.addEventListener('mouseenter',(e)=>{

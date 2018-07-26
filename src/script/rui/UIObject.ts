@@ -1,5 +1,5 @@
 import { UIUtil } from "./UIUtil";
-import { RUIMouseEvent, RUIEvent } from "./RUIEventSys";
+import { RUIMouseEvent, RUIEvent, RUIMouseDragEvent } from "./RUIEventSys";
 import { RUICanvas } from "./RUICanvas";
 import { RUIDrawCall } from "./RUIDrawCall";
 import { RUIStyle } from "./RUIStyle";
@@ -118,7 +118,13 @@ export class UIObject{
     public onMouseUp(e:RUIEvent){}
 
     public onMouseClick(e:RUIMouseEvent){
+
     }
+
+    public onMouseDrag(e:RUIMouseDragEvent){
+
+    } 
+
     public onActive(){}
     public onInactive(){}
 
