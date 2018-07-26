@@ -70,20 +70,21 @@ export class RUIDrawCall {
     public Rebuild(ui: UIObject, isResize: boolean = false) {
         this.drawList = [];
         this.RebuildNode(ui);
-        this.ExecNodes(ui, this.PostRebuild.bind(this));
+        this.ExecNodes(ui, this.PostRebuild.bind(this),this.PostRebuildFinal.bind(this));
 
         ui.isDirty = false;
         this.isDirty = true;
     }
 
-    private ExecNodes(uiobj: UIObject, f: (ui: UIObject) => void) {
-        f(uiobj);
+    private ExecNodes(uiobj: UIObject, fpre: (ui: UIObject) => void,fpost?:(UIObject)=>void) {
+        fpre(uiobj);
         let c = uiobj.children;
         let cc = c.length;
         for (let i = 0; i < cc; i++) {
             let cu = c[i];
-            this.ExecNodes(cu, f);
+            this.ExecNodes(cu, fpre,fpost);
         }
+        if(fpost) fpost(uiobj);
     }
 
     //Process all child ui and self rect
@@ -184,7 +185,8 @@ export class RUIDrawCall {
         this.fillFlexSize(ui);
 
         //checkfor root
-        if (ui.parent == null) {
+        let parent = ui.parent;
+        if (parent == null) {
             let canvas = ui._canvas;
             ui._width = canvas.m_width;
             ui._height = canvas.m_height;
@@ -196,13 +198,23 @@ export class RUIDrawCall {
             if(ui.height != null){
                 ui._height = ui.height;
             }
+            else if(parent.orientation == UIOrientation.Horizontal){
+                ui._height= parent.height;
+            }
             else{
+                console.error(ui);
                 throw new Error('flex proces error');
             }
         }
         if(ui._width == null){
-            if(ui.width != null){ui._width = ui.width;}
+            if(ui.width != null){
+                ui._width = ui.width;
+            }
+            else if(parent.orientation == UIOrientation.Vertical){
+                ui._width = parent._width;
+            }
             else{
+                console.error(ui);
                 throw new Error('flex proces error');
             }
         }
@@ -276,18 +288,14 @@ export class RUIDrawCall {
         }
 
         if (ui.visible) {
-
-            let onDraw = ui['onDraw'];
-            if (onDraw != null) {
-                ui['onDraw'](this);
-            }
-            else {
-                let rect = [ui._calculateX, ui._calculateY, ui._width, ui._height];
-                this.DrawRectWithColor(rect, ui.color);
-            }
-
+            ui.onDraw(this);
         }
+    }
 
+    private PostRebuildFinal(ui:UIObject){
+        if(ui.visible){
+            ui.onDrawLate(this);
+        }
     }
 
 

@@ -6,6 +6,8 @@ import { UIUtil } from "./UIUtil";
 import { RUIStyle } from "./RUIStyle";
 import { UIInput } from "./widget/UIInput";
 import { UISlider } from "./widget/UISlider";
+import { UIField, UIInputField, UISliderFiled } from "./widget/UIField";
+import { UILable } from "./widget/UILabel";
 
 
 export class HeaderUI extends UIObject{
@@ -37,16 +39,16 @@ export class EditorUI extends UIObject{
 
         this.addChild(new UIInput('TestName'));
         this.addChild(new UIInput('1232'));
-        this.addChild(new UIInput('1232'));
         this.addChild(new UIButton('Clear'));
         this.addChild(new UISlider(0.5));
+        this.addChild(new UIInputField("Hello"));
+        this.addChild(new UISliderFiled("Count",20,10,100));
     }
 
     public onDraw(cmd:RUIDrawCall){
         let rect = [this._calculateX,this._calculateY,this._width,this._height];
         cmd.DrawRectWithColor(rect,this.color);
     }
-
 
 }
 

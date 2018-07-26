@@ -132,6 +132,10 @@ export class UIObject{
         
     }
 
+    public onDrawLate(cmd:RUIDrawCall){
+        
+    }
+
     public rectContains(x:number,y:number):boolean{
         if(x < this._calculateX || x > this._calculateX +this._width) return false;
         if(y < this._calculateY || y > this._calculateY + this._height) return false;
