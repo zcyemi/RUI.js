@@ -36,6 +36,7 @@ export class UISlider extends UIObject{
     }
 
     public onMouseDrag(e:RUIMouseDragEvent){
+        
         let value = (e.mousex - this._calculateX) / this._width;
         this.m_value = this.clampValue(value);
         this.m_onDrag = !e.isDragEnd;
