@@ -6,8 +6,7 @@ import { RUIStyle } from "./RUIStyle";
 
 export enum UIDisplayMode{
     Default,
-    Flex,
-    Floating
+    Flex
 }
 
 export enum UIOrientation{
@@ -19,6 +18,12 @@ export enum UIAlign{
     Center,
     Left,
     Right
+}
+
+export enum UIPosition{
+    Default,
+    Relative,
+    Absolute,
 }
 
 
@@ -36,6 +41,13 @@ export class UIObject{
     public width?:number = null;
     public height?:number = null;
     public flex?:number;
+
+
+    public position:UIPosition = UIPosition.Default;
+    public floatLeft?:number;
+    public floatRight?:number;
+    public floatTop?:number;
+    public floatBottom?:number;
 
     public _width:number;
     public _height:number;

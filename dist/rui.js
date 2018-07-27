@@ -141,7 +141,6 @@ define("rui/UIObject", ["require", "exports", "rui/RUIStyle"], function (require
     (function (UIDisplayMode) {
         UIDisplayMode[UIDisplayMode["Default"] = 0] = "Default";
         UIDisplayMode[UIDisplayMode["Flex"] = 1] = "Flex";
-        UIDisplayMode[UIDisplayMode["Floating"] = 2] = "Floating";
     })(UIDisplayMode = exports.UIDisplayMode || (exports.UIDisplayMode = {}));
     var UIOrientation;
     (function (UIOrientation) {
@@ -154,6 +153,12 @@ define("rui/UIObject", ["require", "exports", "rui/RUIStyle"], function (require
         UIAlign[UIAlign["Left"] = 1] = "Left";
         UIAlign[UIAlign["Right"] = 2] = "Right";
     })(UIAlign = exports.UIAlign || (exports.UIAlign = {}));
+    var UIPosition;
+    (function (UIPosition) {
+        UIPosition[UIPosition["Default"] = 0] = "Default";
+        UIPosition[UIPosition["Relative"] = 1] = "Relative";
+        UIPosition[UIPosition["Absolute"] = 2] = "Absolute";
+    })(UIPosition = exports.UIPosition || (exports.UIPosition = {}));
     var UIObject = /** @class */ (function () {
         function UIObject() {
             this.parent = null;
@@ -165,6 +170,7 @@ define("rui/UIObject", ["require", "exports", "rui/RUIStyle"], function (require
             this.color = RUIStyle_1.RUIStyle.Default.background0;
             this.width = null;
             this.height = null;
+            this.position = UIPosition.Default;
             this.extra = {};
         }
         UIObject.prototype.onBuild = function () {
@@ -753,8 +759,13 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
             var childOffset = 0;
             var childMaxSecond = 0;
             var clen = children.length;
+            var floatingObject = [];
             for (var i = 0, len = clen; i < len; i++) {
                 var c = children[i];
+                if (c.position != UIObject_2.UIPosition.Default) {
+                    floatingObject.push(c);
+                    continue;
+                }
                 c._flexWidth = null;
                 c._flexHeight = null;
                 //TODO: set size for flex child
@@ -793,6 +804,51 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
                 if (ui._height == undefined) {
                     ui._height = pisVertical ? 23 : parent._height;
                 }
+            }
+            //floating object
+            for (var i = 0, len = floatingObject.length; i < len; i++) {
+                var fui = floatingObject[i];
+                this.RebuildFloatingUI(fui);
+            }
+        };
+        RUIDrawCall.prototype.RebuildFloatingUI = function (fui) {
+            console.log(fui);
+            var left = fui.floatLeft;
+            var right = fui.floatRight;
+            var top = fui.floatTop;
+            var bottom = fui.floatBottom;
+            var p = fui.parent;
+            var isAbsolute = fui.position == UIObject_2.UIPosition.Absolute;
+            var pwidth = p == null || isAbsolute ? fui._canvas.m_width : p._width;
+            var pheight = p == null || isAbsolute ? fui._canvas.m_height : p._height;
+            if (left != null && right != null) {
+                if (fui.width == null) {
+                    fui._width = (pwidth - left - right);
+                }
+            }
+            if (bottom != null && top != null) {
+                if (fui.height == null) {
+                    fui._height = (pheight - top - bottom);
+                }
+            }
+            this.RebuildNode(fui);
+            if (left != null) {
+                fui._offsetX = left;
+            }
+            else if (right != null) {
+                fui._offsetX = pwidth - right - fui._width;
+            }
+            else {
+                throw new Error("floating ui missing left/right property");
+            }
+            if (top != null) {
+                fui._offsetY = top;
+            }
+            else if (bottom != null) {
+                fui._offsetY = pheight - bottom - fui._height;
+            }
+            else {
+                throw new Error("floating ui missing top/bottom property");
             }
         };
         //Pre process rect
@@ -837,9 +893,14 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
             var clen = children.length;
             var flexCount = 0;
             var flexSize = 0;
+            var floatingObject = [];
             //calculate size
             for (var i = 0; i < clen; i++) {
                 var c = children[i];
+                if (c.position != UIObject_2.UIPosition.Default) {
+                    floatingObject.push(c);
+                    continue;
+                }
                 if (c.flex != null) {
                     flexCount += c.flex;
                 }
@@ -877,17 +938,35 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
                     childOffsetX += c._width;
                 }
             }
+            //floating object
+            for (var i = 0, len = floatingObject.length; i < len; i++) {
+                var fui = floatingObject[i];
+                this.RebuildFloatingUI(fui);
+            }
         };
         RUIDrawCall.prototype.PostRebuild = function (ui) {
             var p = ui.parent;
+            var absolute = ui.position == UIObject_2.UIPosition.Absolute;
             if (p == null) {
-                ui._calculateX = 0;
-                ui._calculateY = 0;
+                if (ui.position == UIObject_2.UIPosition.Default) {
+                    ui._calculateX = 0;
+                    ui._calculateY = 0;
+                }
+                else {
+                    ui._calculateX = ui._offsetX;
+                    ui._calculateY = ui._offsetY;
+                }
                 ui._level = 0;
             }
             else {
-                ui._calculateX = p._calculateX + ui._offsetX;
-                ui._calculateY = p._calculateY + ui._offsetY;
+                if (absolute) {
+                    ui._calculateX = ui._offsetX;
+                    ui._calculateY = ui._offsetY;
+                }
+                else {
+                    ui._calculateX = p._calculateX + ui._offsetX;
+                    ui._calculateY = p._calculateY + ui._offsetY;
+                }
                 ui._level = p._level + 1;
             }
             if (ui.visible) {
@@ -1223,7 +1302,19 @@ define("rui/widget/UIField", ["require", "exports", "rui/UIObject", "rui/RUIFont
     }(UIObject_8.UIObject));
     exports.UISliderFiled = UISliderFiled;
 });
-define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButton", "rui/widget/UIRect", "rui/RUIStyle", "rui/widget/UIField"], function (require, exports, UIObject_9, UIButton_1, UIRect_1, RUIStyle_6, UIField_1) {
+define("rui/RUIColor", ["require", "exports", "rui/UIUtil"], function (require, exports, UIUtil_3) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUIColor = /** @class */ (function () {
+        function RUIColor() {
+        }
+        RUIColor.White = [1, 1, 1, 0];
+        RUIColor.Grey = UIUtil_3.UIUtil.ColorUNorm(200, 200, 200, 255);
+        return RUIColor;
+    }());
+    exports.RUIColor = RUIColor;
+});
+define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButton", "rui/widget/UIRect", "rui/RUIStyle", "rui/widget/UIField", "rui/RUIColor"], function (require, exports, UIObject_9, UIButton_1, UIRect_1, RUIStyle_6, UIField_1, RUIColor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var HeaderUI = /** @class */ (function (_super) {
@@ -1257,6 +1348,7 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButto
             this.addChild(new UIButton_1.UIButton('Clear'));
             this.addChild(new UIField_1.UIInputField("Hello"));
             this.addChild(new UIField_1.UISliderFiled("Count", 20, 10, 100));
+            this.addChild(new FloatingUI());
             this.addChild(new UIField_1.UICheckboxField("Enable", true));
         };
         EditorUI.prototype.onDraw = function (cmd) {
@@ -1266,6 +1358,26 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButto
         return EditorUI;
     }(UIObject_9.UIObject));
     exports.EditorUI = EditorUI;
+    var FloatingUI = /** @class */ (function (_super) {
+        __extends(FloatingUI, _super);
+        function FloatingUI() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        FloatingUI.prototype.onBuild = function () {
+            this.visible = true;
+            this.position = UIObject_9.UIPosition.Absolute;
+            this.floatLeft = 500;
+            this.floatTop = 50;
+            this.width = 200;
+            this.height = 50;
+        };
+        FloatingUI.prototype.onDraw = function (cmd) {
+            var rect = [this._calculateX, this._calculateY, this._width, this._height];
+            cmd.DrawRectWithColor(rect, RUIColor_1.RUIColor.Grey);
+        };
+        return FloatingUI;
+    }(UIObject_9.UIObject));
+    exports.FloatingUI = FloatingUI;
     var DebugUI = /** @class */ (function (_super) {
         __extends(DebugUI, _super);
         function DebugUI() {
@@ -1396,19 +1508,7 @@ define("gl/wglShaderLib", ["require", "exports"], function (require, exports) {
     exports.GLSL_FRAG_TEXT = '#version 300 es\nprecision lowp float;\n\nin vec4 vColor;\nin vec2 vUV;\n\nuniform sampler2D uSampler;\n\nout vec4 fragColor;\n\nvoid main(){\nfragColor = texture(uSampler,vUV);\n}';
     exports.GLSL_VERT_TEXT = '#version 300 es\nprecision mediump float;\nin vec2 aPosition;\nin vec4 aColor;\nin vec2 aUV;\nin vec4 aClip;\n\nuniform vec4 uProj;\nout vec4 vColor;\nout vec2 vUV;\n\nvoid main(){\nvec2 pos = aPosition * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,0,1);\nvColor = aColor;\nvUV =aUV;\n}';
 });
-define("rui/RUIColor", ["require", "exports", "rui/UIUtil"], function (require, exports, UIUtil_3) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var RUIColor = /** @class */ (function () {
-        function RUIColor() {
-        }
-        RUIColor.White = [1, 1, 1, 0];
-        RUIColor.Grey = UIUtil_3.UIUtil.ColorUNorm(200, 200, 200, 255);
-        return RUIColor;
-    }());
-    exports.RUIColor = RUIColor;
-});
-define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wglShaderLib", "rui/RUIFontTexture", "rui/RUIColor"], function (require, exports, RUIDrawCall_1, wglShaderLib_1, RUIFontTexture_2, RUIColor_1) {
+define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wglShaderLib", "rui/RUIFontTexture", "rui/RUIColor"], function (require, exports, RUIDrawCall_1, wglShaderLib_1, RUIFontTexture_2, RUIColor_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var COLOR_ERROR = [1, 0, 1, 1];
@@ -1570,7 +1670,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                         case RUIDrawCall_1.DrawCmdType.line:
                             {
                                 if (color == null)
-                                    color = RUIColor_1.RUIColor.Grey;
+                                    color = RUIColor_2.RUIColor.Grey;
                                 rect_color.push(color);
                                 rect_color.push(color);
                                 rect_color.push(color);

@@ -1,4 +1,4 @@
-import { UIObject, UIOrientation, UIDisplayMode, UIDiv, UIAlign } from "./UIObject";
+import { UIObject, UIOrientation, UIDisplayMode, UIDiv, UIAlign, UIPosition } from "./UIObject";
 import { RUIDrawCall } from "./RUIDrawCall";
 import {UIButton} from './widget/UIButton';
 import {UIRect} from './widget/UIRect';
@@ -9,6 +9,7 @@ import { UISlider } from "./widget/UISlider";
 import { UIField, UIInputField, UISliderFiled, UICheckboxField } from "./widget/UIField";
 import { UILable } from "./widget/UILabel";
 import { UICheckbox } from "./widget/UICheckbox";
+import { RUIColor } from "./RUIColor";
 
 
 export class HeaderUI extends UIObject{
@@ -41,7 +42,10 @@ export class EditorUI extends UIObject{
         this.addChild(new UIButton('Clear'));
         this.addChild(new UIInputField("Hello"));
         this.addChild(new UISliderFiled("Count",20,10,100));
+        this.addChild(new FloatingUI());
         this.addChild(new UICheckboxField("Enable",true));
+
+        
     }
 
     public onDraw(cmd:RUIDrawCall){
@@ -51,6 +55,26 @@ export class EditorUI extends UIObject{
 
 }
 
+
+export class FloatingUI extends UIObject{
+
+    public onBuild(){
+        this.visible = true;
+
+        this.position = UIPosition.Absolute;
+        this.floatLeft = 500;
+        this.floatTop = 50;
+        this.width = 200;
+        this.height= 50;
+        
+    }
+
+    public onDraw(cmd:RUIDrawCall){
+        let rect = [this._calculateX,this._calculateY,this._width,this._height];
+
+        cmd.DrawRectWithColor(rect,RUIColor.Grey);
+    }
+}
 
 export class DebugUI extends UIObject{
 
