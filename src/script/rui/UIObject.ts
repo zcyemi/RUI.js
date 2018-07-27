@@ -15,6 +15,12 @@ export enum UIOrientation{
     Horizontal
 }
 
+export enum UIAlign{
+    Center,
+    Left,
+    Right
+}
+
 
 
 export class UIObject{

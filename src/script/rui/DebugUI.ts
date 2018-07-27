@@ -1,4 +1,4 @@
-import { UIObject, UIOrientation, UIDisplayMode, UIDiv } from "./UIObject";
+import { UIObject, UIOrientation, UIDisplayMode, UIDiv, UIAlign } from "./UIObject";
 import { RUIDrawCall } from "./RUIDrawCall";
 import {UIButton} from './widget/UIButton';
 import {UIRect} from './widget/UIRect';
@@ -6,8 +6,9 @@ import { UIUtil } from "./UIUtil";
 import { RUIStyle } from "./RUIStyle";
 import { UIInput } from "./widget/UIInput";
 import { UISlider } from "./widget/UISlider";
-import { UIField, UIInputField, UISliderFiled } from "./widget/UIField";
+import { UIField, UIInputField, UISliderFiled, UICheckboxField } from "./widget/UIField";
 import { UILable } from "./widget/UILabel";
+import { UICheckbox } from "./widget/UICheckbox";
 
 
 export class HeaderUI extends UIObject{
@@ -37,12 +38,10 @@ export class EditorUI extends UIObject{
         this.visible = true;
         this.color = RUIStyle.Default.background1;
 
-        this.addChild(new UIInput('TestName'));
-        this.addChild(new UIInput('1232'));
         this.addChild(new UIButton('Clear'));
-        this.addChild(new UISlider(0.5));
         this.addChild(new UIInputField("Hello"));
         this.addChild(new UISliderFiled("Count",20,10,100));
+        this.addChild(new UICheckboxField("Enable",true));
     }
 
     public onDraw(cmd:RUIDrawCall){

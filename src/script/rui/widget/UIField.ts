@@ -4,6 +4,7 @@ import { RUIFontTexture } from "../RUIFontTexture";
 import { UIInput } from "./UIInput";
 import { UILable } from "./UILabel";
 import { UISlider } from "./UISlider";
+import { UICheckbox } from "./UICheckbox";
 
 
 export abstract class UIField extends UIObject{
@@ -64,6 +65,29 @@ export class UIInputField extends UIObject{
 
         this.addChild(this.m_label);
         this.addChild(this.m_input);
+    }
+}
+
+export class UICheckboxField extends UIObject{
+    private m_label:UILable;
+    private m_checkbox:UICheckbox;
+
+    public constructor(label:string,checked:boolean){
+        super();
+        this.m_label = new UILable(label);
+        this.m_checkbox = new UICheckbox(checked);
+    }
+
+    public onBuild(){
+        this.height = 23;
+        this.displayMode = UIDisplayMode.Flex;
+        this.orientation = UIOrientation.Horizontal;
+
+        this.m_label.width = 100;
+        this.m_checkbox.flex = 1;
+
+        this.addChild(this.m_label);
+        this.addChild(this.m_checkbox);
     }
 }
 
