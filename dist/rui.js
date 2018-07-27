@@ -170,6 +170,7 @@ define("rui/UIObject", ["require", "exports", "rui/RUIStyle"], function (require
             this.color = RUIStyle_1.RUIStyle.Default.background0;
             this.width = null;
             this.height = null;
+            this.zorder = 0;
             this.position = UIPosition.Default;
             this.extra = {};
         }
@@ -667,6 +668,7 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
     var DrawCmd = /** @class */ (function () {
         function DrawCmd(rect) {
             this.Rect = [];
+            this.Index = 0;
             this.type = DrawCmdType.rect;
             this.Rect = rect;
         }
@@ -704,10 +706,22 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
     var RUIDrawCall = /** @class */ (function () {
         function RUIDrawCall() {
             this.drawList = [];
+            this.m_maxCount = 0;
+            this.m_curzorder = 0;
+            this.m_curCount = 0;
             this.isDirty = true;
         }
+        Object.defineProperty(RUIDrawCall.prototype, "MaxDrawCount", {
+            get: function () {
+                return this.m_maxCount;
+            },
+            enumerable: true,
+            configurable: true
+        });
         RUIDrawCall.prototype.Rebuild = function (ui, isResize) {
             if (isResize === void 0) { isResize = false; }
+            this.m_maxCount = 0;
+            this.m_curCount = 0;
             this.drawList = [];
             this.RebuildNode(ui);
             this.ExecNodes(ui, this.PostRebuild.bind(this), this.PostRebuildFinal.bind(this));
@@ -812,7 +826,6 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
             }
         };
         RUIDrawCall.prototype.RebuildFloatingUI = function (fui) {
-            console.log(fui);
             var left = fui.floatLeft;
             var right = fui.floatRight;
             var top = fui.floatTop;
@@ -970,32 +983,52 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
                 ui._level = p._level + 1;
             }
             if (ui.visible) {
+                this.m_curzorder = ui.zorder * RUIDrawCall.LEVEL_OFFSET;
                 ui.onDraw(this);
             }
         };
         RUIDrawCall.prototype.PostRebuildFinal = function (ui) {
             if (ui.visible) {
+                this.m_curzorder = ui.zorder * RUIDrawCall.LEVEL_OFFSET;
                 ui.onDrawLate(this);
             }
         };
         RUIDrawCall.prototype.DrawRect = function (x, y, w, h) {
-            this.drawList.push(new DrawCmd([x, y, w, h]));
+            var cmd = new DrawCmd([x, y, w, h]);
+            var index = this.m_curzorder + this.m_curCount;
+            this.m_curCount++;
+            this.m_maxCount = Math.max(this.m_maxCount, index);
+            cmd.Index = index;
+            this.drawList.push();
         };
         RUIDrawCall.prototype.DrawRectWithColor = function (pos, color) {
             var cmd = new DrawCmd(pos);
             cmd.Color = color;
+            var index = this.m_curzorder + this.m_curCount;
+            this.m_curCount++;
+            this.m_maxCount = Math.max(this.m_maxCount, index);
+            cmd.Index = index;
             this.drawList.push(cmd);
         };
         RUIDrawCall.prototype.DrawText = function (text, clirect, color) {
             var cmd = DrawCmd.CmdText(text, clirect, color);
+            var index = this.m_curzorder + this.m_curCount;
+            this.m_curCount++;
+            this.m_maxCount = Math.max(this.m_maxCount, index);
+            cmd.Index = index;
             this.drawList.push(cmd);
         };
         RUIDrawCall.prototype.DrawBorder = function (rect, color) {
             var cmd = DrawCmd.CmdBorder(rect, color);
+            var index = this.m_curzorder + this.m_curCount;
+            this.m_curCount++;
+            this.m_maxCount = Math.max(this.m_maxCount, index);
+            cmd.Index = index;
             this.drawList.push(cmd);
         };
         RUIDrawCall.prototype.DrawLine = function (x1, y1, x2, y2, color) {
         };
+        RUIDrawCall.LEVEL_OFFSET = 1000;
         return RUIDrawCall;
     }());
     exports.RUIDrawCall = RUIDrawCall;
@@ -1314,7 +1347,7 @@ define("rui/RUIColor", ["require", "exports", "rui/UIUtil"], function (require, 
     }());
     exports.RUIColor = RUIColor;
 });
-define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButton", "rui/widget/UIRect", "rui/RUIStyle", "rui/widget/UIField", "rui/RUIColor"], function (require, exports, UIObject_9, UIButton_1, UIRect_1, RUIStyle_6, UIField_1, RUIColor_1) {
+define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButton", "rui/RUIStyle", "rui/widget/UIField", "rui/RUIColor"], function (require, exports, UIObject_9, UIButton_1, RUIStyle_6, UIField_1, RUIColor_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var HeaderUI = /** @class */ (function (_super) {
@@ -1348,8 +1381,8 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButto
             this.addChild(new UIButton_1.UIButton('Clear'));
             this.addChild(new UIField_1.UIInputField("Hello"));
             this.addChild(new UIField_1.UISliderFiled("Count", 20, 10, 100));
-            this.addChild(new FloatingUI());
             this.addChild(new UIField_1.UICheckboxField("Enable", true));
+            this.addChild(new FloatingUI());
         };
         EditorUI.prototype.onDraw = function (cmd) {
             var rect = [this._calculateX, this._calculateY, this._width, this._height];
@@ -1365,11 +1398,12 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButto
         }
         FloatingUI.prototype.onBuild = function () {
             this.visible = true;
-            this.position = UIObject_9.UIPosition.Absolute;
-            this.floatLeft = 500;
+            this.position = UIObject_9.UIPosition.Relative;
+            this.floatRight = 20;
             this.floatTop = 50;
-            this.width = 200;
             this.height = 50;
+            this.width = 50;
+            this.zorder = 1;
         };
         FloatingUI.prototype.onDraw = function (cmd) {
             var rect = [this._calculateX, this._calculateY, this._width, this._height];
@@ -1399,7 +1433,7 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButto
             editorui.flex = 2;
             main.addChild(editorui);
             this.m_editor = editorui;
-            var x = new UIRect_1.UIRect();
+            var x = new UIObject_9.UIObject();
             x.flex = 3;
             main.addChild(x);
             // let btn1 = new UIButton();
@@ -1504,9 +1538,9 @@ define("gl/wglShaderLib", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.GLSL_FRAG_COLOR = 'precision lowp float;\n\nvarying vec4 vColor;\n\nvoid main(){\ngl_FragColor = vColor;\n}';
-    exports.GLSL_VERT_DEF = 'precision mediump float;\nattribute vec2 aPosition;\nattribute vec4 aColor;\n\nuniform vec4 uProj;\nvarying vec4 vColor;\n\nvoid main(){\nvec2 pos = aPosition * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,0,1);\nvColor = aColor;\n}';
+    exports.GLSL_VERT_DEF = 'precision mediump float;\nattribute vec3 aPosition;\nattribute vec4 aColor;\n\nuniform vec4 uProj;\nvarying vec4 vColor;\n\nvoid main(){\nvec2 pos = aPosition.xy * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,aPosition.z,1);\nvColor = aColor;\n}';
     exports.GLSL_FRAG_TEXT = '#version 300 es\nprecision lowp float;\n\nin vec4 vColor;\nin vec2 vUV;\n\nuniform sampler2D uSampler;\n\nout vec4 fragColor;\n\nvoid main(){\nfragColor = texture(uSampler,vUV);\n}';
-    exports.GLSL_VERT_TEXT = '#version 300 es\nprecision mediump float;\nin vec2 aPosition;\nin vec4 aColor;\nin vec2 aUV;\nin vec4 aClip;\n\nuniform vec4 uProj;\nout vec4 vColor;\nout vec2 vUV;\n\nvoid main(){\nvec2 pos = aPosition * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,0,1);\nvColor = aColor;\nvUV =aUV;\n}';
+    exports.GLSL_VERT_TEXT = '#version 300 es\nprecision mediump float;\nin vec3 aPosition;\nin vec4 aColor;\nin vec2 aUV;\nin vec4 aClip;\n\nuniform vec4 uProj;\nout vec4 vColor;\nout vec2 vUV;\n\nvoid main(){\nvec2 pos = aPosition.xy * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,aPosition.z,1);\nvColor = aColor;\nvUV =aUV;\n}';
 });
 define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wglShaderLib", "rui/RUIFontTexture", "rui/RUIColor"], function (require, exports, RUIDrawCall_1, wglShaderLib_1, RUIFontTexture_2, RUIColor_2) {
     "use strict";
@@ -1597,7 +1631,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                 var vbuffer = gl.createBuffer();
                 gl.bindBuffer(gl.ARRAY_BUFFER, vbuffer);
                 this.vertexBufferRect = vbuffer;
-                gl.vertexAttribPointer(program.aPosition, 2, gl.FLOAT, false, 0, 0);
+                gl.vertexAttribPointer(program.aPosition, 3, gl.FLOAT, false, 0, 0);
                 gl.enableVertexAttribArray(program.aPosition);
                 //color
                 var cbuffer = gl.createBuffer();
@@ -1619,7 +1653,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                 var vbuffer = gl.createBuffer();
                 gl.bindBuffer(gl.ARRAY_BUFFER, vbuffer);
                 this.vertexBufferText = vbuffer;
-                gl.vertexAttribPointer(program.aPosition, 2, gl.FLOAT, false, 0, 0);
+                gl.vertexAttribPointer(program.aPosition, 3, gl.FLOAT, false, 0, 0);
                 gl.enableVertexAttribArray(program.aPosition);
                 //UV
                 var uvbuffer = gl.createBuffer();
@@ -1640,6 +1674,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                 return;
             }
             else {
+                var drawDepthMax = drawcall.MaxDrawCount;
                 var rect_vert = this.m_aryBufferRectPos.resetPos();
                 var rect_color = this.m_aryBufferRectColor.resetPos();
                 var text_vert = this.m_aryBufferTextPos.resetPos();
@@ -1650,6 +1685,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                     var cmd = drawlist[i];
                     var rect = cmd.Rect;
                     var color = cmd.Color;
+                    var d = 1.0 - cmd.Index * 1.0 / drawDepthMax;
                     switch (cmd.type) {
                         case RUIDrawCall_1.DrawCmdType.rect:
                             {
@@ -1663,7 +1699,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                                 var y = rect[1];
                                 var w = rect[2];
                                 var h = rect[3];
-                                rect_vert.push([x, y, x + w, y, x + w, y + h, x, y + h]);
+                                rect_vert.push([x, y, d, x + w, y, d, x + w, y + h, d, x, y + h, d]);
                                 rectCount++;
                             }
                             break;
@@ -1684,7 +1720,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                                 var len_1 = Math.sqrt(dx * dx + dy * dy) * 2;
                                 dx = dx / len_1;
                                 dy = dy / len_1;
-                                rect_vert.push([x1 + dx, y1 + dy, x2 + dx, y2 + dy, x2 - dx, y2 - dy, x1 - dx, y1 - dy]);
+                                rect_vert.push([x1 + dx, y1 + dy, d, x2 + dx, y2 + dy, d, x2 - dx, y2 - dy, d, x1 - dx, y1 - dy, d]);
                                 rectCount++;
                             }
                             break;
@@ -1699,10 +1735,10 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                                 var y1 = rect[1];
                                 var x2 = x1 + rect[2];
                                 var y2 = y1 + rect[3];
-                                rect_vert.push([x1, y1, x2, y1, x2, y1 + 1, x1, y1 + 1]);
-                                rect_vert.push([x2 - 1, y1, x2, y1, x2, y2, x2 - 1, y2]);
-                                rect_vert.push([x1, y2 - 1, x2, y2 - 1, x2, y2, x1, y2]);
-                                rect_vert.push([x1, y1, x1 + 1, y1, x1 + 1, y2, x1, y2]);
+                                rect_vert.push([x1, y1, d, x2, y1, d, x2, y1 + 1, d, x1, y1 + 1, d]);
+                                rect_vert.push([x2 - 1, y1, d, x2, y1, d, x2, y2, d, x2 - 1, y2, d]);
+                                rect_vert.push([x1, y2 - 1, d, x2, y2 - 1, d, x2, y2, d, x1, y2, d]);
+                                rect_vert.push([x1, y1, d, x1 + 1, y1, d, x1 + 1, y2, d, x1, y2, d]);
                                 rectCount += 4;
                             }
                             break;
@@ -1728,7 +1764,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                                         var drawy = y + glyph.offsetY;
                                         var drawy1 = drawy + glyph.height;
                                         var drawx1 = x + glyph.width;
-                                        text_vert.push([x, drawy, drawx1, drawy, drawx1, drawy1, x, drawy1]);
+                                        text_vert.push([x, drawy, d, drawx1, drawy, d, drawx1, drawy1, d, x, drawy1, d]);
                                         text_uv.push(glyph.uv);
                                         x += glyph.width;
                                         textCount++;
@@ -1815,7 +1851,9 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
                 return;
             var glctx = this.glctx;
             //pipeline
-            gl.disable(gl.DEPTH_TEST);
+            gl.enable(gl.DEPTH_TEST);
+            gl.depthMask(true);
+            gl.depthFunc(gl.LEQUAL);
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
             var clearColor = RUIStyle_7.RUIStyle.Default.background0;

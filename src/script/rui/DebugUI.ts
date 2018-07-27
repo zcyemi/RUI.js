@@ -42,10 +42,8 @@ export class EditorUI extends UIObject{
         this.addChild(new UIButton('Clear'));
         this.addChild(new UIInputField("Hello"));
         this.addChild(new UISliderFiled("Count",20,10,100));
-        this.addChild(new FloatingUI());
         this.addChild(new UICheckboxField("Enable",true));
-
-        
+        this.addChild(new FloatingUI());
     }
 
     public onDraw(cmd:RUIDrawCall){
@@ -61,12 +59,12 @@ export class FloatingUI extends UIObject{
     public onBuild(){
         this.visible = true;
 
-        this.position = UIPosition.Absolute;
-        this.floatLeft = 500;
+        this.position = UIPosition.Relative;
+        this.floatRight = 20;
         this.floatTop = 50;
-        this.width = 200;
         this.height= 50;
-        
+        this.width = 50;
+        this.zorder = 1;
     }
 
     public onDraw(cmd:RUIDrawCall){
@@ -108,7 +106,7 @@ export class DebugUI extends UIObject{
 
         this.m_editor = editorui;
 
-        let x = new UIRect();
+        let x = new UIObject();
         x.flex = 3;
         main.addChild(x);
 

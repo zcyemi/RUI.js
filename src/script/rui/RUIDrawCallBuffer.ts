@@ -131,7 +131,7 @@ export class RUIDrawCallBuffer {
             let vbuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, vbuffer);
             this.vertexBufferRect = vbuffer;
-            gl.vertexAttribPointer(program.aPosition, 2, gl.FLOAT, false, 0, 0);
+            gl.vertexAttribPointer(program.aPosition, 3, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(program.aPosition);
 
             //color
@@ -158,7 +158,7 @@ export class RUIDrawCallBuffer {
             let vbuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, vbuffer);
             this.vertexBufferText = vbuffer;
-            gl.vertexAttribPointer(program.aPosition, 2, gl.FLOAT, false, 0, 0);
+            gl.vertexAttribPointer(program.aPosition, 3, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(program.aPosition);
 
             //UV
@@ -185,10 +185,13 @@ export class RUIDrawCallBuffer {
         let fonttex = RUIFontTexture.ASIICTexture;
 
 
+
         if (drawlist.length == 0) {
             return;
         }
         else {
+            let drawDepthMax = drawcall.MaxDrawCount;
+
             let rect_vert = this.m_aryBufferRectPos.resetPos();
             let rect_color = this.m_aryBufferRectColor.resetPos();
 
@@ -203,6 +206,8 @@ export class RUIDrawCallBuffer {
                 let rect = cmd.Rect;
                 let color = cmd.Color;
 
+                let d = 1.0 - cmd.Index * 1.0 / drawDepthMax;
+
                 switch (cmd.type) {
                     case DrawCmdType.rect:
                         {
@@ -216,7 +221,7 @@ export class RUIDrawCallBuffer {
                             let y = rect[1];
                             let w = rect[2];
                             let h = rect[3];
-                            rect_vert.push([x, y, x + w, y, x + w, y + h, x, y + h]);
+                            rect_vert.push([x, y, d, x + w, y, d, x + w, y + h, d, x, y + h, d]);
                             rectCount++;
                         }
                         break;
@@ -242,7 +247,7 @@ export class RUIDrawCallBuffer {
                             dx = dx / len;
                             dy = dy / len;
 
-                            rect_vert.push([x1 + dx, y1 + dy, x2 + dx, y2 + dy, x2 - dx, y2 - dy, x1 - dx, y1 - dy]);
+                            rect_vert.push([x1 + dx, y1 + dy, d, x2 + dx, y2 + dy, d, x2 - dx, y2 - dy, d, x1 - dx, y1 - dy, d]);
                             rectCount++;
                         }
                         break;
@@ -258,12 +263,12 @@ export class RUIDrawCallBuffer {
                             let y1 = rect[1];
                             let x2 = x1 + rect[2];
                             let y2 = y1 + rect[3];
-                            rect_vert.push([x1, y1, x2, y1, x2, y1 + 1, x1, y1 + 1]);
-                            rect_vert.push([x2 - 1, y1, x2, y1, x2, y2, x2 - 1, y2]);
-                            rect_vert.push([x1, y2 - 1, x2, y2 - 1, x2, y2, x1, y2]);
-                            rect_vert.push([x1, y1, x1 + 1, y1, x1 + 1, y2, x1, y2]);
+                            rect_vert.push([x1, y1, d, x2, y1, d, x2, y1 + 1, d, x1, y1 + 1, d]);
+                            rect_vert.push([x2 - 1, y1, d, x2, y1, d, x2, y2, d, x2 - 1, y2, d]);
+                            rect_vert.push([x1, y2 - 1, d, x2, y2 - 1, d, x2, y2, d, x1, y2, d]);
+                            rect_vert.push([x1, y1, d, x1 + 1, y1, d, x1 + 1, y2, d, x1, y2, d]);
 
-                            rectCount+=4;
+                            rectCount += 4;
                         }
                         break;
                     case DrawCmdType.text:
@@ -295,7 +300,7 @@ export class RUIDrawCallBuffer {
                                     let drawy1 = drawy + glyph.height;
                                     let drawx1 = x + glyph.width;
 
-                                    text_vert.push([x, drawy, drawx1, drawy, drawx1, drawy1, x, drawy1]);
+                                    text_vert.push([x, drawy,d, drawx1, drawy,d, drawx1, drawy1,d, x, drawy1,d]);
                                     text_uv.push(glyph.uv);
 
                                     x += glyph.width;

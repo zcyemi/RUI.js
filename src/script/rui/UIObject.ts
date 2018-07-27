@@ -42,6 +42,8 @@ export class UIObject{
     public height?:number = null;
     public flex?:number;
 
+    public zorder:number = 0;
+
 
     public position:UIPosition = UIPosition.Default;
     public floatLeft?:number;

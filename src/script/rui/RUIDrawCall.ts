@@ -16,8 +16,11 @@ export class DrawCmd {
     public Color: number[];
     public Text: string;
 
+    public Index:number = 0;
+
     public type: DrawCmdType = DrawCmdType.rect;
 
+    
     public constructor(rect?: number[]) {
         this.Rect = rect;
     }
@@ -60,6 +63,11 @@ export class RUIDrawCall {
 
 
     public drawList: DrawCmd[] = [];
+    
+    private m_maxCount: number =0 ;
+    private m_curzorder:number =0 ;
+    private m_curCount:number = 0;
+    public static readonly LEVEL_OFFSET:number = 1000;
 
     public isDirty: boolean = true;
 
@@ -67,13 +75,22 @@ export class RUIDrawCall {
 
     }
 
+    public get MaxDrawCount():number{
+        return this.m_maxCount;
+    }
+
+
     public Rebuild(ui: UIObject, isResize: boolean = false) {
+
+        this.m_maxCount = 0;
+        this.m_curCount = 0;
         this.drawList = [];
         this.RebuildNode(ui);
         this.ExecNodes(ui, this.PostRebuild.bind(this), this.PostRebuildFinal.bind(this));
 
         ui.isDirty = false;
         this.isDirty = true;
+
     }
 
     private ExecNodes(uiobj: UIObject, fpre: (ui: UIObject) => void, fpost?: (UIObject) => void) {
@@ -195,8 +212,6 @@ export class RUIDrawCall {
     }
 
     private RebuildFloatingUI(fui: UIObject) {
-
-        console.log(fui);
 
         let left = fui.floatLeft;
         let right = fui.floatRight;
@@ -388,34 +403,62 @@ export class RUIDrawCall {
         }
 
         if (ui.visible) {
+            this.m_curzorder = ui.zorder * RUIDrawCall.LEVEL_OFFSET;
             ui.onDraw(this);
         }
     }
 
     private PostRebuildFinal(ui: UIObject) {
         if (ui.visible) {
+            this.m_curzorder = ui.zorder * RUIDrawCall.LEVEL_OFFSET;
             ui.onDrawLate(this);
         }
     }
+    
 
 
     public DrawRect(x: number, y: number, w: number, h: number) {
-        this.drawList.push(new DrawCmd([x, y, w, h]));
+        let cmd = new DrawCmd([x, y, w, h]);
+
+        let index = this.m_curzorder + this.m_curCount;
+        this.m_curCount ++;
+        this.m_maxCount = Math.max(this.m_maxCount,index);
+        cmd.Index = index;
+
+        this.drawList.push();
     }
 
     public DrawRectWithColor(pos: number[], color: number[]) {
         let cmd = new DrawCmd(pos);
         cmd.Color = color;
+        
+        let index =this.m_curzorder+ this.m_curCount;
+        this.m_curCount ++;
+        this.m_maxCount = Math.max(this.m_maxCount,index);
+        cmd.Index = index;
+
         this.drawList.push(cmd);
     }
 
     public DrawText(text: string, clirect: number[], color?: number[]) {
         let cmd = DrawCmd.CmdText(text, clirect, color);
+
+        let index = this.m_curzorder+ this.m_curCount;
+        this.m_curCount ++;
+        this.m_maxCount = Math.max(this.m_maxCount,index);
+        cmd.Index = index;
+
         this.drawList.push(cmd);
     }
 
     public DrawBorder(rect: number[], color: number[]) {
         let cmd = DrawCmd.CmdBorder(rect, color);
+        
+        let index = this.m_curzorder + this.m_curCount;
+        this.m_curCount ++;
+        this.m_maxCount = Math.max(this.m_maxCount,index);
+        cmd.Index = index;
+
         this.drawList.push(cmd);
     }
 
