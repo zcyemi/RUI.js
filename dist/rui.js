@@ -32,6 +32,123 @@ define("rui/UIUtil", ["require", "exports"], function (require, exports) {
     }());
     exports.UIUtil = UIUtil;
 });
+define("rui/RUIInput", ["require", "exports", "rui/RUIEventSys"], function (require, exports, RUIEventSys_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var IInputUI = /** @class */ (function () {
+        function IInputUI() {
+        }
+        IInputUI.prototype.onKeyPress = function (e) {
+        };
+        IInputUI.prototype.onKeyDown = function (e) {
+        };
+        return IInputUI;
+    }());
+    exports.IInputUI = IInputUI;
+    var RUIButton;
+    (function (RUIButton) {
+        RUIButton[RUIButton["Left"] = 0] = "Left";
+        RUIButton[RUIButton["Middle"] = 1] = "Middle";
+        RUIButton[RUIButton["Right"] = 2] = "Right";
+    })(RUIButton = exports.RUIButton || (exports.RUIButton = {}));
+    var RUIInput = /** @class */ (function () {
+        function RUIInput(uicanvas) {
+            this.m_activeMouseUI = null;
+            this.m_activeMouseUIDrag = false;
+            this.m_onMouseDown = false;
+            this.m_target = uicanvas;
+            this.EvtMouseEnter = new RUIEventSys_1.RUIEventEmitter();
+            this.EvtMouseLeave = new RUIEventSys_1.RUIEventEmitter();
+            this.RegisterEvent();
+        }
+        RUIInput.prototype.setActiveUI = function (ui) {
+            var curActiveUI = this.m_activeMouseUI;
+            if (ui == curActiveUI)
+                return;
+            if (curActiveUI != null) {
+                curActiveUI.onInactive();
+            }
+            ui.onActive();
+            this.m_activeMouseUI = ui;
+        };
+        RUIInput.prototype.RegisterEvent = function () {
+            var _this = this;
+            var c = this.m_target.canvas;
+            var tar = this.m_target;
+            window.addEventListener('keypress', this.onKeyboardEvent.bind(this));
+            window.addEventListener('keydown', this.onKeyboardDown.bind(this));
+            c.addEventListener('mousedown', function (e) {
+                _this.m_onMouseDown = true;
+                var tar = _this.m_target;
+                var newActiveUI = tar.qtree.DispatchEvtMouseEvent(e, RUIEventSys_1.RUIEvent.MOUSE_DOWN);
+                var curActiveUI = _this.m_activeMouseUI;
+                if (curActiveUI == newActiveUI)
+                    return;
+                if (curActiveUI != null)
+                    curActiveUI.onInactive();
+                if (newActiveUI != null) {
+                    newActiveUI.onActive();
+                    _this.m_activeMouseUI = newActiveUI;
+                }
+                _this.m_activeMouseUIDrag = false;
+            });
+            c.addEventListener('mouseup', function (e) {
+                var tar = _this.m_target;
+                var tarui = tar.qtree.DispatchEvtMouseEvent(e, RUIEventSys_1.RUIEvent.MOUSE_UP);
+                var activeUI = _this.m_activeMouseUI;
+                if (tarui && tarui == _this.m_activeMouseUI) {
+                    var eventClick = new RUIEventSys_1.RUIMouseEvent(tarui, RUIEventSys_1.RUIEvent.MOUSE_CLICK, e.offsetX, e.offsetY, tarui._canvas);
+                    eventClick.button = e.button;
+                    tarui.onMouseClick(eventClick);
+                }
+                if (activeUI != null && _this.m_activeMouseUIDrag) {
+                    activeUI.onMouseDrag(new RUIEventSys_1.RUIMouseDragEvent(activeUI, RUIEventSys_1.RUIEvent.MOUSE_DRAG, e.offsetX, e.offsetY, true, tar));
+                }
+                _this.m_onMouseDown = false;
+            });
+            c.addEventListener('mousemove', function (e) {
+                _this.m_target.qtree.DispatchEvtMouseMove(e.offsetX, e.offsetY);
+                var activeUI = _this.m_activeMouseUI;
+                if (_this.m_onMouseDown && activeUI != null) {
+                    activeUI.onMouseDrag(new RUIEventSys_1.RUIMouseDragEvent(activeUI, RUIEventSys_1.RUIEvent.MOUSE_DRAG, e.offsetX, e.offsetY, false, tar));
+                    _this.m_activeMouseUIDrag = true;
+                }
+            });
+            c.addEventListener('mouseenter', function (e) {
+                _this.EvtMouseEnter.emit(new RUIEventSys_1.RUIEvent(_this.m_target.rootui, RUIEventSys_1.RUIEvent.MOUSE_ENTER, tar));
+            });
+            c.addEventListener('mouseleave', function (e) {
+                _this.EvtMouseLeave.emit(new RUIEventSys_1.RUIEvent(_this.m_target.rootui, RUIEventSys_1.RUIEvent.MOUSE_LEAVE, tar));
+            });
+        };
+        RUIInput.prototype.onKeyboardEvent = function (e) {
+            var activeUI = this.m_target.activeUI;
+            if (activeUI != null)
+                activeUI.onKeyPress(e);
+        };
+        RUIInput.prototype.onKeyboardDown = function (e) {
+            var activeUI = this.m_target.activeUI;
+            if (activeUI != null)
+                activeUI.onKeyDown(e);
+        };
+        RUIInput.ProcessTextKeyPress = function (text, e) {
+            return text + e.key;
+        };
+        RUIInput.ProcessTextKeyDown = function (text, e) {
+            if (text == null || text.length == 0)
+                return text;
+            if (e.key == 'Backspace') {
+                if (e.shiftKey) {
+                    return '';
+                }
+                text = text.slice(0, text.length - 1);
+            }
+            return text;
+        };
+        return RUIInput;
+    }());
+    exports.RUIInput = RUIInput;
+});
 define("rui/RUIEventSys", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -141,6 +258,7 @@ define("rui/UIObject", ["require", "exports", "rui/RUIStyle"], function (require
     (function (UIDisplayMode) {
         UIDisplayMode[UIDisplayMode["Default"] = 0] = "Default";
         UIDisplayMode[UIDisplayMode["Flex"] = 1] = "Flex";
+        UIDisplayMode[UIDisplayMode["None"] = 2] = "None";
     })(UIDisplayMode = exports.UIDisplayMode || (exports.UIDisplayMode = {}));
     var UIOrientation;
     (function (UIOrientation) {
@@ -164,7 +282,7 @@ define("rui/UIObject", ["require", "exports", "rui/RUIStyle"], function (require
             this.parent = null;
             this.children = [];
             this.isDirty = true;
-            this.visible = false;
+            this.visibleSelf = false;
             this.displayMode = UIDisplayMode.Default;
             this.orientation = UIOrientation.Vertical;
             this.color = RUIStyle_1.RUIStyle.Default.background0;
@@ -426,105 +544,6 @@ define("rui/RUIFontTexture", ["require", "exports", "opentype.js"], function (re
     }());
     exports.RUIFontTexture = RUIFontTexture;
 });
-define("rui/RUIInput", ["require", "exports", "rui/RUIEventSys"], function (require, exports, RUIEventSys_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var IInputUI = /** @class */ (function () {
-        function IInputUI() {
-        }
-        IInputUI.prototype.onKeyPress = function (e) {
-        };
-        IInputUI.prototype.onKeyDown = function (e) {
-        };
-        return IInputUI;
-    }());
-    exports.IInputUI = IInputUI;
-    var RUIInput = /** @class */ (function () {
-        function RUIInput(uicanvas) {
-            this.m_activeMouseUI = null;
-            this.m_activeMouseUIDrag = false;
-            this.m_onMouseDown = false;
-            this.m_target = uicanvas;
-            this.EvtMouseEnter = new RUIEventSys_1.RUIEventEmitter();
-            this.EvtMouseLeave = new RUIEventSys_1.RUIEventEmitter();
-            this.RegisterEvent();
-        }
-        RUIInput.prototype.RegisterEvent = function () {
-            var _this = this;
-            var c = this.m_target.canvas;
-            var tar = this.m_target;
-            window.addEventListener('keypress', this.onKeyboardEvent.bind(this));
-            window.addEventListener('keydown', this.onKeyboardDown.bind(this));
-            c.addEventListener('mousedown', function (e) {
-                _this.m_onMouseDown = true;
-                var tar = _this.m_target;
-                var newActiveUI = tar.qtree.DispatchEvtMouseEvent(e.offsetX, e.offsetY, RUIEventSys_1.RUIEvent.MOUSE_DOWN);
-                var curActiveUI = _this.m_activeMouseUI;
-                if (curActiveUI == newActiveUI)
-                    return;
-                if (curActiveUI != null)
-                    curActiveUI.onInactive();
-                if (newActiveUI != null) {
-                    newActiveUI.onActive();
-                    _this.m_activeMouseUI = newActiveUI;
-                }
-                _this.m_activeMouseUIDrag = false;
-            });
-            c.addEventListener('mouseup', function (e) {
-                var tar = _this.m_target;
-                var tarui = tar.qtree.DispatchEvtMouseEvent(e.offsetX, e.offsetY, RUIEventSys_1.RUIEvent.MOUSE_UP);
-                var activeUI = _this.m_activeMouseUI;
-                if (tarui && tarui == _this.m_activeMouseUI) {
-                    tarui.onMouseClick(new RUIEventSys_1.RUIMouseDragEvent(tarui, RUIEventSys_1.RUIEvent.MOUSE_CLICK, e.offsetX, e.offsetY, true, tar));
-                }
-                if (activeUI != null && _this.m_activeMouseUIDrag) {
-                    activeUI.onMouseDrag(new RUIEventSys_1.RUIMouseDragEvent(activeUI, RUIEventSys_1.RUIEvent.MOUSE_DRAG, e.offsetX, e.offsetY, true, tar));
-                }
-                _this.m_onMouseDown = false;
-            });
-            c.addEventListener('mousemove', function (e) {
-                _this.m_target.qtree.DispatchEvtMouseMove(e.offsetX, e.offsetY);
-                var activeUI = _this.m_activeMouseUI;
-                if (_this.m_onMouseDown && activeUI != null) {
-                    activeUI.onMouseDrag(new RUIEventSys_1.RUIMouseDragEvent(activeUI, RUIEventSys_1.RUIEvent.MOUSE_DRAG, e.offsetX, e.offsetY, false, tar));
-                    _this.m_activeMouseUIDrag = true;
-                }
-            });
-            c.addEventListener('mouseenter', function (e) {
-                _this.EvtMouseEnter.emit(new RUIEventSys_1.RUIEvent(_this.m_target.rootui, RUIEventSys_1.RUIEvent.MOUSE_ENTER, tar));
-            });
-            c.addEventListener('mouseleave', function (e) {
-                _this.EvtMouseLeave.emit(new RUIEventSys_1.RUIEvent(_this.m_target.rootui, RUIEventSys_1.RUIEvent.MOUSE_LEAVE, tar));
-            });
-        };
-        RUIInput.prototype.onKeyboardEvent = function (e) {
-            var activeUI = this.m_target.activeUI;
-            if (activeUI != null)
-                activeUI.onKeyPress(e);
-        };
-        RUIInput.prototype.onKeyboardDown = function (e) {
-            var activeUI = this.m_target.activeUI;
-            if (activeUI != null)
-                activeUI.onKeyDown(e);
-        };
-        RUIInput.ProcessTextKeyPress = function (text, e) {
-            return text + e.key;
-        };
-        RUIInput.ProcessTextKeyDown = function (text, e) {
-            if (text == null || text.length == 0)
-                return text;
-            if (e.key == 'Backspace') {
-                if (e.shiftKey) {
-                    return '';
-                }
-                text = text.slice(0, text.length - 1);
-            }
-            return text;
-        };
-        return RUIInput;
-    }());
-    exports.RUIInput = RUIInput;
-});
 define("rui/RUICursor", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -595,7 +614,7 @@ define("rui/widget/UIInput", ["require", "exports", "rui/UIObject", "rui/RUIStyl
             configurable: true
         });
         UIInput.prototype.onBuild = function () {
-            this.visible = true;
+            this.visibleSelf = true;
         };
         UIInput.prototype.onActive = function () {
             this.m_isFocuesd = true;
@@ -724,7 +743,7 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
             this.m_curCount = 0;
             this.drawList = [];
             this.RebuildNode(ui);
-            this.ExecNodes(ui, this.PostRebuild.bind(this), this.PostRebuildFinal.bind(this));
+            this.ExecNodesDisplay(ui, this.PostRebuild.bind(this), this.PostRebuildFinal.bind(this));
             ui.isDirty = false;
             this.isDirty = true;
         };
@@ -735,6 +754,20 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
             for (var i = 0; i < cc; i++) {
                 var cu = c[i];
                 this.ExecNodes(cu, fpre, fpost);
+            }
+            if (fpost)
+                fpost(uiobj);
+        };
+        RUIDrawCall.prototype.ExecNodesDisplay = function (uiobj, fpre, fpost) {
+            if (uiobj.displayMode == UIObject_2.UIDisplayMode.None) {
+                return;
+            }
+            fpre(uiobj);
+            var c = uiobj.children;
+            var cc = c.length;
+            for (var i = 0; i < cc; i++) {
+                var cu = c[i];
+                this.ExecNodesDisplay(cu, fpre, fpost);
             }
             if (fpost)
                 fpost(uiobj);
@@ -776,6 +809,8 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
             var floatingObject = [];
             for (var i = 0, len = clen; i < len; i++) {
                 var c = children[i];
+                if (c.displayMode == UIObject_2.UIDisplayMode.None)
+                    continue;
                 if (c.position != UIObject_2.UIPosition.Default) {
                     floatingObject.push(c);
                     continue;
@@ -910,6 +945,8 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
             //calculate size
             for (var i = 0; i < clen; i++) {
                 var c = children[i];
+                if (c.displayMode == UIObject_2.UIDisplayMode.None)
+                    continue;
                 if (c.position != UIObject_2.UIPosition.Default) {
                     floatingObject.push(c);
                     continue;
@@ -982,53 +1019,52 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
                 }
                 ui._level = p._level + 1;
             }
-            if (ui.visible) {
+            if (ui.visibleSelf) {
                 this.m_curzorder = ui.zorder * RUIDrawCall.LEVEL_OFFSET;
                 ui.onDraw(this);
             }
         };
         RUIDrawCall.prototype.PostRebuildFinal = function (ui) {
-            if (ui.visible) {
+            if (ui.visibleSelf) {
                 this.m_curzorder = ui.zorder * RUIDrawCall.LEVEL_OFFSET;
-                ui.onDrawLate(this);
+                //ui.onDrawLate(this);
             }
         };
         RUIDrawCall.prototype.DrawRect = function (x, y, w, h) {
             var cmd = new DrawCmd([x, y, w, h]);
-            var index = this.m_curzorder + this.m_curCount;
-            this.m_curCount++;
-            this.m_maxCount = Math.max(this.m_maxCount, index);
-            cmd.Index = index;
+            cmd.Index = this.CalculateZOrder();
             this.drawList.push();
         };
         RUIDrawCall.prototype.DrawRectWithColor = function (pos, color) {
             var cmd = new DrawCmd(pos);
             cmd.Color = color;
-            var index = this.m_curzorder + this.m_curCount;
-            this.m_curCount++;
-            this.m_maxCount = Math.max(this.m_maxCount, index);
-            cmd.Index = index;
+            cmd.Index = this.CalculateZOrder();
             this.drawList.push(cmd);
         };
         RUIDrawCall.prototype.DrawText = function (text, clirect, color) {
             var cmd = DrawCmd.CmdText(text, clirect, color);
-            var index = this.m_curzorder + this.m_curCount;
-            this.m_curCount++;
-            this.m_maxCount = Math.max(this.m_maxCount, index);
-            cmd.Index = index;
+            cmd.Index = this.CalculateZOrder();
             this.drawList.push(cmd);
         };
         RUIDrawCall.prototype.DrawBorder = function (rect, color) {
             var cmd = DrawCmd.CmdBorder(rect, color);
-            var index = this.m_curzorder + this.m_curCount;
-            this.m_curCount++;
-            this.m_maxCount = Math.max(this.m_maxCount, index);
-            cmd.Index = index;
+            cmd.Index = this.CalculateZOrder();
             this.drawList.push(cmd);
         };
         RUIDrawCall.prototype.DrawLine = function (x1, y1, x2, y2, color) {
+            var cmd = DrawCmd.CmdLine(x1, y1, x2, y2, color);
+            cmd.Index = this.CalculateZOrder();
+            this.drawList.push(cmd);
+        };
+        RUIDrawCall.prototype.CalculateZOrder = function () {
+            var index = this.m_curzorder + this.m_curCount;
+            this.m_curCount++;
+            this.m_maxCount = Math.max(this.m_maxCount, index);
+            return index;
         };
         RUIDrawCall.LEVEL_OFFSET = 1000;
+        RUIDrawCall.LAYER_DEFAULT = 0;
+        RUIDrawCall.LAYER_OVERLAY = 5;
         return RUIDrawCall;
     }());
     exports.RUIDrawCall = RUIDrawCall;
@@ -1046,7 +1082,7 @@ define("rui/widget/UIButton", ["require", "exports", "rui/UIObject", "rui/RUIEve
             return _this;
         }
         UIButton.prototype.onBuild = function () {
-            this.visible = true;
+            this.visibleSelf = true;
             this.width = 100;
             this.height = 23;
             this.color = RUIStyle_3.RUIStyle.Default.background1;
@@ -1069,7 +1105,10 @@ define("rui/widget/UIButton", ["require", "exports", "rui/UIObject", "rui/RUIEve
         UIButton.prototype.onDraw = function (drawcall) {
             var rect = [this._calculateX, this._calculateY, this._width, this._height];
             drawcall.DrawRectWithColor(rect, this.color);
-            drawcall.DrawText('Button1', rect, null);
+            var l = this.label;
+            if (l == null)
+                l = "Button";
+            drawcall.DrawText(l, rect, null);
         };
         return UIButton;
     }(UIObject_3.UIObject));
@@ -1084,7 +1123,7 @@ define("rui/widget/UIRect", ["require", "exports", "rui/UIObject"], function (re
             return _super !== null && _super.apply(this, arguments) || this;
         }
         UIRect.prototype.onBuild = function () {
-            this.visible = true;
+            this.visibleSelf = true;
         };
         UIRect.prototype.onDraw = function (drawcall) {
             var rect = [this._calculateX, this._calculateY, this._width, this._height];
@@ -1115,7 +1154,7 @@ define("rui/widget/UISlider", ["require", "exports", "rui/UIObject", "rui/RUISty
             configurable: true
         });
         UISlider.prototype.onBuild = function () {
-            this.visible = true;
+            this.visibleSelf = true;
         };
         UISlider.prototype.onMouseClick = function (e) {
             var value = (e.mousex - this._calculateX) / this._width;
@@ -1159,7 +1198,7 @@ define("rui/widget/UILabel", ["require", "exports", "rui/UIObject"], function (r
             return _this;
         }
         UILable.prototype.onBuild = function () {
-            this.visible = true;
+            this.visibleSelf = true;
         };
         UILable.prototype.onDraw = function (cmd) {
             var rect = [this._calculateX, this._calculateY, this._width, this._height];
@@ -1192,7 +1231,7 @@ define("rui/widget/UICheckbox", ["require", "exports", "rui/UIObject", "rui/RUIS
         }
         UICheckbox.prototype.onBuild = function () {
             this.height = 23;
-            this.visible = true;
+            this.visibleSelf = true;
         };
         UICheckbox.prototype.onMouseClick = function (e) {
             if (UIUtil_2.UIUtil.RectContains(this.m_rectOuter, e.mousex, e.mousey)) {
@@ -1240,7 +1279,7 @@ define("rui/widget/UIField", ["require", "exports", "rui/UIObject", "rui/RUIFont
             return _this;
         }
         UIField.prototype.onBuild = function () {
-            this.visible = true;
+            this.visibleSelf = true;
         };
         Object.defineProperty(UIField.prototype, "label", {
             get: function () {
@@ -1347,28 +1386,94 @@ define("rui/RUIColor", ["require", "exports", "rui/UIUtil"], function (require, 
     }());
     exports.RUIColor = RUIColor;
 });
-define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButton", "rui/RUIStyle", "rui/widget/UIField", "rui/RUIColor"], function (require, exports, UIObject_9, UIButton_1, RUIStyle_6, UIField_1, RUIColor_1) {
+define("rui/widget/UIContextMenu", ["require", "exports", "rui/UIObject", "rui/RUIDrawCall", "rui/RUIStyle", "rui/widget/UIButton"], function (require, exports, UIObject_9, RUIDrawCall_1, RUIStyle_6, UIButton_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var UIContextMenu = /** @class */ (function (_super) {
+        __extends(UIContextMenu, _super);
+        function UIContextMenu(items) {
+            var _this = _super.call(this) || this;
+            _this.m_isshow = false;
+            if (items)
+                _this.setMenuItems(items);
+            return _this;
+        }
+        UIContextMenu.prototype.onBuild = function () {
+            this.visibleSelf = false;
+            this.position = UIObject_9.UIPosition.Absolute;
+            this.floatLeft = 0;
+            this.floatTop = 0;
+            this.zorder = RUIDrawCall_1.RUIDrawCall.LAYER_OVERLAY;
+            this.displayMode = UIObject_9.UIDisplayMode.None;
+        };
+        UIContextMenu.prototype.onActive = function () {
+        };
+        UIContextMenu.prototype.onInactive = function () {
+            this.m_isshow = false;
+            this.visibleSelf = false;
+            this.displayMode = UIObject_9.UIDisplayMode.None;
+            this.setDirty(true);
+        };
+        UIContextMenu.prototype.setMenuItems = function (items) {
+            this.children = [];
+            var _loop_1 = function (key) {
+                if (items.hasOwnProperty(key)) {
+                    var item_1 = items[key];
+                    var btn = new UIButton_1.UIButton(key);
+                    if (item_1 != null)
+                        btn.EvtMouseClick.on(function (f) { return item_1(); });
+                    this_1.addChild(btn);
+                }
+            };
+            var this_1 = this;
+            for (var key in items) {
+                _loop_1(key);
+            }
+            this.setDirty(true);
+        };
+        UIContextMenu.prototype.show = function (e) {
+            this.m_isshow = true;
+            this.m_attatchUI = e;
+            this.floatLeft = e._calculateX;
+            this.floatTop = e._calculateY + e._height;
+            this.visibleSelf = true;
+            this.displayMode = UIObject_9.UIDisplayMode.Default;
+            this._canvas.setActiveUI(this);
+            this.setDirty(true);
+        };
+        UIContextMenu.prototype.onDraw = function (cmd) {
+            if (this.m_isshow) {
+                var attui = this.m_attatchUI;
+                var rect = [this._calculateX, this._calculateY, this._width, this._height];
+                cmd.DrawBorder(rect, RUIStyle_6.RUIStyle.Default.primary0);
+            }
+        };
+        return UIContextMenu;
+    }(UIObject_9.UIObject));
+    exports.UIContextMenu = UIContextMenu;
+});
+define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButton", "rui/RUIStyle", "rui/widget/UIField", "rui/RUIColor", "rui/widget/UIContextMenu"], function (require, exports, UIObject_10, UIButton_2, RUIStyle_7, UIField_1, RUIColor_1, UIContextMenu_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var HeaderUI = /** @class */ (function (_super) {
         __extends(HeaderUI, _super);
         function HeaderUI() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.btnNew = new UIButton_1.UIButton("New");
-            _this.btnOpen = new UIButton_1.UIButton("Open");
+            _this.btnNew = new UIButton_2.UIButton("New");
+            _this.btnOpen = new UIButton_2.UIButton("Open");
             return _this;
         }
         HeaderUI.prototype.onBuild = function () {
-            this.visible = false;
-            this.displayMode = UIObject_9.UIDisplayMode.Flex;
-            this.orientation = UIObject_9.UIOrientation.Horizontal;
+            this.visibleSelf = false;
+            this.displayMode = UIObject_10.UIDisplayMode.Flex;
+            this.orientation = UIObject_10.UIOrientation.Horizontal;
             this.addChild(this.btnNew);
             this.addChild(this.btnOpen);
         };
         HeaderUI.prototype.onDraw = function (cmd) {
         };
         return HeaderUI;
-    }(UIObject_9.UIObject));
+    }(UIObject_10.UIObject));
     exports.HeaderUI = HeaderUI;
     var EditorUI = /** @class */ (function (_super) {
         __extends(EditorUI, _super);
@@ -1376,20 +1481,32 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButto
             return _super !== null && _super.apply(this, arguments) || this;
         }
         EditorUI.prototype.onBuild = function () {
-            this.visible = true;
-            this.color = RUIStyle_6.RUIStyle.Default.background1;
-            this.addChild(new UIButton_1.UIButton('Clear'));
+            this.visibleSelf = true;
+            this.color = RUIStyle_7.RUIStyle.Default.background1;
+            this.addChild(new UIButton_2.UIButton('Clear'));
             this.addChild(new UIField_1.UIInputField("Hello"));
             this.addChild(new UIField_1.UISliderFiled("Count", 20, 10, 100));
             this.addChild(new UIField_1.UICheckboxField("Enable", true));
-            this.addChild(new FloatingUI());
+            //this.addChild(new FloatingUI());
+            var btnCtxMenu = new UIButton_2.UIButton('context menu');
+            var ctxMenu = new UIContextMenu_1.UIContextMenu({
+                "A": function () { return console.log("A"); },
+                "B": function () { return console.log("B"); },
+            });
+            btnCtxMenu.EvtMouseClick.on(function (e) {
+                var m = ctxMenu;
+                var b = btnCtxMenu;
+                m.show(b);
+            });
+            this.addChild(btnCtxMenu);
+            this.addChild(ctxMenu);
         };
         EditorUI.prototype.onDraw = function (cmd) {
             var rect = [this._calculateX, this._calculateY, this._width, this._height];
             cmd.DrawRectWithColor(rect, this.color);
         };
         return EditorUI;
-    }(UIObject_9.UIObject));
+    }(UIObject_10.UIObject));
     exports.EditorUI = EditorUI;
     var FloatingUI = /** @class */ (function (_super) {
         __extends(FloatingUI, _super);
@@ -1397,8 +1514,8 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButto
             return _super !== null && _super.apply(this, arguments) || this;
         }
         FloatingUI.prototype.onBuild = function () {
-            this.visible = true;
-            this.position = UIObject_9.UIPosition.Relative;
+            this.visibleSelf = true;
+            this.position = UIObject_10.UIPosition.Relative;
             this.floatRight = 20;
             this.floatTop = 50;
             this.height = 50;
@@ -1410,7 +1527,7 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButto
             cmd.DrawRectWithColor(rect, RUIColor_1.RUIColor.Grey);
         };
         return FloatingUI;
-    }(UIObject_9.UIObject));
+    }(UIObject_10.UIObject));
     exports.FloatingUI = FloatingUI;
     var DebugUI = /** @class */ (function (_super) {
         __extends(DebugUI, _super);
@@ -1418,22 +1535,22 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButto
             return _super !== null && _super.apply(this, arguments) || this;
         }
         DebugUI.prototype.onBuild = function () {
-            this.visible = true;
-            this.displayMode = UIObject_9.UIDisplayMode.Flex;
+            this.visibleSelf = true;
+            this.displayMode = UIObject_10.UIDisplayMode.Flex;
             var header = new HeaderUI();
             header.height = 23;
             this.m_header = header;
             this.addChild(header);
-            var main = new UIObject_9.UIDiv();
+            var main = new UIObject_10.UIDiv();
             main.flex = 1;
-            main.displayMode = UIObject_9.UIDisplayMode.Flex;
-            main.orientation = UIObject_9.UIOrientation.Horizontal;
+            main.displayMode = UIObject_10.UIDisplayMode.Flex;
+            main.orientation = UIObject_10.UIOrientation.Horizontal;
             this.addChild(main);
             var editorui = new EditorUI();
             editorui.flex = 2;
             main.addChild(editorui);
             this.m_editor = editorui;
-            var x = new UIObject_9.UIObject();
+            var x = new UIObject_10.UIObject();
             x.flex = 3;
             main.addChild(x);
             // let btn1 = new UIButton();
@@ -1453,7 +1570,7 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButto
             drawcall.DrawRectWithColor(rect, this.color);
         };
         return DebugUI;
-    }(UIObject_9.UIObject));
+    }(UIObject_10.UIObject));
     exports.DebugUI = DebugUI;
 });
 define("rui/RUIQTree", ["require", "exports", "rui/RUIEventSys"], function (require, exports, RUIEventSys_3) {
@@ -1475,11 +1592,15 @@ define("rui/RUIQTree", ["require", "exports", "rui/RUIEventSys"], function (requ
             this.m_tar = canvas;
             this.m_ui = canvas.rootui;
         }
-        RUIQTree.prototype.DispatchEvtMouseEvent = function (x, y, type) {
+        RUIQTree.prototype.DispatchEvtMouseEvent = function (e, type) {
+            var x = e.offsetX;
+            var y = e.offsetY;
             var target = this.TraversalTree(x, y);
             if (target == null)
                 return null;
-            target[type].call(target, new RUIEventSys_3.RUIMouseEvent(target, type, x, y));
+            var re = new RUIEventSys_3.RUIMouseEvent(target, type, x, y);
+            re.button = e.button;
+            target[type].call(target, re);
             return target;
         };
         RUIQTree.prototype.DispatchEvtMouseMove = function (x, y) {
@@ -1537,12 +1658,12 @@ define("rui/RUIQTree", ["require", "exports", "rui/RUIEventSys"], function (requ
 define("gl/wglShaderLib", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.GLSL_FRAG_COLOR = 'precision lowp float;\n\nvarying vec4 vColor;\n\nvoid main(){\ngl_FragColor = vColor;\n}';
-    exports.GLSL_VERT_DEF = 'precision mediump float;\nattribute vec3 aPosition;\nattribute vec4 aColor;\n\nuniform vec4 uProj;\nvarying vec4 vColor;\n\nvoid main(){\nvec2 pos = aPosition.xy * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,aPosition.z,1);\nvColor = aColor;\n}';
+    exports.GLSL_FRAG_COLOR = '#version 300 es\nprecision lowp float;\n\nin vec4 vColor;\n\nout vec4 fragColor;\n\nvoid main(){\nfragColor = vColor;\n}';
+    exports.GLSL_VERT_DEF = '#version 300 es\nprecision mediump float;\nin vec3 aPosition;\nin vec4 aColor;\nin vec4 aClip;\n\nuniform vec4 uProj;\nout vec4 vColor;\n\nvoid main(){\nvec2 pos =aPosition.xy;\npos = clamp(pos,aClip.xy,aClip.zw);\npos = pos * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,aPosition.z,1);\nvColor = aColor;\n}';
     exports.GLSL_FRAG_TEXT = '#version 300 es\nprecision lowp float;\n\nin vec4 vColor;\nin vec2 vUV;\n\nuniform sampler2D uSampler;\n\nout vec4 fragColor;\n\nvoid main(){\nfragColor = texture(uSampler,vUV);\n}';
-    exports.GLSL_VERT_TEXT = '#version 300 es\nprecision mediump float;\nin vec3 aPosition;\nin vec4 aColor;\nin vec2 aUV;\nin vec4 aClip;\n\nuniform vec4 uProj;\nout vec4 vColor;\nout vec2 vUV;\n\nvoid main(){\nvec2 pos = aPosition.xy * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,aPosition.z,1);\nvColor = aColor;\nvUV =aUV;\n}';
+    exports.GLSL_VERT_TEXT = '#version 300 es\nprecision mediump float;\nin vec3 aPosition;\nin vec4 aColor;\nin vec2 aUV;\nin vec4 aClip;\n\nuniform vec4 uProj;\nout vec4 vColor;\nout vec2 vUV;\n\nvoid main(){\nvec2 pos = aPosition.xy;\npos = clamp(pos,aClip.xy,aClip.zw);\npos = pos * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,aPosition.z,1);\nvColor = aColor;\nvUV =aUV;\n}';
 });
-define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wglShaderLib", "rui/RUIFontTexture", "rui/RUIColor"], function (require, exports, RUIDrawCall_1, wglShaderLib_1, RUIFontTexture_2, RUIColor_2) {
+define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wglShaderLib", "rui/RUIFontTexture", "rui/RUIColor"], function (require, exports, RUIDrawCall_2, wglShaderLib_1, RUIFontTexture_2, RUIColor_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var COLOR_ERROR = [1, 0, 1, 1];
@@ -1599,8 +1720,10 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
             this.m_indicesBufferArray = new RUIArrayBufferUI16(Uint16Array);
             this.m_aryBufferRectColor = new RUIArrayBufferF32(Float32Array);
             this.m_aryBufferRectPos = new RUIArrayBufferF32(Float32Array);
+            this.m_aryBufferRectClip = new RUIArrayBufferF32(Float32Array);
             this.m_aryBufferTextPos = new RUIArrayBufferF32(Float32Array);
             this.m_aryBufferTextUV = new RUIArrayBufferF32(Float32Array);
+            this.m_aryBufferTextClip = new RUIArrayBufferF32(Float32Array);
             var gl = glctx.gl;
             this.m_drawcall = drawcall;
             if (drawcall == null)
@@ -1639,6 +1762,12 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                 this.colorBufferRect = cbuffer;
                 gl.vertexAttribPointer(program.aColor, 4, gl.FLOAT, true, 0, 0);
                 gl.enableVertexAttribArray(program.aColor);
+                //clip
+                var clipbuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, clipbuffer);
+                this.clipBufferRect = clipbuffer;
+                gl.vertexAttribPointer(program.aClip, 4, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(program.aClip);
                 //indices buffer
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuffer);
                 gl.bindVertexArray(null);
@@ -1661,6 +1790,12 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                 this.uvBufferText = uvbuffer;
                 gl.vertexAttribPointer(program.aUV, 2, gl.FLOAT, true, 0, 0);
                 gl.enableVertexAttribArray(program.aUV);
+                //Clip
+                var clipbuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, clipbuffer);
+                this.clipBufferText = clipbuffer;
+                gl.vertexAttribPointer(program.aClip, 4, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(program.aClip);
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuffer);
                 gl.bindVertexArray(null);
             }
@@ -1677,17 +1812,22 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                 var drawDepthMax = drawcall.MaxDrawCount;
                 var rect_vert = this.m_aryBufferRectPos.resetPos();
                 var rect_color = this.m_aryBufferRectColor.resetPos();
+                var rect_clip = this.m_aryBufferRectClip.resetPos();
                 var text_vert = this.m_aryBufferTextPos.resetPos();
                 var text_uv = this.m_aryBufferTextUV.resetPos();
+                var text_clip = this.m_aryBufferTextClip.resetPos();
                 var rectCount = 0;
                 var textCount = 0;
+                var maxClip = drawcall.canvas.canvasRect;
+                maxClip[2] = maxClip[0] + maxClip[2];
+                maxClip[3] = maxClip[1] + maxClip[3];
                 for (var i = 0, cmdlen = drawlist.length; i < cmdlen; i++) {
                     var cmd = drawlist[i];
                     var rect = cmd.Rect;
                     var color = cmd.Color;
                     var d = 1.0 - cmd.Index * 1.0 / drawDepthMax;
                     switch (cmd.type) {
-                        case RUIDrawCall_1.DrawCmdType.rect:
+                        case RUIDrawCall_2.DrawCmdType.rect:
                             {
                                 if (color == null)
                                     color = COLOR_ERROR;
@@ -1700,10 +1840,14 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                                 var w = rect[2];
                                 var h = rect[3];
                                 rect_vert.push([x, y, d, x + w, y, d, x + w, y + h, d, x, y + h, d]);
+                                rect_clip.push(maxClip);
+                                rect_clip.push(maxClip);
+                                rect_clip.push(maxClip);
+                                rect_clip.push(maxClip);
                                 rectCount++;
                             }
                             break;
-                        case RUIDrawCall_1.DrawCmdType.line:
+                        case RUIDrawCall_2.DrawCmdType.line:
                             {
                                 if (color == null)
                                     color = RUIColor_2.RUIColor.Grey;
@@ -1721,15 +1865,20 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                                 dx = dx / len_1;
                                 dy = dy / len_1;
                                 rect_vert.push([x1 + dx, y1 + dy, d, x2 + dx, y2 + dy, d, x2 - dx, y2 - dy, d, x1 - dx, y1 - dy, d]);
+                                rect_clip.push(maxClip);
+                                rect_clip.push(maxClip);
+                                rect_clip.push(maxClip);
+                                rect_clip.push(maxClip);
                                 rectCount++;
                             }
                             break;
-                        case RUIDrawCall_1.DrawCmdType.border:
+                        case RUIDrawCall_2.DrawCmdType.border:
                             {
                                 if (color == null)
                                     color = COLOR_ERROR;
                                 for (var n = 0; n < 16; n++) {
                                     rect_color.push(color);
+                                    rect_clip.push(maxClip);
                                 }
                                 var x1 = rect[0];
                                 var y1 = rect[1];
@@ -1742,7 +1891,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                                 rectCount += 4;
                             }
                             break;
-                        case RUIDrawCall_1.DrawCmdType.text:
+                        case RUIDrawCall_2.DrawCmdType.text:
                             {
                                 var content = cmd.Text;
                                 if (content == null || content === '')
@@ -1751,6 +1900,9 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                                 var y = rect[1];
                                 var w = rect[2];
                                 var h = rect[3];
+                                var clip = cmd.Rect;
+                                clip[2] += clip[0];
+                                clip[3] += clip[1];
                                 var contentW = fonttex.MeasureTextWith(content);
                                 x += Math.max(3, Math.floor((w - contentW) / 2.0));
                                 y = y + h - (h - fonttex.fontSize);
@@ -1766,6 +1918,10 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                                         var drawx1 = x + glyph.width;
                                         text_vert.push([x, drawy, d, drawx1, drawy, d, drawx1, drawy1, d, x, drawy1, d]);
                                         text_uv.push(glyph.uv);
+                                        text_clip.push(clip);
+                                        text_clip.push(clip);
+                                        text_clip.push(clip);
+                                        text_clip.push(clip);
                                         x += glyph.width;
                                         textCount++;
                                     }
@@ -1782,6 +1938,8 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                         gl.bufferData(gl.ARRAY_BUFFER, rect_vert.buffer, gl.STATIC_DRAW);
                         gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBufferRect);
                         gl.bufferData(gl.ARRAY_BUFFER, rect_color.buffer, gl.STATIC_DRAW);
+                        gl.bindBuffer(gl.ARRAY_BUFFER, this.clipBufferRect);
+                        gl.bufferData(gl.ARRAY_BUFFER, rect_clip.buffer, gl.STATIC_DRAW);
                     }
                 }
                 //Text{
@@ -1791,6 +1949,8 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                     gl.bufferData(gl.ARRAY_BUFFER, text_vert.buffer, gl.STATIC_DRAW);
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBufferText);
                     gl.bufferData(gl.ARRAY_BUFFER, text_uv.buffer, gl.STATIC_DRAW);
+                    gl.bindBuffer(gl.ARRAY_BUFFER, this.clipBufferText);
+                    gl.bufferData(gl.ARRAY_BUFFER, text_clip.buffer, gl.STATIC_DRAW);
                 }
             }
         };
@@ -1798,7 +1958,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
     }());
     exports.RUIDrawCallBuffer = RUIDrawCallBuffer;
 });
-define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer", "rui/RUIFontTexture", "rui/RUIStyle"], function (require, exports, wglut_1, RUIDrawCallBuffer_1, RUIFontTexture_3, RUIStyle_7) {
+define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer", "rui/RUIFontTexture", "rui/RUIStyle"], function (require, exports, wglut_1, RUIDrawCallBuffer_1, RUIFontTexture_3, RUIStyle_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUIRenderer = /** @class */ (function () {
@@ -1856,7 +2016,7 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             gl.depthFunc(gl.LEQUAL);
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-            var clearColor = RUIStyle_7.RUIStyle.Default.background0;
+            var clearColor = RUIStyle_8.RUIStyle.Default.background0;
             gl.clearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
         };
         RUIRenderer.prototype.Draw = function (drawcall) {
@@ -1908,7 +2068,7 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
     }());
     exports.RUIRenderer = RUIRenderer;
 });
-define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "rui/DebugUI", "rui/RUIInput", "rui/RUIQTree", "rui/RUICursor", "rui/RUIRenderer"], function (require, exports, RUIDrawCall_2, DebugUI_1, RUIInput_2, RUIQTree_1, RUICursor_3, RUIRenderer_1) {
+define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "rui/DebugUI", "rui/RUIInput", "rui/RUIQTree", "rui/RUICursor", "rui/RUIRenderer"], function (require, exports, RUIDrawCall_3, DebugUI_1, RUIInput_2, RUIQTree_1, RUICursor_3, RUIRenderer_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUICanvas = /** @class */ (function () {
@@ -1918,12 +2078,15 @@ define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "rui/DebugUI",
             this.m_isResized = false;
             this.m_canvas = canvas;
             this.m_renderer = new RUIRenderer_1.RUIRenderer(this);
-            this.m_drawcall = new RUIDrawCall_2.RUIDrawCall();
+            this.m_drawcall = new RUIDrawCall_3.RUIDrawCall();
+            this.m_drawcall.canvas = this;
             this.m_rootUI = new DebugUI_1.DebugUI();
             this.m_rootUI._canvas = this;
             this.m_qtree = new RUIQTree_1.RUIQTree(this);
             this.m_input = new RUIInput_2.RUIInput(this);
             this.m_cursor = new RUICursor_3.RUICursor(this);
+            //disable context menu
+            this.m_canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); return false; });
             if (this.m_renderer.isValid) {
                 this.m_valid = true;
             }
@@ -1971,6 +2134,13 @@ define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "rui/DebugUI",
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(RUICanvas.prototype, "canvasRect", {
+            get: function () {
+                return [0, 0, this.m_width, this.m_height];
+            },
+            enumerable: true,
+            configurable: true
+        });
         RUICanvas.prototype.setSize = function (w, h) {
             if (this.m_width != w || this.m_height != h) {
                 this.m_width = w;
@@ -1987,6 +2157,9 @@ define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "rui/DebugUI",
             if (this.m_activeUI == ui) {
                 this.m_activeUI = null;
             }
+        };
+        RUICanvas.prototype.setActiveUI = function (ui) {
+            this.m_input.setActiveUI(ui);
         };
         RUICanvas.prototype.OnBuild = function () {
             this.m_rootUI._dispatchOnBuild();
@@ -2020,4 +2193,16 @@ define("rui", ["require", "exports", "rui/RUICanvas"], function (require, export
     }
     Object.defineProperty(exports, "__esModule", { value: true });
     __export(RUICanvas_1);
+});
+define("rui/widget/UICanvas", ["require", "exports", "rui/UIObject"], function (require, exports, UIObject_11) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var UICanvas = /** @class */ (function (_super) {
+        __extends(UICanvas, _super);
+        function UICanvas() {
+            return _super.call(this) || this;
+        }
+        return UICanvas;
+    }(UIObject_11.UIObject));
+    exports.UICanvas = UICanvas;
 });

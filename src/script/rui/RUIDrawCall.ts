@@ -1,5 +1,6 @@
 import { UIObject, UIOrientation, UIDisplayMode, UIPosition } from "./UIObject";
 import { UIInput } from "./widget/UIInput";
+import { RUICanvas } from "./RUICanvas";
 
 
 
@@ -72,6 +73,8 @@ export class RUIDrawCall {
     public static readonly LAYER_OVERLAY:number = 5;
 
     public isDirty: boolean = true;
+
+    public canvas: RUICanvas;
 
     constructor() {
 

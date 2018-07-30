@@ -33,6 +33,7 @@ export class RUICanvas{
         this.m_renderer = new RUIRenderer(this);
 
         this.m_drawcall = new RUIDrawCall();
+        this.m_drawcall.canvas = this;
         this.m_rootUI = new DebugUI();
         this.m_rootUI._canvas = this;
         this.m_qtree = new RUIQTree(this);
@@ -68,6 +69,10 @@ export class RUICanvas{
     }
     public get activeUI():IInputUI{
         return this.m_activeUI;
+    }
+
+    public get canvasRect():number[]{
+        return [0,0,this.m_width,this.m_height];
     }
 
     public setSize(w:number,h:number){

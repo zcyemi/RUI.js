@@ -69,6 +69,7 @@ export class RUIDrawCallBuffer {
 
     public vertexBufferRect: WebGLBuffer;
     public colorBufferRect: WebGLBuffer;
+    public clipBufferRect: WebGLBuffer;
     public drawCountRect: number = 0;
 
     public vertexBufferText: WebGLBuffer;
@@ -90,9 +91,11 @@ export class RUIDrawCallBuffer {
 
     private m_aryBufferRectColor: RUIArrayBufferF32 = new RUIArrayBufferF32(Float32Array);
     private m_aryBufferRectPos: RUIArrayBufferF32 = new RUIArrayBufferF32(Float32Array);
+    private m_aryBufferRectClip: RUIArrayBufferF32 = new RUIArrayBufferF32(Float32Array);
 
     private m_aryBufferTextPos: RUIArrayBufferF32 = new RUIArrayBufferF32(Float32Array);
     private m_aryBufferTextUV: RUIArrayBufferF32 = new RUIArrayBufferF32(Float32Array);
+    private m_aryBufferTextClip: RUIArrayBufferF32 = new RUIArrayBufferF32(Float32Array);
 
 
     constructor(glctx: GLContext, drawcall: RUIDrawCall) {
@@ -141,6 +144,14 @@ export class RUIDrawCallBuffer {
             gl.vertexAttribPointer(program.aColor, 4, gl.FLOAT, true, 0, 0);
             gl.enableVertexAttribArray(program.aColor);
 
+            //clip
+            let clipbuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER,clipbuffer);
+            this.clipBufferRect = clipbuffer;
+            gl.vertexAttribPointer(program.aClip,4,gl.FLOAT,false,0,0);
+            gl.enableVertexAttribArray(program.aClip);
+
+
             //indices buffer
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuffer);
 
@@ -168,6 +179,13 @@ export class RUIDrawCallBuffer {
             gl.vertexAttribPointer(program.aUV, 2, gl.FLOAT, true, 0, 0);
             gl.enableVertexAttribArray(program.aUV);
 
+            //Clip
+            let clipbuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER,clipbuffer);
+            this.clipBufferText = clipbuffer;
+            gl.vertexAttribPointer(program.aClip,4,gl.FLOAT,false,0,0);
+            gl.enableVertexAttribArray(program.aClip);
+
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuffer);
 
             gl.bindVertexArray(null);
@@ -194,12 +212,18 @@ export class RUIDrawCallBuffer {
 
             let rect_vert = this.m_aryBufferRectPos.resetPos();
             let rect_color = this.m_aryBufferRectColor.resetPos();
+            let rect_clip = this.m_aryBufferRectClip.resetPos();
 
             let text_vert = this.m_aryBufferTextPos.resetPos();
             let text_uv = this.m_aryBufferTextUV.resetPos();
+            let text_clip = this.m_aryBufferTextClip.resetPos();
 
             let rectCount = 0;
             let textCount = 0;
+
+            let maxClip = drawcall.canvas.canvasRect;
+            maxClip[2] = maxClip[0] + maxClip[2];
+            maxClip[3] = maxClip[1]+ maxClip[3];
 
             for (var i = 0, cmdlen = drawlist.length; i < cmdlen; i++) {
                 let cmd = drawlist[i];
@@ -222,6 +246,12 @@ export class RUIDrawCallBuffer {
                             let w = rect[2];
                             let h = rect[3];
                             rect_vert.push([x, y, d, x + w, y, d, x + w, y + h, d, x, y + h, d]);
+                            
+                            rect_clip.push(maxClip);
+                            rect_clip.push(maxClip);
+                            rect_clip.push(maxClip);
+                            rect_clip.push(maxClip);
+
                             rectCount++;
                         }
                         break;
@@ -248,6 +278,12 @@ export class RUIDrawCallBuffer {
                             dy = dy / len;
 
                             rect_vert.push([x1 + dx, y1 + dy, d, x2 + dx, y2 + dy, d, x2 - dx, y2 - dy, d, x1 - dx, y1 - dy, d]);
+
+                            rect_clip.push(maxClip);
+                            rect_clip.push(maxClip);
+                            rect_clip.push(maxClip);
+                            rect_clip.push(maxClip);
+
                             rectCount++;
                         }
                         break;
@@ -257,6 +293,7 @@ export class RUIDrawCallBuffer {
 
                             for (let n = 0; n < 16; n++) {
                                 rect_color.push(color);
+                                rect_clip.push(maxClip);
                             }
 
                             let x1 = rect[0];
@@ -281,6 +318,10 @@ export class RUIDrawCallBuffer {
                             let w = rect[2];
                             let h = rect[3];
 
+                            let clip = cmd.Rect;
+                            clip[2] += clip[0];
+                            clip[3]+=clip[1];
+
                             let contentW = fonttex.MeasureTextWith(content);
 
                             x += Math.max(3, Math.floor((w - contentW) / 2.0));
@@ -303,6 +344,11 @@ export class RUIDrawCallBuffer {
                                     text_vert.push([x, drawy,d, drawx1, drawy,d, drawx1, drawy1,d, x, drawy1,d]);
                                     text_uv.push(glyph.uv);
 
+                                    text_clip.push(clip);
+                                    text_clip.push(clip);
+                                    text_clip.push(clip);
+                                    text_clip.push(clip);
+
                                     x += glyph.width;
                                     textCount++;
                                 }
@@ -323,6 +369,10 @@ export class RUIDrawCallBuffer {
 
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBufferRect);
                     gl.bufferData(gl.ARRAY_BUFFER, rect_color.buffer, gl.STATIC_DRAW);
+
+                    gl.bindBuffer(gl.ARRAY_BUFFER,this.clipBufferRect);
+                    gl.bufferData(gl.ARRAY_BUFFER,rect_clip.buffer,gl.STATIC_DRAW);
+
                 }
             }
 
@@ -334,6 +384,9 @@ export class RUIDrawCallBuffer {
 
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBufferText);
                 gl.bufferData(gl.ARRAY_BUFFER, text_uv.buffer, gl.STATIC_DRAW);
+
+                gl.bindBuffer(gl.ARRAY_BUFFER,this.clipBufferText);
+                gl.bufferData(gl.ARRAY_BUFFER,text_clip.buffer,gl.STATIC_DRAW);
             }
         }
 
