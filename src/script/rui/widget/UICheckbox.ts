@@ -29,7 +29,7 @@ export class UICheckbox extends UIObject{
 
     public onBuild(){
         this.height = 23;
-        this.visible =true;
+        this.visibleSelf =true;
     }
 
     public onMouseClick(e:RUIMouseEvent){

@@ -88,7 +88,7 @@ export class RUIDrawCall {
         this.m_curCount = 0;
         this.drawList = [];
         this.RebuildNode(ui);
-        this.ExecNodes(ui, this.PostRebuild.bind(this), this.PostRebuildFinal.bind(this));
+        this.ExecNodesDisplay(ui, this.PostRebuild.bind(this), this.PostRebuildFinal.bind(this));
 
         ui.isDirty = false;
         this.isDirty = true;
@@ -102,6 +102,20 @@ export class RUIDrawCall {
         for (let i = 0; i < cc; i++) {
             let cu = c[i];
             this.ExecNodes(cu, fpre, fpost);
+        }
+        if (fpost) fpost(uiobj);
+    }
+
+    private ExecNodesDisplay(uiobj: UIObject, fpre: (ui: UIObject) => void, fpost?: (UIObject) => void) {
+        if(uiobj.displayMode == UIDisplayMode.None){
+            return;
+        }
+        fpre(uiobj);
+        let c = uiobj.children;
+        let cc = c.length;
+        for (let i = 0; i < cc; i++) {
+            let cu = c[i];
+            this.ExecNodesDisplay(cu, fpre, fpost);
         }
         if (fpost) fpost(uiobj);
     }
@@ -152,6 +166,8 @@ export class RUIDrawCall {
 
         for (var i = 0, len = clen; i < len; i++) {
             let c = children[i];
+
+            if(c.displayMode == UIDisplayMode.None) continue;
 
             if (c.position != UIPosition.Default) {
                 floatingObject.push(c);
@@ -316,6 +332,8 @@ export class RUIDrawCall {
         for (var i = 0; i < clen; i++) {
             let c = children[i];
 
+            if(c.displayMode == UIDisplayMode.None) continue;
+
             if (c.position != UIPosition.Default) {
                 floatingObject.push(c);
                 continue;
@@ -404,16 +422,16 @@ export class RUIDrawCall {
             ui._level = p._level + 1;
         }
 
-        if (ui.visible) {
+        if (ui.visibleSelf) {
             this.m_curzorder = ui.zorder * RUIDrawCall.LEVEL_OFFSET;
             ui.onDraw(this);
         }
     }
 
     private PostRebuildFinal(ui: UIObject) {
-        if (ui.visible) {
+        if (ui.visibleSelf) {
             this.m_curzorder = ui.zorder * RUIDrawCall.LEVEL_OFFSET;
-            ui.onDrawLate(this);
+            //ui.onDrawLate(this);
         }
     }
     

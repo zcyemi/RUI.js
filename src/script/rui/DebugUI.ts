@@ -10,6 +10,8 @@ import { UIField, UIInputField, UISliderFiled, UICheckboxField } from "./widget/
 import { UILable } from "./widget/UILabel";
 import { UICheckbox } from "./widget/UICheckbox";
 import { RUIColor } from "./RUIColor";
+import { RUIEvent, RUIMouseEvent } from "./RUIEventSys";
+import { UIContextMenu } from "./widget/UIContextMenu";
 
 
 export class HeaderUI extends UIObject{
@@ -18,7 +20,7 @@ export class HeaderUI extends UIObject{
     public btnOpen:UIButton = new UIButton("Open");
     public onBuild(){
 
-        this.visible = false;
+        this.visibleSelf = false;
         this.displayMode = UIDisplayMode.Flex;
         this.orientation = UIOrientation.Horizontal;
 
@@ -36,14 +38,26 @@ export class EditorUI extends UIObject{
 
     public onBuild(){
 
-        this.visible = true;
+        this.visibleSelf = true;
         this.color = RUIStyle.Default.background1;
 
         this.addChild(new UIButton('Clear'));
         this.addChild(new UIInputField("Hello"));
         this.addChild(new UISliderFiled("Count",20,10,100));
         this.addChild(new UICheckboxField("Enable",true));
-        this.addChild(new FloatingUI());
+        //this.addChild(new FloatingUI());
+        var btnCtxMenu = new UIButton('context menu');
+        var ctxMenu = new UIContextMenu({
+            "A": ()=>console.log("A"),
+            "B" : ()=>console.log("B"),
+        });
+        btnCtxMenu.EvtMouseClick.on((e)=>{
+            let m = ctxMenu;
+            let b = btnCtxMenu;
+            m.show(b);
+        });
+        this.addChild(btnCtxMenu);
+        this.addChild(ctxMenu);
     }
 
     public onDraw(cmd:RUIDrawCall){
@@ -57,7 +71,7 @@ export class EditorUI extends UIObject{
 export class FloatingUI extends UIObject{
 
     public onBuild(){
-        this.visible = true;
+        this.visibleSelf = true;
 
         this.position = UIPosition.Relative;
         this.floatRight = 20;
@@ -83,7 +97,7 @@ export class DebugUI extends UIObject{
     public onBuild(){
 
 
-        this.visible = true;
+        this.visibleSelf = true;
 
         this.displayMode = UIDisplayMode.Flex;
 

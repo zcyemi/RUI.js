@@ -24,7 +24,7 @@ export class UISlider extends UIObject{
     }
 
     public onBuild(){
-        this.visible = true;
+        this.visibleSelf = true;
     }
 
     public onMouseClick(e:RUIMouseEvent){

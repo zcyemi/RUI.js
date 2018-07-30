@@ -15,6 +15,13 @@ export class IInputUI{
 }
 
 
+export enum RUIButton{
+    Left = 0,
+    Middle = 1,
+    Right = 2
+}
+
+
 export class RUIInput{
 
     private m_target : RUICanvas;
@@ -36,6 +43,17 @@ export class RUIInput{
         this.RegisterEvent();
     }
 
+    public setActiveUI(ui:UIObject){
+        let curActiveUI = this.m_activeMouseUI;
+        if(ui == curActiveUI) return;
+        if(curActiveUI != null){
+            curActiveUI.onInactive();
+        }
+
+        ui.onActive();
+        this.m_activeMouseUI = ui;
+    }
+
     private RegisterEvent(){
         let c = this.m_target.canvas;
         let tar = this.m_target;
@@ -46,7 +64,7 @@ export class RUIInput{
         c.addEventListener('mousedown',(e)=>{
             this.m_onMouseDown = true;
             let tar = this.m_target;
-            let newActiveUI = tar.qtree.DispatchEvtMouseEvent(e.offsetX,e.offsetY,RUIEvent.MOUSE_DOWN);
+            let newActiveUI = tar.qtree.DispatchEvtMouseEvent(e,RUIEvent.MOUSE_DOWN);
             let curActiveUI = this.m_activeMouseUI;
 
             if(curActiveUI == newActiveUI) return;
@@ -62,12 +80,14 @@ export class RUIInput{
         });
         c.addEventListener('mouseup',(e)=>{
             let tar = this.m_target;
-            let tarui = tar.qtree.DispatchEvtMouseEvent(e.offsetX,e.offsetY,RUIEvent.MOUSE_UP);
+            let tarui = tar.qtree.DispatchEvtMouseEvent(e,RUIEvent.MOUSE_UP);
 
             let activeUI = this.m_activeMouseUI;
             
             if(tarui && tarui == this.m_activeMouseUI){
-                tarui.onMouseClick(new RUIMouseDragEvent(tarui,RUIEvent.MOUSE_CLICK,e.offsetX,e.offsetY,true,tar));
+                let eventClick = new RUIMouseEvent(tarui,RUIEvent.MOUSE_CLICK,e.offsetX,e.offsetY,tarui._canvas);
+                eventClick.button = <RUIButton>e.button;
+                tarui.onMouseClick(eventClick);
             }
 
             if(activeUI != null && this.m_activeMouseUIDrag){

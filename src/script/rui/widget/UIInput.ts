@@ -33,7 +33,7 @@ export class UIInput extends UIObject implements IInputUI {
     }
 
     public onBuild() {
-        this.visible = true;
+        this.visibleSelf = true;
     }
 
     public onActive(){

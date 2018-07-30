@@ -1,6 +1,7 @@
 import { UIObject } from "./UIObject";
 import { RUIEventEmitter, RUIEvent, RUIMouseEvent } from "./RUIEventSys";
 import { RUICanvas } from "./RUICanvas";
+import { RUIButton } from "./RUIInput";
 
 
 
@@ -24,10 +25,15 @@ export class RUIQTree{
     }
 
 
-    public DispatchEvtMouseEvent(x:number,y:number,type:string): UIObject{
+    public DispatchEvtMouseEvent(e:MouseEvent,type:string): UIObject{
+        let x = e.offsetX;
+        let y = e.offsetY;
+
         let target = this.TraversalTree(x,y);
         if(target == null) return null;
-        target[type].call(target,new RUIMouseEvent(target,type,x,y));
+        let re = new RUIMouseEvent(target,type,x,y);
+        re.button = <RUIButton>e.button;
+        target[type].call(target,re);
         return target;
     }
 

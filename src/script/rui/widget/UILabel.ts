@@ -11,7 +11,7 @@ export class UILable  extends UIObject{
     }
 
     public onBuild(){
-        this.visible = true;
+        this.visibleSelf = true;
     }
 
     public onDraw(cmd:RUIDrawCall){

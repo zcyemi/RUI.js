@@ -1,5 +1,6 @@
 import { UIObject } from "./UIObject";
 import { RUICanvas } from "./RUICanvas";
+import { RUIButton } from "./RUIInput";
 
 
 
@@ -38,6 +39,7 @@ export class RUIMouseEvent extends RUIEvent{
 
     public mousex:number;
     public mousey:number;
+    public button:RUIButton;
     public constructor(tar:UIObject,type:string,x:number,y:number,canvas?:RUICanvas){
         super(tar,type,canvas);
 
@@ -56,7 +58,7 @@ export class RUIMouseDragEvent extends RUIMouseEvent{
     }
 }
 
-export type RUIEventFunc = (RUIEvent)=>void;
+export type RUIEventFunc = (e:RUIEvent)=>void;
 
 
 export class RUIEventEmitter{

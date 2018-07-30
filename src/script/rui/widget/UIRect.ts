@@ -4,7 +4,7 @@ import { RUIDrawCall } from "../RUIDrawCall";
 export class UIRect extends UIObject{
 
     public onBuild(){
-        this.visible= true;
+        this.visibleSelf= true;
     }
     public onDraw(drawcall:RUIDrawCall) {
         let rect = [this._calculateX,this._calculateY,this._width,this._height];

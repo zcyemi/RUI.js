@@ -38,6 +38,9 @@ export class RUICanvas{
         this.m_qtree = new RUIQTree(this);
         this.m_input = new RUIInput(this);
         this.m_cursor= new RUICursor(this);
+
+        //disable context menu
+        this.m_canvas.addEventListener('contextmenu',(e)=>{e.preventDefault(); return false});
         
 
         if(this.m_renderer.isValid){
@@ -46,6 +49,7 @@ export class RUICanvas{
 
         this.OnBuild();
     }
+    
 
     public get canvas():HTMLCanvasElement{
         return this.m_canvas;
@@ -84,6 +88,10 @@ export class RUICanvas{
         if(this.m_activeUI == ui){
             this.m_activeUI = null;
         }
+    }
+
+    public setActiveUI(ui:UIObject){
+        this.m_input.setActiveUI(ui);
     }
 
     public OnBuild(){

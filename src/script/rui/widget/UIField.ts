@@ -17,7 +17,7 @@ export abstract class UIField extends UIObject{
     }
 
     public onBuild(){
-        this.visible = true;
+        this.visibleSelf = true;
     }
 
     public get label(): string {

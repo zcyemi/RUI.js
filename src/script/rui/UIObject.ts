@@ -6,7 +6,8 @@ import { RUIStyle } from "./RUIStyle";
 
 export enum UIDisplayMode{
     Default,
-    Flex
+    Flex,
+    None,
 }
 
 export enum UIOrientation{
@@ -33,7 +34,7 @@ export class UIObject{
     public children: UIObject[] = [];
     public isDirty:boolean = true;
 
-    public visible: boolean= false;
+    public visibleSelf: boolean= false;
     public displayMode: UIDisplayMode = UIDisplayMode.Default;
     public orientation: UIOrientation = UIOrientation.Vertical;
 

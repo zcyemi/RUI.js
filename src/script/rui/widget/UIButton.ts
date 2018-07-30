@@ -19,7 +19,7 @@ export class UIButton extends UIObject{
     }
 
     public onBuild(){
-        this.visible = true;
+        this.visibleSelf = true;
         this.width = 100;
         this.height = 23;
 
@@ -48,6 +48,8 @@ export class UIButton extends UIObject{
         let rect = [this._calculateX,this._calculateY,this._width,this._height];
         drawcall.DrawRectWithColor(rect,this.color);
 
-        drawcall.DrawText('Button1',rect,null);
+        let l = this.label;
+        if(l == null) l = "Button";
+        drawcall.DrawText(l,rect,null);
     }
 }
