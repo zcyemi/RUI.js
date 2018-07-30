@@ -68,6 +68,8 @@ export class RUIDrawCall {
     private m_curzorder:number =0 ;
     private m_curCount:number = 0;
     public static readonly LEVEL_OFFSET:number = 1000;
+    public static readonly LAYER_DEFAULT:number = 0;
+    public static readonly LAYER_OVERLAY:number = 5;
 
     public isDirty: boolean = true;
 
@@ -420,10 +422,7 @@ export class RUIDrawCall {
     public DrawRect(x: number, y: number, w: number, h: number) {
         let cmd = new DrawCmd([x, y, w, h]);
 
-        let index = this.m_curzorder + this.m_curCount;
-        this.m_curCount ++;
-        this.m_maxCount = Math.max(this.m_maxCount,index);
-        cmd.Index = index;
+        cmd.Index = this.CalculateZOrder();
 
         this.drawList.push();
     }
@@ -432,10 +431,7 @@ export class RUIDrawCall {
         let cmd = new DrawCmd(pos);
         cmd.Color = color;
         
-        let index =this.m_curzorder+ this.m_curCount;
-        this.m_curCount ++;
-        this.m_maxCount = Math.max(this.m_maxCount,index);
-        cmd.Index = index;
+        cmd.Index = this.CalculateZOrder();
 
         this.drawList.push(cmd);
     }
@@ -443,26 +439,27 @@ export class RUIDrawCall {
     public DrawText(text: string, clirect: number[], color?: number[]) {
         let cmd = DrawCmd.CmdText(text, clirect, color);
 
-        let index = this.m_curzorder+ this.m_curCount;
-        this.m_curCount ++;
-        this.m_maxCount = Math.max(this.m_maxCount,index);
-        cmd.Index = index;
+        cmd.Index = this.CalculateZOrder();
 
         this.drawList.push(cmd);
     }
 
     public DrawBorder(rect: number[], color: number[]) {
         let cmd = DrawCmd.CmdBorder(rect, color);
-        
-        let index = this.m_curzorder + this.m_curCount;
-        this.m_curCount ++;
-        this.m_maxCount = Math.max(this.m_maxCount,index);
-        cmd.Index = index;
-
+        cmd.Index = this.CalculateZOrder();
         this.drawList.push(cmd);
     }
 
     public DrawLine(x1: number, y1: number, x2: number, y2: number, color: number[]) {
+        let cmd = DrawCmd.CmdLine(x1,y1,x2,y2,color);
+        cmd.Index= this.CalculateZOrder();
+        this.drawList.push(cmd);
+    }
 
+    private CalculateZOrder():number{
+        let index = this.m_curzorder + this.m_curCount;
+        this.m_curCount ++;
+        this.m_maxCount = Math.max(this.m_maxCount,index);
+        return index;
     }
 }
