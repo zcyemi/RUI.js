@@ -56,6 +56,7 @@ export class RUITest{
                 let rectc2 = new RUIRectangle();
                 rectc2.width= 130;
                 rectc2.height= 50;
+                
                 rectc2.margin[3] = 25;
                 rectc2.isClip = false;
 
@@ -66,13 +67,14 @@ export class RUITest{
                 let container2 = new RUIFlexContainer();
                 container2.width = 200;
                 container2.padding = [5,5,5,5];
-                //container2.height = 100;
+                container2.height = 100;
                 container2.boxOrientation = RUIOrientation.Horizontal;
 
                 ui.addChild(container2);
 
                 let rectfc1 = new RUIRectangle();
                 rectfc1.flex = 1;
+                rectfc1.margin = [10,2,5,3];
                 container2.addChild(rectfc1);
                 rectfc1.height = 30;
 
@@ -80,11 +82,33 @@ export class RUITest{
                 rectfc2.width = 50;
                 container2.addChild(rectfc2);
 
+                rectfc2.margin[1] = 7;
+
                 let rectfc3 = new RUIRectangle();
                 rectfc3.height = 100;
                 rectfc3.flex = 2;
+                rectfc3.margin[0] = 70;
+                rectfc3.margin[1] = 5;
 
                 container2.addChild(rectfc3);
+
+                {
+                    let container3 =new RUIFlexContainer();
+                    container3.boxOrientation = RUIOrientation.Vertical;
+                    container3.flex = 1;
+
+                    container2.addChild(container3);
+
+                    console.log(container3);
+
+                    let rfc1 = new RUIRectangle();
+                    rfc1.flex = 1;
+                    container3.addChild(rfc1);
+
+                    let rfc2 =new RUIRectangle();
+                    rfc2.flex = 2;
+                    container3.addChild(rfc2);
+                }
             }
 
             let rect2 = new RUIRectangle();

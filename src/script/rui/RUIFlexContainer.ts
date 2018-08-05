@@ -5,7 +5,7 @@ export class RUIFlexContainer extends RUIContainer{
 
     public onLayout(){
 
-        let isVertical = this.boxOrientation = RUIOrientation.Vertical;
+        let isVertical = this.boxOrientation == RUIOrientation.Vertical;
         let children = this.children;
 
 
@@ -45,6 +45,12 @@ export class RUIFlexContainer extends RUIContainer{
 
             let childMaxSide = RUIAuto;
 
+            let marginAry:number[] = [];
+            let marginValue = 0;
+            let marginPos = isVertical ? RUIConst.TOP: RUIConst.LEFT;
+            let marginPosSide = isVertical ? RUIConst.BOTTOM: RUIConst.RIGHT;
+            let marginTotal = 0;
+
             for(var i=0;i<clen;i++){
                 let c = children[i];
 
@@ -61,16 +67,34 @@ export class RUIFlexContainer extends RUIContainer{
                     flexaccu += c.flex;
                 }
 
-                let cmaxside = isVertical ? c.width : c.height;
+                let cmargin = c.margin;
+
+                let cmarginValue = cmargin[marginPos];
+                marginValue = Math.max(marginValue,cmarginValue);
+                
+                marginAry.push(marginValue);
+                marginTotal += marginValue;
+                marginValue = cmargin[marginPosSide];
+
+                let cmaxside = 0;
+                if(isVertical){
+                    cmaxside = c.width + cmargin[RUIConst.LEFT] + cmargin[RUIConst.RIGHT];
+                }
+                else{
+                    cmaxside = c.height + cmargin[RUIConst.TOP] + cmargin[RUIConst.BOTTOM];
+                }
                 childMaxSide = Math.max(childMaxSide,cmaxside);
             }
 
-            let sizePerFlex = (contentTotal - fixedaccu) / flexaccu;
+            marginAry.push(marginValue);
+            marginTotal += marginValue;
+
+            let sizePerFlex = (contentTotal - fixedaccu - marginTotal) / flexaccu;
 
             let offset = this.padding[isVertical? RUIConst.TOP : RUIConst.LEFT];
             let offsetside = this.padding[isVertical? RUIConst.LEFT: RUIConst.TOP];
 
-            console.log(childMaxSide);
+
 
             if(childMaxSide != RUIAuto && sideIsAuto){
                 contentSide = childMaxSide;
@@ -98,14 +122,16 @@ export class RUIFlexContainer extends RUIContainer{
                 }
 
                 c.onLayout();
+                
+                offset += marginAry[i];
 
                 if(isVertical){
                     c._caloffsety = offset;
-                    c._caloffsetx = offsetside;
+                    c._caloffsetx = offsetside +c.margin[RUIConst.LEFT];
                     offset += c._calheight;
                 }
                 else{
-                    c._caloffsety= offsetside;
+                    c._caloffsety= offsetside + c.margin[RUIConst.TOP];
                     c._caloffsetx = offset;
 
                     offset += c._calwidth;
