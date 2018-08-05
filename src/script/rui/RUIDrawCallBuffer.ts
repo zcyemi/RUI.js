@@ -3,7 +3,7 @@ import { GLProgram, GLContext } from "wglut";
 import { GLSL_VERT_DEF, GLSL_FRAG_COLOR, GLSL_VERT_TEXT, GLSL_FRAG_TEXT } from "../gl/wglShaderLib";
 import { RUIFontTexture } from "./RUIFontTexture";
 import { RUIColor } from "./RUIColor";
-import { RUICmdList } from "./RUICmdList";
+import { RUICmdList, RUIDrawCmdType } from "./RUICmdList";
 
 
 const COLOR_ERROR: number[] = [1, 0, 1, 1];
@@ -81,7 +81,7 @@ export class RUIDrawCallBuffer {
 
     public indicesBuffer: WebGLBuffer;
 
-    private m_drawcall: RUIDrawCall | RUICmdList;
+    private m_drawcall:  RUICmdList;
 
     public isDirty: boolean = true;
 
@@ -99,7 +99,7 @@ export class RUIDrawCallBuffer {
     private m_aryBufferTextClip: RUIArrayBufferF32 = new RUIArrayBufferF32(Float32Array);
 
 
-    constructor(glctx: GLContext, drawcall: RUIDrawCall | RUICmdList) {
+    constructor(glctx: GLContext, drawcall:  RUICmdList) {
         let gl = glctx.gl;
         this.m_drawcall = drawcall;
         if (drawcall == null) return;
@@ -198,7 +198,7 @@ export class RUIDrawCallBuffer {
 
 
         this.isDirty = true;
-        let drawcall: RUIDrawCall | RUICmdList = this.m_drawcall;
+        let drawcall: RUICmdList = this.m_drawcall;
         let drawlist = drawcall.drawList;
 
         let fonttex = RUIFontTexture.ASIICTexture;
@@ -233,8 +233,10 @@ export class RUIDrawCallBuffer {
 
                 let d = 1.0 - cmd.Index * 1.0 / drawDepthMax;
 
+                let clip = cmd.clip == null? maxClip : cmd.clip;
+
                 switch (cmd.type) {
-                    case DrawCmdType.rect:
+                    case RUIDrawCmdType.rect:
                         {
                             if (color == null) color = COLOR_ERROR;
                             rect_color.push(color);
@@ -248,15 +250,16 @@ export class RUIDrawCallBuffer {
                             let h = rect[3];
                             rect_vert.push([x, y, d, x + w, y, d, x + w, y + h, d, x, y + h, d]);
                             
-                            rect_clip.push(maxClip);
-                            rect_clip.push(maxClip);
-                            rect_clip.push(maxClip);
-                            rect_clip.push(maxClip);
+                           
+                            rect_clip.push(clip);
+                            rect_clip.push(clip);
+                            rect_clip.push(clip);
+                            rect_clip.push(clip);
 
                             rectCount++;
                         }
                         break;
-                    case DrawCmdType.line:
+                    case RUIDrawCmdType.line:
                         {
                             if (color == null) color = RUIColor.Grey;
 
@@ -280,21 +283,21 @@ export class RUIDrawCallBuffer {
 
                             rect_vert.push([x1 + dx, y1 + dy, d, x2 + dx, y2 + dy, d, x2 - dx, y2 - dy, d, x1 - dx, y1 - dy, d]);
 
-                            rect_clip.push(maxClip);
-                            rect_clip.push(maxClip);
-                            rect_clip.push(maxClip);
-                            rect_clip.push(maxClip);
+                            rect_clip.push(clip);
+                            rect_clip.push(clip);
+                            rect_clip.push(clip);
+                            rect_clip.push(clip);
 
                             rectCount++;
                         }
                         break;
-                    case DrawCmdType.border:
+                    case RUIDrawCmdType.border:
                         {
                             if (color == null) color = COLOR_ERROR;
 
                             for (let n = 0; n < 16; n++) {
                                 rect_color.push(color);
-                                rect_clip.push(maxClip);
+                                rect_clip.push(clip);
                             }
 
                             let x1 = rect[0];
@@ -309,7 +312,7 @@ export class RUIDrawCallBuffer {
                             rectCount += 4;
                         }
                         break;
-                    case DrawCmdType.text:
+                    case RUIDrawCmdType.text:
                         {
                             let content = cmd.Text;
                             if (content == null || content === '') break;
@@ -319,7 +322,7 @@ export class RUIDrawCallBuffer {
                             let w = rect[2];
                             let h = rect[3];
 
-                            let clip = cmd.Rect;
+                            clip = cmd.Rect;
                             clip[2] += clip[0];
                             clip[3]+=clip[1];
 

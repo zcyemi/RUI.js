@@ -7,6 +7,10 @@ import { RUIStyle } from "./RUIStyle";
 export const RUIAuto: number= -1;
 
 
+export type RUIRect = number[];
+
+
+
 export class RUIConst{
     public static readonly TOP:number = 0;
     public static readonly RIGHT:number = 1;
@@ -72,6 +76,8 @@ export class RUIObject{
     public _caloffsety:number = 0;
     public _calx:number;
     public _caly:number;
+
+    protected _rect :RUIRect;
 
     public _root :RUIRoot;
 
@@ -249,6 +255,9 @@ export class RUIContainer extends RUIObject{
             this._calheight = maxsize + padding[RUIConst.BOTTOM] + padding[RUIConst.TOP];
             this._calwidth = offset + padding[RUIConst.RIGHT];
         }
+
+        if(this.width != RUIAuto) this._calwidth = this.width;
+        if(this.height != RUIAuto) this._calheight = this.height;
     }
 
 
@@ -267,11 +276,15 @@ export class RUIContainer extends RUIObject{
     public onDrawPre(cmd:RUICmdList){
 
         let rect =[this._calx,this._caly,this._calwidth,this._calheight];
+        this._rect = rect;
+        if(this.boxClip) cmd.PushClipRect(rect);
+
         cmd.DrawBorder(rect,RUIStyle.Default.primary);
+
     }
 
     public onDrawPost(cmd:RUICmdList){
-
+        if(this.boxClip) cmd.PopClipRect();
     }
 }
 
@@ -305,7 +318,7 @@ export class RUIRoot{
     }
 }
 
-export class RUIRect extends RUIObject{
+export class RUIRectangle extends RUIObject{
 
 
     public onDraw(cmd:RUICmdList){

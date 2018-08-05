@@ -1,5 +1,5 @@
 import { RUIRenderer } from "./RUIRenderer";
-import { RUIRoot, RUIContainer, RUILayouter, RUIRect, RUIOrientation } from "./RUI";
+import { RUIRoot, RUIContainer, RUILayouter, RUIRectangle, RUIOrientation } from "./RUI";
 import { RUICanvas } from "./RUICanvas";
 import { RUICmdList } from "./RUICmdList";
 
@@ -31,18 +31,20 @@ export class RUITest{
         root.root = ui;
 
         {
-            let rect1 = new RUIRect();
+            let rect1 = new RUIRectangle();
             rect1.width = 100;
             rect1.height= 100;
             ui.addChild(rect1);
 
             let container1 =new RUIContainer();
             container1.boxOrientation = RUIOrientation.Horizontal;
-            container1.padding = [10,10,10,5];
+            //container1.padding = [10,10,10,5];
             container1.margin = [10,0,5,0];
+            
+            container1.width = 150;
             ui.addChild(container1);
             {
-                let rectc1 = new RUIRect();
+                let rectc1 = new RUIRectangle();
                 rectc1.width = 70;
                 rectc1.height = 30;
                 rectc1.margin[3] = 20;
@@ -50,7 +52,7 @@ export class RUITest{
                 container1.addChild(rectc1);
 
 
-                let rectc2 = new RUIRect();
+                let rectc2 = new RUIRectangle();
                 rectc2.width= 130;
                 rectc2.height= 50;
                 rectc2.margin[3] = 25;
@@ -58,7 +60,7 @@ export class RUITest{
                 container1.addChild(rectc2);
             }
 
-            let rect2 = new RUIRect();
+            let rect2 = new RUIRectangle();
             rect2.width = 50;
             rect2.height = 30;
             ui.addChild(rect2);

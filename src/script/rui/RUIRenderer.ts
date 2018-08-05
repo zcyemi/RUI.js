@@ -148,62 +148,62 @@ export class RUIRenderer{
     }
 
     public Draw(drawcall:RUIDrawCall){
-        if(drawcall == null) return;
+        // if(drawcall == null) return;
         
-        if(this.m_drawcallBuffer == null){
-            this.m_drawcallBuffer = new RUIDrawCallBuffer(this.glctx,drawcall);
-        }
+        // if(this.m_drawcallBuffer == null){
+        //     this.m_drawcallBuffer = new RUIDrawCallBuffer(this.glctx,drawcall);
+        // }
 
-        let fonttex = RUIFontTexture.ASIICTexture;
+        // let fonttex = RUIFontTexture.ASIICTexture;
         
 
-        if(drawcall.isDirty ||fonttex.isDirty){
-            this.m_drawcallBuffer.SyncBuffer(this.gl);
-            drawcall.isDirty = false;
-            fonttex.isDirty= false;
-        }
+        // if(drawcall.isDirty ||fonttex.isDirty){
+        //     this.m_drawcallBuffer.SyncBuffer(this.gl);
+        //     drawcall.isDirty = false;
+        //     fonttex.isDirty= false;
+        // }
 
-        //do draw
-        let drawbuffer:RUIDrawCallBuffer = this.m_drawcallBuffer;
+        // //do draw
+        // let drawbuffer:RUIDrawCallBuffer = this.m_drawcallBuffer;
         
-        if(!drawbuffer.isDirty) return;
-        drawbuffer.isDirty = false;
+        // if(!drawbuffer.isDirty) return;
+        // drawbuffer.isDirty = false;
 
-        let gl = this.gl;
+        // let gl = this.gl;
 
        
-        gl.clear(gl.COLOR_BUFFER_BIT);
+        // gl.clear(gl.COLOR_BUFFER_BIT);
         
 
-        //draw drawcall buffer
-        let drawRectCount = drawbuffer.drawCountRect;
-        if(drawRectCount>0){
-            let programRect : GLProgram |any = drawbuffer.programRect;
-            gl.useProgram(programRect.Program);
-            gl.uniform4fv(programRect.uProj,this.m_projectParam);
+        // //draw drawcall buffer
+        // let drawRectCount = drawbuffer.drawCountRect;
+        // if(drawRectCount>0){
+        //     let programRect : GLProgram |any = drawbuffer.programRect;
+        //     gl.useProgram(programRect.Program);
+        //     gl.uniform4fv(programRect.uProj,this.m_projectParam);
 
-            gl.bindVertexArray(this.m_drawcallBuffer.vaoRect);
-            gl.drawElements(gl.TRIANGLES,drawRectCount*6,gl.UNSIGNED_SHORT,0);
-        }
+        //     gl.bindVertexArray(this.m_drawcallBuffer.vaoRect);
+        //     gl.drawElements(gl.TRIANGLES,drawRectCount*6,gl.UNSIGNED_SHORT,0);
+        // }
 
-        let drawTextCount = drawbuffer.drawCountText;
-        if(drawTextCount > 0){
-            if(fonttex.isTextureValid){
-                let programText: GLProgram|any = drawbuffer.programText;
-                gl.useProgram(programText.Program);
-                gl.uniform4fv(programText.uProj,this.m_projectParam);
+        // let drawTextCount = drawbuffer.drawCountText;
+        // if(drawTextCount > 0){
+        //     if(fonttex.isTextureValid){
+        //         let programText: GLProgram|any = drawbuffer.programText;
+        //         gl.useProgram(programText.Program);
+        //         gl.uniform4fv(programText.uProj,this.m_projectParam);
 
-                gl.activeTexture(gl.TEXTURE0);
-                gl.bindTexture(gl.TEXTURE_2D,fonttex.m_glTexture);
-                gl.uniform1i(programText.uSampler,0);
+        //         gl.activeTexture(gl.TEXTURE0);
+        //         gl.bindTexture(gl.TEXTURE_2D,fonttex.m_glTexture);
+        //         gl.uniform1i(programText.uSampler,0);
 
-                gl.bindVertexArray(drawbuffer.vaoText);
-                gl.drawElements(gl.TRIANGLES,drawTextCount *6, gl.UNSIGNED_SHORT,0)
-            }
-            else{
-                drawbuffer.isDirty = true;
-            }
-        }
+        //         gl.bindVertexArray(drawbuffer.vaoText);
+        //         gl.drawElements(gl.TRIANGLES,drawTextCount *6, gl.UNSIGNED_SHORT,0)
+        //     }
+        //     else{
+        //         drawbuffer.isDirty = true;
+        //     }
+        // }
 
         
 
