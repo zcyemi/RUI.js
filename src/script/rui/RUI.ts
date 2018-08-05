@@ -1,9 +1,18 @@
 import { RUICmdList } from "./RUICmdList";
 import { UIUtil } from "./UIUtil";
+import { RUIStyle } from "./RUIStyle";
 
 
 
 export const RUIAuto: number= -1;
+
+
+export class RUIConst{
+    public static readonly TOP:number = 0;
+    public static readonly RIGHT:number = 1;
+    public static readonly BOTTOM:number = 2;
+    public static readonly LEFT: number = 3;
+}
 
 type RUISize = number;
 
@@ -38,8 +47,9 @@ export class RUIObject{
     public maxheight: RUISize = RUIAuto;
     public minwidth:RUISize = 70;
     public minheight:RUISize = 23;
-    public margin : number[];
-    public padding: number[];
+    public margin : number[] = [0,0,0,0];
+    // top right bottom left
+    public padding: number[] = [0,0,0,0]; 
 
     public position : RUIPosition = RUIPosition.Default;
     public left: RUISize;
@@ -181,6 +191,17 @@ export class RUIContainer extends RUIObject{
 
         let offset = 0;
         let maxsize = 0;
+
+        let offsetside = 0;
+
+        //padding
+        let padding = this.padding;
+            offset += padding[isVertical? RUIConst.TOP : RUIConst.LEFT];
+            offsetside = padding[isVertical? RUIConst.LEFT: RUIConst.TOP];
+
+        //margin
+        let marginLast = 0;
+
         if(children.length != 0){
             for(var i=0,len = children.length;i<len;i++){
                 let c= children[i];
@@ -192,31 +213,41 @@ export class RUIContainer extends RUIObject{
                 if(cw == null) throw new Error("children width is null");
                 if(ch == null) throw new Error("children height is null");
 
+                let cmargin = c.margin;
                 if(isVertical){
-                    c._caloffsety = offset;
-                    c._caloffsetx = 0;
-                    offset += ch;
-                    maxsize = Math.max(maxsize,cw);
+                    marginLast = Math.max(marginLast, cmargin[RUIConst.TOP]);
+
+                    c._caloffsety = offset + marginLast;
+                    c._caloffsetx = offsetside + cmargin[RUIConst.LEFT];
+                    offset += ch + marginLast;
+                    marginLast = cmargin[RUIConst.BOTTOM];
+                    maxsize = Math.max(maxsize,cw + cmargin[RUIConst.LEFT]+ cmargin[RUIConst.RIGHT]);
                 }
                 else{
-                    c._caloffsetx = offset;
-                    c._caloffsety = 0;
-                    offset +=cw;
-                    maxsize = Math.max(maxsize,ch);
+                    marginLast = Math.max(marginLast,cmargin[RUIConst.LEFT]);
+
+                    c._caloffsetx = offset + marginLast;
+                    c._caloffsety = offsetside + cmargin[RUIConst.TOP];
+                    
+                    offset +=cw + marginLast;
+                    marginLast = cmargin[RUIConst.RIGHT];
+                    maxsize = Math.max(maxsize,ch+ cmargin[RUIConst.TOP] + cmargin[RUIConst.BOTTOM]);
                 }
             }
+            
+            offset += marginLast;
         }
         else{
 
         }
 
         if(isVertical){
-            this._calwidth = maxsize;
-            this._calheight = offset;
+            this._calwidth = maxsize + padding[RUIConst.RIGHT] + padding[RUIConst.LEFT];
+            this._calheight = offset +padding[RUIConst.BOTTOM];
         }
         else{
-            this._calheight = maxsize;
-            this._calwidth = offset;
+            this._calheight = maxsize + padding[RUIConst.BOTTOM] + padding[RUIConst.TOP];
+            this._calwidth = offset + padding[RUIConst.RIGHT];
         }
     }
 
@@ -235,6 +266,8 @@ export class RUIContainer extends RUIObject{
 
     public onDrawPre(cmd:RUICmdList){
 
+        let rect =[this._calx,this._caly,this._calwidth,this._calheight];
+        cmd.DrawBorder(rect,RUIStyle.Default.primary);
     }
 
     public onDrawPost(cmd:RUICmdList){
