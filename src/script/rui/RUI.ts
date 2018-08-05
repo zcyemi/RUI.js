@@ -8,7 +8,7 @@ export const RUIAuto: number= -1;
 
 
 export type RUIRect = number[];
-
+export const RUICLIP_MAX = [0,0,5000,5000];
 
 
 export class RUIConst{
@@ -63,12 +63,13 @@ export class RUIObject{
 
     public visible: boolean = false;
     public zorder: number = 0;
-    public flex: number | null;
+    public flex?: number;
 
     public parent: RUIObject = null;
 
     public id:string;
     public isdirty: boolean = true;
+    public isClip: boolean = true;
 
     public _calwidth?: number;
     public _calheight?:number;
@@ -77,11 +78,14 @@ export class RUIObject{
     public _calx:number;
     public _caly:number;
 
+    public _flexwidth?:number;
+    public _flexheight?:number;
+
     protected _rect :RUIRect;
 
     public _root :RUIRoot;
 
-    public _resized:boolean = false;
+    public _resized:boolean = true;
 
     public onBuild(){
 
@@ -116,29 +120,9 @@ export class RUIObject{
             if(this._calheight == null) throw new Error();
             return;
         }
-        if(this.width != RUIAuto){
-            this._calwidth = this.width;
-        }
-        else{
-            if(isRoot){
-                throw new Error();
-            }
-            else{
-                this._calwidth = this.minwidth;
-            }
-        }
 
-        if(this.height != RUIAuto){
-            this._calheight = this.height;
-        }
-        else{
-            if(isRoot){
-                throw new Error();
-            }
-            else{
-                this._calheight = this.minheight;
-            }
-        }
+        this.fillSize();
+
         this._resized = false;
     }
 
@@ -153,6 +137,37 @@ export class RUIObject{
             throw new Error("setDirty must be called in hierachied uiobject.");
         }
         root.isdirty = true;
+    }
+
+    protected fillSize(){
+
+        this._calwidth= null;
+        this._calheight = null;
+
+        if(this._flexwidth != null) this._calwidth = this._flexwidth;
+        if(this._flexheight != null) this._calheight = this._flexheight;
+
+        if(this._calwidth == null){
+            if(this.width== RUIAuto){
+                if(this.parent == null){
+                    throw new Error();
+                }
+            }
+            else{
+                this._calwidth= this.width;
+            }
+        }
+        
+        if(this._calheight == null){
+            if(this.height == RUIAuto){
+                if(this.parent == null){
+                    throw new Error();
+                }
+            }
+            else{
+                this._calheight = this.height;
+            }
+        }
     }
 
 }
@@ -288,15 +303,7 @@ export class RUIContainer extends RUIObject{
     }
 }
 
-export class RUIFlexContainer extends RUIContainer{
 
-
-    public onLayout(){
-
-      
-
-    }
-}
 
 export class RUIRoot{
 
@@ -322,8 +329,15 @@ export class RUIRectangle extends RUIObject{
 
 
     public onDraw(cmd:RUICmdList){
+
+        let noclip = !this.isClip;
+
+        if(noclip) cmd.PushClipRect();
+        
         let rect = [this._calx,this._caly,this._calwidth,this._calheight];
         cmd.DrawRectWithColor(rect,UIUtil.RandomColor());
+
+        if(noclip) cmd.PopClipRect();
     }
 }
 

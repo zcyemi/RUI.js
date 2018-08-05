@@ -1,4 +1,4 @@
-import { RUIRoot, RUIRect } from "./RUI";
+import { RUIRoot, RUIRect, RUICLIP_MAX } from "./RUI";
 
 export enum RUIDrawCmdType {
     rect,
@@ -113,11 +113,17 @@ export class RUICmdList{
         this.drawList.push(cmd);
     }
 
-    public PushClipRect(rect:RUIRect){
+    public PushClipRect(rect?:RUIRect){
+        let clip  = null;
+        if(rect == null){
+            clip = RUICLIP_MAX;
+        }
+        else{
+           clip = [rect[0],rect[1],rect[0] + rect[2],rect[1]+ rect[3]];
+        }
 
-        let clip = [rect[0],rect[1],rect[0] + rect[2],rect[1]+ rect[3]];
-
-        this.m_clipStack.push(clip);
+        
+        this.m_clipStack.push(this.m_clipRect);
         this.m_clipRect = clip;
     }
 

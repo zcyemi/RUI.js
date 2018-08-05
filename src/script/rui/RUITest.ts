@@ -2,6 +2,7 @@ import { RUIRenderer } from "./RUIRenderer";
 import { RUIRoot, RUIContainer, RUILayouter, RUIRectangle, RUIOrientation } from "./RUI";
 import { RUICanvas } from "./RUICanvas";
 import { RUICmdList } from "./RUICmdList";
+import { RUIFlexContainer } from "./RUIFlexContainer";
 
 
 export class RUITest{
@@ -56,8 +57,34 @@ export class RUITest{
                 rectc2.width= 130;
                 rectc2.height= 50;
                 rectc2.margin[3] = 25;
+                rectc2.isClip = false;
 
                 container1.addChild(rectc2);
+            }
+
+            {
+                let container2 = new RUIFlexContainer();
+                container2.width = 200;
+                container2.padding = [5,5,5,5];
+                //container2.height = 100;
+                container2.boxOrientation = RUIOrientation.Horizontal;
+
+                ui.addChild(container2);
+
+                let rectfc1 = new RUIRectangle();
+                rectfc1.flex = 1;
+                container2.addChild(rectfc1);
+                rectfc1.height = 30;
+
+                let rectfc2 = new RUIRectangle();
+                rectfc2.width = 50;
+                container2.addChild(rectfc2);
+
+                let rectfc3 = new RUIRectangle();
+                rectfc3.height = 100;
+                rectfc3.flex = 2;
+
+                container2.addChild(rectfc3);
             }
 
             let rect2 = new RUIRectangle();

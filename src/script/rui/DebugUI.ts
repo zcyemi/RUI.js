@@ -60,6 +60,8 @@ export class EditorUI extends UIObject{
         this.addChild(ctxMenu);
     }
 
+    
+
     public onDraw(cmd:RUIDrawCall){
         let rect = [this._calculateX,this._calculateY,this._width,this._height];
         cmd.DrawRectWithColor(rect,this.color);
