@@ -3,6 +3,7 @@ import { GLProgram, GLContext } from "wglut";
 import { GLSL_VERT_DEF, GLSL_FRAG_COLOR, GLSL_VERT_TEXT, GLSL_FRAG_TEXT } from "../gl/wglShaderLib";
 import { RUIFontTexture } from "./RUIFontTexture";
 import { RUIColor } from "./RUIColor";
+import { RUICmdList } from "./RUICmdList";
 
 
 const COLOR_ERROR: number[] = [1, 0, 1, 1];
@@ -80,7 +81,7 @@ export class RUIDrawCallBuffer {
 
     public indicesBuffer: WebGLBuffer;
 
-    private m_drawcall: RUIDrawCall;
+    private m_drawcall: RUIDrawCall | RUICmdList;
 
     public isDirty: boolean = true;
 
@@ -98,7 +99,7 @@ export class RUIDrawCallBuffer {
     private m_aryBufferTextClip: RUIArrayBufferF32 = new RUIArrayBufferF32(Float32Array);
 
 
-    constructor(glctx: GLContext, drawcall: RUIDrawCall) {
+    constructor(glctx: GLContext, drawcall: RUIDrawCall | RUICmdList) {
         let gl = glctx.gl;
         this.m_drawcall = drawcall;
         if (drawcall == null) return;
@@ -197,7 +198,7 @@ export class RUIDrawCallBuffer {
 
 
         this.isDirty = true;
-        let drawcall: RUIDrawCall = this.m_drawcall;
+        let drawcall: RUIDrawCall | RUICmdList = this.m_drawcall;
         let drawlist = drawcall.drawList;
 
         let fonttex = RUIFontTexture.ASIICTexture;
@@ -221,7 +222,7 @@ export class RUIDrawCallBuffer {
             let rectCount = 0;
             let textCount = 0;
 
-            let maxClip = drawcall.canvas.canvasRect;
+            let maxClip = [0,0,2000,1000];
             maxClip[2] = maxClip[0] + maxClip[2];
             maxClip[3] = maxClip[1]+ maxClip[3];
 

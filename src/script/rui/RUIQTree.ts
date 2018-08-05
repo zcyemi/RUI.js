@@ -15,87 +15,87 @@ if(Array.prototype['includes'] == null){
 }
 
 
-export class RUIQTree{
+// export class RUIQTree{
 
-    private m_ui :UIObject;
-    private m_tar:RUICanvas;
-    constructor(canvas:RUICanvas){
-        this.m_tar = canvas;
-        this.m_ui = canvas.rootui;
-    }
-
-
-    public DispatchEvtMouseEvent(e:MouseEvent,type:string): UIObject{
-        let x = e.offsetX;
-        let y = e.offsetY;
-
-        let target = this.TraversalTree(x,y);
-        if(target == null) return null;
-        let re = new RUIMouseEvent(target,type,x,y);
-        re.button = <RUIButton>e.button;
-        target[type].call(target,re);
-        return target;
-    }
+//     private m_ui :UIObject;
+//     private m_tar:RUICanvas;
+//     constructor(canvas:RUICanvas){
+//         this.m_tar = canvas;
+//         this.m_ui = canvas.rootui;
+//     }
 
 
-    private m_listHovered: UIObject[] = [];
-    public DispatchEvtMouseMove(x:number,y:number){
-        let curlist = this.TraversalNormalAll(x,y);
-        let hovlist= this.m_listHovered;
+//     public DispatchEvtMouseEvent(e:MouseEvent,type:string): UIObject{
+//         let x = e.offsetX;
+//         let y = e.offsetY;
+
+//         let target = this.TraversalTree(x,y);
+//         if(target == null) return null;
+//         let re = new RUIMouseEvent(target,type,x,y);
+//         re.button = <RUIButton>e.button;
+//         target[type].call(target,re);
+//         return target;
+//     }
 
 
-        for(var i=hovlist.length-1;i>=0;i--){
-            let c= hovlist[i];
-            if(curlist.indexOf(c) == -1){
-                c.onMouseLeave(new RUIEvent(c,RUIEvent.MOUSE_LEAVE,this.m_tar));
-                hovlist.splice(i,1);
-            }
-        }
-
-        for(var i=0,len = curlist.length;i<len;i++){
-            let c = curlist[i];
-            if(hovlist.indexOf(c)>=0) continue;
-            c.onMouseEnter(new RUIEvent(c,RUIEvent.MOUSE_ENTER,this.m_tar));
-            hovlist.push(c);
-        }
-    }
+//     private m_listHovered: UIObject[] = [];
+//     public DispatchEvtMouseMove(x:number,y:number){
+//         let curlist = this.TraversalNormalAll(x,y);
+//         let hovlist= this.m_listHovered;
 
 
+//         for(var i=hovlist.length-1;i>=0;i--){
+//             let c= hovlist[i];
+//             if(curlist.indexOf(c) == -1){
+//                 c.onMouseLeave(new RUIEvent(c,RUIEvent.MOUSE_LEAVE,this.m_tar));
+//                 hovlist.splice(i,1);
+//             }
+//         }
 
-    public TraversalTree(x:number,y:number) : UIObject{
-        return this.TraversalNoraml(x,y);
-    }
+//         for(var i=0,len = curlist.length;i<len;i++){
+//             let c = curlist[i];
+//             if(hovlist.indexOf(c)>=0) continue;
+//             c.onMouseEnter(new RUIEvent(c,RUIEvent.MOUSE_ENTER,this.m_tar));
+//             hovlist.push(c);
+//         }
+//     }
 
-    private TraversalNormalAll(x:number,y:number):UIObject[]{
-        var list:UIObject[] = [];
 
-        this.m_ui.execRecursive((ui)=>{
-            if(ui.rectContains(x,y)){
-                list.push(ui);
-            }
-        })
 
-        return list;
+//     public TraversalTree(x:number,y:number) : UIObject{
+//         return this.TraversalNoraml(x,y);
+//     }
 
-    }
+//     private TraversalNormalAll(x:number,y:number):UIObject[]{
+//         var list:UIObject[] = [];
 
-    private TraversalNoraml(x:number,y:number):UIObject{
-        var tarNode: UIObject = null;
-        this.m_ui.execRecursive((ui)=>{
-            if(ui.rectContains(x,y)){
-                if(tarNode == null){
-                    tarNode = ui;
-                }
-                else{
-                    if(ui._level >= tarNode._level) tarNode = ui;
-                }
-            }
-        });
+//         this.m_ui.execRecursive((ui)=>{
+//             if(ui.rectContains(x,y)){
+//                 list.push(ui);
+//             }
+//         })
 
-        return tarNode;
-    }
+//         return list;
 
-    private TraversalQuadTree(x:number,y:number):UIObject{
-        throw new Error('not implemented.');
-    }
-}
+//     }
+
+//     private TraversalNoraml(x:number,y:number):UIObject{
+//         var tarNode: UIObject = null;
+//         this.m_ui.execRecursive((ui)=>{
+//             if(ui.rectContains(x,y)){
+//                 if(tarNode == null){
+//                     tarNode = ui;
+//                 }
+//                 else{
+//                     if(ui._level >= tarNode._level) tarNode = ui;
+//                 }
+//             }
+//         });
+
+//         return tarNode;
+//     }
+
+//     private TraversalQuadTree(x:number,y:number):UIObject{
+//         throw new Error('not implemented.');
+//     }
+// }

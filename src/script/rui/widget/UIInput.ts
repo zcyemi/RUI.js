@@ -40,13 +40,13 @@ export class UIInput extends UIObject implements IInputUI {
         this.m_isFocuesd= true;
         this.setColor();
         this.setDirty(true);
-        this._canvas.setActiveInputUI(this);
+        //this._canvas.setActiveInputUI(this);
     }
     public onInactive(){
         this.m_isFocuesd= false;
         this.setColor();
         this.setDirty(true);
-        this._canvas.setInActiveInputUI(this);
+        //this._canvas.setInActiveInputUI(this);
     }
 
     public onKeyPress(e:KeyboardEvent): void {

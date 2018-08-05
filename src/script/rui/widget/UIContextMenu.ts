@@ -63,7 +63,7 @@ export class UIContextMenu extends UIObject{
 
         this.visibleSelf =true;
         this.displayMode = UIDisplayMode.Default;
-        this._canvas.setActiveUI(this);
+        //this._canvas.setActiveUI(this);
 
         this.setDirty(true);
     }

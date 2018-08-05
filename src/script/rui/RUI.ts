@@ -1,3 +1,5 @@
+import { RUICmdList } from "./RUICmdList";
+import { UIUtil } from "./UIUtil";
 
 
 
@@ -29,8 +31,8 @@ export enum RUIOrientation{
 
 export class RUIObject{
 
-    public width: RUISize = RUIAuto;
-    public height: RUISize = RUIAuto;
+    private _width: RUISize = RUIAuto;
+    private _height: RUISize = RUIAuto;
 
     public maxwidth: RUISize = RUIAuto;
     public maxheight: RUISize = RUIAuto;
@@ -58,6 +60,8 @@ export class RUIObject{
     public _calheight?:number;
     public _caloffsetx:number = 0;
     public _caloffsety:number = 0;
+    public _calx:number;
+    public _caly:number;
 
     public _root :RUIRoot;
 
@@ -67,8 +71,25 @@ export class RUIObject{
 
     }
 
-    public onDraw(){
+    public onDraw(cmd:RUICmdList){
 
+    }
+
+    public set width(val:RUISize){
+        this._width = val;
+        this._resized = true;
+    }
+
+    public get width():RUISize{
+        return this._width;
+    }
+
+    public set height(val:RUISize){
+        this._height = val;
+        this._resized = true;
+    }
+    public get height():RUISize{
+        return this._height;
     }
 
     public onLayout(){
@@ -109,6 +130,15 @@ export class RUIObject{
         return this._root.root === this;
     }
 
+    public setDirty(){
+        this.isdirty =true;
+        let root = this._root;
+        if(root == null){
+            throw new Error("setDirty must be called in hierachied uiobject.");
+        }
+        root.isdirty = true;
+    }
+
 }
 
 export class RUIContainer extends RUIObject{
@@ -128,8 +158,7 @@ export class RUIContainer extends RUIObject{
         ui._root = this._root;
         c.push(ui);
 
-        ui.isdirty = true;
-        this.isdirty = true;
+        ui.setDirty();
     }
 
     public removeChild(ui:RUIObject){
@@ -190,6 +219,27 @@ export class RUIContainer extends RUIObject{
             this._calwidth = offset;
         }
     }
+
+
+    public onDraw(cmd:RUICmdList){
+        this.onDrawPre(cmd);
+
+        let children= this.children;
+        for(var i=0,clen = children.length;i<clen;i++){
+            let c=  children[i];
+            c.onDraw(cmd);
+        }
+
+        this.onDrawPost(cmd);
+    }
+
+    public onDrawPre(cmd:RUICmdList){
+
+    }
+
+    public onDrawPost(cmd:RUICmdList){
+
+    }
 }
 
 export class RUIFlexContainer extends RUIContainer{
@@ -207,14 +257,77 @@ export class RUIRoot{
     public root: RUIObject;
 
     public isdirty: boolean = true;
+
+    public constructor(ui:RUIObject){
+        if(ui.parent != null) throw new Error("root ui must have no parent.");
+
+        this.root = ui;
+        ui._root = this;
+    }
+
+    public resizeRoot(width:number,height:number){
+        this.isdirty =true;
+        this.root.width = width;
+        this.root.height = height;
+    }
+}
+
+export class RUIRect extends RUIObject{
+
+
+    public onDraw(cmd:RUICmdList){
+        let rect = [this._calx,this._caly,this._calwidth,this._calheight];
+        cmd.DrawRectWithColor(rect,UIUtil.RandomColor());
+    }
 }
 
 export class RUILayouter{
 
-    public static Build(uiroot: RUIRoot){
+    public build(uiroot: RUIRoot){
+
+        let isdirty = uiroot.isdirty;
+        if(!isdirty) return;
+
+        //Layout
         let ui = uiroot.root;
         ui.onLayout();
+        uiroot.isdirty = false;
         
+
+        ui._calx = 0;
+        ui._caly = 0;
+
+        //Calculate All offset
+        if(ui instanceof RUIContainer){
+            this.calculateOffset(ui);
+        }
+
+        console.log(ui);
+    }
+
+    private calculateOffset(cui:RUIContainer){
+
+        let children = cui.children;
+        let clen = children.length;
+
+        let isVertical = cui.boxOrientation == RUIOrientation.Vertical;
+
+        if(clen > 0){
+
+            let offx = cui._calx;
+            let offy = cui._caly;
+
+            for(var i=0;i<clen;i++){
+                var c= children[i];
+
+                c._calx = offx + c._caloffsetx;
+                c._caly = offy + c._caloffsety;
+
+                if(c instanceof RUIContainer){
+                    this.calculateOffset(c);
+                }
+            }
+        }
     }
 
 
