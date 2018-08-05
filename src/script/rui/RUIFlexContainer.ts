@@ -1,4 +1,4 @@
-import { RUIContainer, RUIOrientation, RUIAuto, RUIConst } from "./RUI";
+import { RUIContainer, RUIOrientation, RUIAuto, RUIConst, ROUND } from "./RUI";
 
 export class RUIFlexContainer extends RUIContainer{
 
@@ -110,7 +110,7 @@ export class RUIFlexContainer extends RUIContainer{
             for(var i=0;i<clen;i++){
                 let c= children[i];
 
-                let flowsize = c.flex == null ? ( isVertical ? c.height: c.width ): (c.flex * sizePerFlex);
+                let flowsize = c.flex == null ? ( isVertical ? c.height: c.width ): ROUND(c.flex * sizePerFlex);
                 
                 if(isVertical){
                     c._flexheight = flowsize;

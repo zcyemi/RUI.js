@@ -103,7 +103,7 @@ export class RUICmdList{
 
     public DrawBorder(rect: number[], color: number[]) {
         let cmd = RUIDrawCmd.CmdBorder(rect, color);
-        cmd.clip = this.m_clipRect;
+        //cmd.clip = this.m_clipRect;
         this.drawList.push(cmd);
     }
 

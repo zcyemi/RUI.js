@@ -40,5 +40,14 @@ export class UIUtil{
 
         return null;
     }
+
+    public static RectMinus(recta:RUIRect,offset:RUIRect):RUIRect{
+        return [
+            recta[0] - offset[0],
+            recta[1] - offset[1],
+            recta[2] - offset[2],
+            recta[3] - offset[3]
+        ];
+    }
 }
 

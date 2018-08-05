@@ -11,6 +11,11 @@ export type RUIRect = number[];
 export const RUICLIP_MAX = [0,0,5000,5000];
 
 
+export function ROUND(x:number){
+    return Math.round(x);
+}
+
+
 export class RUIConst{
     public static readonly TOP:number = 0;
     public static readonly RIGHT:number = 1;
@@ -292,10 +297,10 @@ export class RUIContainer extends RUIObject{
 
         let rect =[this._calx,this._caly,this._calwidth,this._calheight];
         this._rect = rect;
-        if(this.boxClip) cmd.PushClipRect(rect);
 
         cmd.DrawBorder(rect,RUIStyle.Default.primary);
 
+        if(this.boxClip) cmd.PushClipRect(UIUtil.RectMinus(rect,this.padding));
     }
 
     public onDrawPost(cmd:RUICmdList){
