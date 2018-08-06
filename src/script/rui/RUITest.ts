@@ -1,5 +1,5 @@
 import { RUIRenderer } from "./RUIRenderer";
-import { RUIRoot, RUIContainer, RUILayouter, RUIRectangle, RUIOrientation } from "./RUI";
+import { RUIRoot, RUILayouter, RUIRectangle, RUIOrientation, RUIPosition, RUIContainer } from "./RUI";
 import { RUICanvas } from "./RUICanvas";
 import { RUICmdList } from "./RUICmdList";
 import { RUIFlexContainer } from "./RUIFlexContainer";
@@ -56,6 +56,9 @@ export class RUITest{
                 let rectc2 = new RUIRectangle();
                 rectc2.width= 130;
                 rectc2.height= 50;
+                rectc2.position = RUIPosition.Offset;
+                rectc2.left = 20;
+                rectc2.top = -20;
                 
                 rectc2.margin[3] = 25;
                 rectc2.isClip = false;
@@ -69,6 +72,7 @@ export class RUITest{
                 container2.padding = [5,5,5,5];
                 container2.height = 100;
                 container2.boxOrientation = RUIOrientation.Horizontal;
+
 
                 ui.addChild(container2);
 
@@ -96,6 +100,9 @@ export class RUITest{
                     let container3 =new RUIFlexContainer();
                     container3.boxOrientation = RUIOrientation.Vertical;
                     container3.flex = 1;
+
+                    container3.position = RUIPosition.Offset;
+                    container3.left = 20;
 
                     container2.addChild(container3);
 

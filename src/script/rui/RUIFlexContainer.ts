@@ -1,4 +1,4 @@
-import { RUIContainer, RUIOrientation, RUIAuto, RUIConst, ROUND } from "./RUI";
+import { RUIOrientation, RUIAuto, RUIConst, ROUND, RUIPosition, RUIContainer } from "./RUI";
 
 export class RUIFlexContainer extends RUIContainer{
 
@@ -136,6 +136,10 @@ export class RUIFlexContainer extends RUIContainer{
 
                     offset += c._calwidth;
                 }
+
+
+                //offset
+                c.fillPositionOffset();
             }
         }
 

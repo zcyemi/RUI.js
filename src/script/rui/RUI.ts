@@ -61,10 +61,10 @@ export class RUIObject{
     public padding: number[] = [0,0,0,0]; 
 
     public position : RUIPosition = RUIPosition.Default;
-    public left: RUISize;
-    public right: RUISize;
-    public top: RUISize;
-    public bottom:RUISize;
+    public left: RUISize = 0;
+    public right: RUISize = 0;
+    public top: RUISize = 0;
+    public bottom:RUISize = 0;
 
     public visible: boolean = false;
     public zorder: number = 0;
@@ -175,6 +175,13 @@ export class RUIObject{
         }
     }
 
+    public fillPositionOffset(){
+        if(this.position == RUIPosition.Offset){
+            this._caloffsetx += this.left;
+            this._caloffsety += this.top;
+        }
+    }
+
 }
 
 export class RUIContainer extends RUIObject{
@@ -254,11 +261,12 @@ export class RUIContainer extends RUIObject{
 
                     c._caloffsetx = offset + marginLast;
                     c._caloffsety = offsetside + cmargin[RUIConst.TOP];
-                    
                     offset +=cw + marginLast;
                     marginLast = cmargin[RUIConst.RIGHT];
                     maxsize = Math.max(maxsize,ch+ cmargin[RUIConst.TOP] + cmargin[RUIConst.BOTTOM]);
                 }
+
+                c.fillPositionOffset();
             }
             
             offset += marginLast;
