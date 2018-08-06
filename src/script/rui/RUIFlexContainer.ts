@@ -1,4 +1,4 @@
-import { RUIOrientation, RUIConst, RUIAuto, ROUND } from "./RUIObject";
+import { RUIOrientation, RUIConst, RUIAuto, ROUND, RUIObject } from "./RUIObject";
 import { RUIContainer } from "./RUIContainer";
 
 
@@ -53,8 +53,15 @@ export class RUIFlexContainer extends RUIContainer{
             let marginPosSide = isVertical ? RUIConst.BOTTOM: RUIConst.RIGHT;
             let marginTotal = 0;
 
+            let relativeChildren:RUIObject[] = [];
+
             for(var i=0;i<clen;i++){
                 let c = children[i];
+
+                if(!c.isOnFlow){
+                    relativeChildren.push(c);
+                    continue;
+                }
 
                 if(c.flex == null){
                     let cfixed = isVertical? c.height :c.width;
@@ -112,6 +119,8 @@ export class RUIFlexContainer extends RUIContainer{
             for(var i=0;i<clen;i++){
                 let c= children[i];
 
+                if(!c.isOnFlow) continue;
+
                 let flowsize = c.flex == null ? ( isVertical ? c.height: c.width ): ROUND(c.flex * sizePerFlex);
                 
                 if(isVertical){
@@ -143,6 +152,9 @@ export class RUIFlexContainer extends RUIContainer{
                 //offset
                 c.fillPositionOffset();
             }
+
+
+            this.onLayoutRelativeUI(relativeChildren);
         }
 
     }

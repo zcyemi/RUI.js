@@ -116,10 +116,23 @@ export class RUITest{
                     rfc1.flex = 1;
                     container3.addChild(rfc1);
 
+
+
                     let rfc2 =new RUIRectangle();
                     rfc2.flex = 2;
                     container3.addChild(rfc2);
+
                 }
+
+                
+                let rfcf1 = new RUIRectangle();
+                rfcf1.position = RUIPosition.Relative;
+                rfcf1.left = 20;
+                rfcf1.right = 20;
+                rfcf1.height =100;
+                rfcf1.isClip = false;
+
+                container2.addChild(rfcf1);
             }
 
             let rect2 = new RUIRectangle();

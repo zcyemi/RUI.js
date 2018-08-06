@@ -22,10 +22,10 @@ export class RUIConst{
 type RUISize = number;
 
 export enum RUIPosition{
-    Default,
-    Relative,
-    Absolute,
-    Offset
+    Default = 0,
+    Relative = 1,
+    Absolute = 2,
+    Offset = 3
 }
 
 export enum RUIBoxFlow{
@@ -57,10 +57,10 @@ export class RUIObject{
     public padding: number[] = [0,0,0,0]; 
 
     public position : RUIPosition = RUIPosition.Default;
-    public left: RUISize = 0;
-    public right: RUISize = 0;
-    public top: RUISize = 0;
-    public bottom:RUISize = 0;
+    public left: RUISize = RUIAuto;
+    public right: RUISize = RUIAuto;
+    public top: RUISize = RUIAuto;
+    public bottom:RUISize = RUIAuto;
 
     public visible: boolean = false;
     public zorder: number = 0;
@@ -130,6 +130,11 @@ export class RUIObject{
         return this._root.root === this;
     }
 
+    public get isOnFlow(): boolean{
+        let pos = this.position;
+        return (pos == RUIPosition.Default || pos == RUIPosition.Offset);
+    }
+
     public setDirty(){
         this.isdirty =true;
         let root = this._root;
@@ -172,8 +177,8 @@ export class RUIObject{
 
     public fillPositionOffset(){
         if(this.position == RUIPosition.Offset){
-            this._caloffsetx += this.left;
-            this._caloffsety += this.top;
+            this._caloffsetx += this.left == RUIAuto? 0 : this.left;
+            this._caloffsety += this.top == RUIAuto? 0: this.top;
         }
     }
 

@@ -1,10 +1,10 @@
-import { RUIObject, RUIOverflow, RUIOrientation, RUIConst, RUIAuto } from "./RUIObject";
+import { RUIObject, RUIOverflow, RUIOrientation, RUIConst, RUIAuto, RUIPosition, ROUND, RUIRect } from "./RUIObject";
 import { RUICmdList } from "./RUICmdList";
 import { RUIStyle } from "./RUIStyle";
 import { UIUtil } from "./UIUtil";
 
 
-export class RUIContainer extends RUIObject{
+export class RUIContainer extends RUIObject {
     public boxClip: boolean = true;
     public boxOverflow: RUIOverflow = RUIOverflow.Clip;
     public boxOrientation: RUIOrientation = RUIOrientation.Vertical;
@@ -12,31 +12,31 @@ export class RUIContainer extends RUIObject{
     public children: RUIObject[] = [];
 
 
-    public addChild(ui:RUIObject){
-        if(ui == null) return;
+    public addChild(ui: RUIObject) {
+        if (ui == null) return;
         let c = this.children;
-        if(c.indexOf(ui)>=0) return;
+        if (c.indexOf(ui) >= 0) return;
 
-        ui.parent =this;
+        ui.parent = this;
         ui._root = this._root;
         c.push(ui);
 
         ui.setDirty();
     }
 
-    public removeChild(ui:RUIObject){
-        if(ui == null) return;
+    public removeChild(ui: RUIObject) {
+        if (ui == null) return;
         let c = this.children;
-        let index= c.indexOf(ui);
-        if(index <0) return;
-        this.children = c.splice(index,1);
+        let index = c.indexOf(ui);
+        if (index < 0) return;
+        this.children = c.splice(index, 1);
 
-        this.isdirty =true;
+        this.isdirty = true;
         ui.parent = null;
         ui._root = null;
     }
 
-    public onLayout(){
+    public onLayout() {
 
         let isVertical = this.boxOrientation == RUIOrientation.Vertical;
 
@@ -49,89 +49,186 @@ export class RUIContainer extends RUIObject{
 
         //padding
         let padding = this.padding;
-            offset += padding[isVertical? RUIConst.TOP : RUIConst.LEFT];
-            offsetside = padding[isVertical? RUIConst.LEFT: RUIConst.TOP];
+        offset += padding[isVertical ? RUIConst.TOP : RUIConst.LEFT];
+        offsetside = padding[isVertical ? RUIConst.LEFT : RUIConst.TOP];
 
         //margin
         let marginLast = 0;
 
-        if(children.length != 0){
-            for(var i=0,len = children.length;i<len;i++){
-                let c= children[i];
+        let relativeChildren: RUIObject[] = [];
+
+        if (children.length != 0) {
+
+            for (var i = 0, len = children.length; i < len; i++) {
+                let c = children[i];
+
+                if (!c.isOnFlow) {
+                    relativeChildren.push(c);
+                    continue;
+                }
 
                 c.onLayout();
 
                 let cw = c._calwidth;
                 let ch = c._calheight;
-                if(cw == null) throw new Error("children width is null");
-                if(ch == null) throw new Error("children height is null");
+                if (cw == null) throw new Error("children width is null");
+                if (ch == null) throw new Error("children height is null");
 
                 let cmargin = c.margin;
-                if(isVertical){
+                if (isVertical) {
                     marginLast = Math.max(marginLast, cmargin[RUIConst.TOP]);
 
                     c._caloffsety = offset + marginLast;
                     c._caloffsetx = offsetside + cmargin[RUIConst.LEFT];
                     offset += ch + marginLast;
                     marginLast = cmargin[RUIConst.BOTTOM];
-                    maxsize = Math.max(maxsize,cw + cmargin[RUIConst.LEFT]+ cmargin[RUIConst.RIGHT]);
+                    maxsize = Math.max(maxsize, cw + cmargin[RUIConst.LEFT] + cmargin[RUIConst.RIGHT]);
                 }
-                else{
-                    marginLast = Math.max(marginLast,cmargin[RUIConst.LEFT]);
+                else {
+                    marginLast = Math.max(marginLast, cmargin[RUIConst.LEFT]);
 
                     c._caloffsetx = offset + marginLast;
                     c._caloffsety = offsetside + cmargin[RUIConst.TOP];
-                    offset +=cw + marginLast;
+                    offset += cw + marginLast;
                     marginLast = cmargin[RUIConst.RIGHT];
-                    maxsize = Math.max(maxsize,ch+ cmargin[RUIConst.TOP] + cmargin[RUIConst.BOTTOM]);
+                    maxsize = Math.max(maxsize, ch + cmargin[RUIConst.TOP] + cmargin[RUIConst.BOTTOM]);
                 }
 
                 c.fillPositionOffset();
             }
-            
+
             offset += marginLast;
         }
-        else{
-
+        else {
         }
 
-        if(isVertical){
+        if (isVertical) {
             this._calwidth = maxsize + padding[RUIConst.RIGHT] + padding[RUIConst.LEFT];
-            this._calheight = offset +padding[RUIConst.BOTTOM];
+            this._calheight = offset + padding[RUIConst.BOTTOM];
         }
-        else{
+        else {
             this._calheight = maxsize + padding[RUIConst.BOTTOM] + padding[RUIConst.TOP];
             this._calwidth = offset + padding[RUIConst.RIGHT];
         }
 
-        if(this.width != RUIAuto) this._calwidth = this.width;
-        if(this.height != RUIAuto) this._calheight = this.height;
+        if (this.width != RUIAuto) this._calwidth = this.width;
+        if (this.height != RUIAuto) this._calheight = this.height;
+
+        //process relative children
+        this.onLayoutRelativeUI(relativeChildren);
+    }
+
+    protected onLayoutRelativeUI(ui: RUIObject[]) {
+        if (ui.length == 0) return;
+        let pWdith = this._calwidth;
+        let pHeight = this._calheight;
+
+        let root = this._root.root;
+
+        let rWidth = root._calwidth;
+        let rHeight = root._calheight;
+
+        for (var i = 0, clen = ui.length; i < clen; i++) {
+
+            let c = ui[i];
+
+            let isrelative = c.position == RUIPosition.Relative;
+            let cpw = isrelative ? pWdith : rWidth;
+            let cph = isrelative ? pHeight : rHeight;
+
+            let cleft = c.left;
+            let cright = c.right;
+            let ctop = c.top;
+            let cbottom = c.bottom;
+            
+            let cwidth = c.width;
+            let cheight = c.height;
+
+            let constraintHori = cleft != RUIAuto && c.right != RUIAuto;
+            let constraintVert = ctop != RUIAuto && c.bottom != RUIAuto;
+
+            if (constraintHori) {
+                c._caloffsetx = cleft;
+                c._calwidth = cpw - cleft - cright;
+            }
+            else {
+                if (cwidth != RUIAuto) {
+                    c._calwidth = cwidth;
+                    if (cleft != RUIAuto) {
+                        c._caloffsetx = cleft;
+                    }
+                    else if (cright != RUIAuto) {
+                        c._caloffsetx = cpw - cright - cwidth;
+                    }
+                    else {
+                        c._caloffsetx = ROUND((cpw - c._calwidth) / 2);
+                    }
+                }
+                else {
+                    throw new Error("relative ui have invalid horizontal constraint.");
+                }
+            }
+
+            if (constraintVert) {
+                c._caloffsety = ctop;
+                c._calheight = cph - ctop - cbottom;
+            }
+            else {
+                if (c.height != RUIAuto) {
+                    c._calheight = cheight;
+                    if (ctop != RUIAuto) {
+                        c._caloffsety = ctop;
+                    }
+                    else if (cbottom != RUIAuto) {
+                        c._caloffsety = cph - cbottom - cheight;
+                    }
+                    else {
+                        c._caloffsety = ROUND((cph - c._calheight) / 2);
+                    }
+                } else {
+                    throw new Error("relative ui have invalid vertical constraint.");
+                }
+            }
+        }
     }
 
 
-    public onDraw(cmd:RUICmdList){
+    public onDraw(cmd: RUICmdList) {
         this.onDrawPre(cmd);
 
-        let children= this.children;
-        for(var i=0,clen = children.length;i<clen;i++){
-            let c=  children[i];
+        let children = this.children;
+        for (var i = 0, clen = children.length; i < clen; i++) {
+            let c = children[i];
             c.onDraw(cmd);
         }
 
         this.onDrawPost(cmd);
     }
 
-    public onDrawPre(cmd:RUICmdList){
+    public onDrawPre(cmd: RUICmdList) {
 
-        let rect =[this._calx,this._caly,this._calwidth,this._calheight];
+        let rect = [this._calx, this._caly, this._calwidth, this._calheight];
         this._rect = rect;
 
-        cmd.DrawBorder(rect,RUIStyle.Default.primary);
+        cmd.DrawBorder(rect, RUIStyle.Default.primary);
 
-        if(this.boxClip) cmd.PushClipRect(UIUtil.RectMinus(rect,this.padding));
+        if (this.boxClip) cmd.PushClipRect(this.RectMinusePadding(rect, this.padding));
     }
 
-    public onDrawPost(cmd:RUICmdList){
-        if(this.boxClip) cmd.PopClipRect();
+    public onDrawPost(cmd: RUICmdList) {
+        if (this.boxClip) cmd.PopClipRect();
+    }
+
+    protected RectMinusePadding(recta: RUIRect, offset: number[]): RUIRect {
+
+        let pleft = offset[3];
+        let ptop = offset[0]
+
+        return [
+            recta[0] + pleft,
+            recta[1] + ptop,
+            recta[2] - offset[2] - pleft,
+            recta[3] - offset[3] - ptop
+        ];
     }
 }
