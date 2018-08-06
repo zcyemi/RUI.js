@@ -1,8 +1,12 @@
 import { RUIRenderer } from "./RUIRenderer";
-import { RUIRoot, RUILayouter, RUIRectangle, RUIOrientation, RUIPosition, RUIContainer } from "./RUI";
 import { RUICanvas } from "./RUICanvas";
 import { RUICmdList } from "./RUICmdList";
 import { RUIFlexContainer } from "./RUIFlexContainer";
+import { RUIRoot } from "./RUIRoot";
+import { RUIOrientation, RUIPosition } from "./RUIObject";
+import { RUIContainer } from "./RUIContainer";
+import { RUILayouter } from "./RUILayouter";
+import { RUIRectangle } from "./RUIRectangle";
 
 
 export class RUITest{

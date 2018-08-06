@@ -1,4 +1,5 @@
-import { RUIRect } from "./RUI";
+import { RUIRect } from "./RUIObject";
+
 
 export class UIUtil{
 
@@ -36,7 +37,6 @@ export class UIUtil{
         //TODO 
 
         throw new Error("not implemented!");
-
 
         return null;
     }

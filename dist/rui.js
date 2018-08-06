@@ -8,7 +8,27 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define("rui/RUICmdList", ["require", "exports", "rui/RUI"], function (require, exports, RUI_1) {
+define("rui/RUIRoot", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUIRoot = /** @class */ (function () {
+        function RUIRoot(ui) {
+            this.isdirty = true;
+            if (ui.parent != null)
+                throw new Error("root ui must have no parent.");
+            this.root = ui;
+            ui._root = this;
+        }
+        RUIRoot.prototype.resizeRoot = function (width, height) {
+            this.isdirty = true;
+            this.root.width = width;
+            this.root.height = height;
+        };
+        return RUIRoot;
+    }());
+    exports.RUIRoot = RUIRoot;
+});
+define("rui/RUICmdList", ["require", "exports", "rui/RUIObject"], function (require, exports, RUIObject_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUIDrawCmdType;
@@ -88,7 +108,7 @@ define("rui/RUICmdList", ["require", "exports", "rui/RUI"], function (require, e
         };
         RUICmdList.prototype.DrawBorder = function (rect, color) {
             var cmd = RUIDrawCmd.CmdBorder(rect, color);
-            cmd.clip = this.m_clipRect;
+            //cmd.clip = this.m_clipRect;
             this.drawList.push(cmd);
         };
         RUICmdList.prototype.DrawLine = function (x1, y1, x2, y2, color) {
@@ -99,7 +119,7 @@ define("rui/RUICmdList", ["require", "exports", "rui/RUI"], function (require, e
         RUICmdList.prototype.PushClipRect = function (rect) {
             var clip = null;
             if (rect == null) {
-                clip = RUI_1.RUICLIP_MAX;
+                clip = RUIObject_1.RUICLIP_MAX;
             }
             else {
                 clip = [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]];
@@ -115,29 +135,15 @@ define("rui/RUICmdList", ["require", "exports", "rui/RUI"], function (require, e
     }());
     exports.RUICmdList = RUICmdList;
 });
-define("rui/RUIStyle", ["require", "exports", "rui/UIUtil"], function (require, exports, UIUtil_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var RUIStyle = /** @class */ (function () {
-        function RUIStyle() {
-            this.background0 = UIUtil_1.UIUtil.ColorUNorm(30, 30, 30, 255);
-            this.background1 = UIUtil_1.UIUtil.ColorUNorm(37, 37, 38);
-            this.background2 = UIUtil_1.UIUtil.ColorUNorm(51, 51, 51);
-            this.primary = UIUtil_1.UIUtil.ColorUNorm(0, 122, 204);
-            this.primary0 = UIUtil_1.UIUtil.ColorUNorm(9, 71, 113);
-            this.inactive = UIUtil_1.UIUtil.ColorUNorm(63, 63, 70);
-            this.border0 = UIUtil_1.UIUtil.ColorUNorm(3, 3, 3);
-        }
-        RUIStyle.Default = new RUIStyle();
-        return RUIStyle;
-    }());
-    exports.RUIStyle = RUIStyle;
-});
-define("rui/RUI", ["require", "exports", "rui/UIUtil", "rui/RUIStyle"], function (require, exports, UIUtil_2, RUIStyle_1) {
+define("rui/RUIObject", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.RUIAuto = -1;
     exports.RUICLIP_MAX = [0, 0, 5000, 5000];
+    function ROUND(x) {
+        return Math.round(x);
+    }
+    exports.ROUND = ROUND;
     var RUIConst = /** @class */ (function () {
         function RUIConst() {
         }
@@ -182,6 +188,10 @@ define("rui/RUI", ["require", "exports", "rui/UIUtil", "rui/RUIStyle"], function
             // top right bottom left
             this.padding = [0, 0, 0, 0];
             this.position = RUIPosition.Default;
+            this.left = 0;
+            this.right = 0;
+            this.top = 0;
+            this.bottom = 0;
             this.visible = false;
             this.zorder = 0;
             this.parent = null;
@@ -272,194 +282,15 @@ define("rui/RUI", ["require", "exports", "rui/UIUtil", "rui/RUIStyle"], function
                 }
             }
         };
+        RUIObject.prototype.fillPositionOffset = function () {
+            if (this.position == RUIPosition.Offset) {
+                this._caloffsetx += this.left;
+                this._caloffsety += this.top;
+            }
+        };
         return RUIObject;
     }());
     exports.RUIObject = RUIObject;
-    var RUIContainer = /** @class */ (function (_super) {
-        __extends(RUIContainer, _super);
-        function RUIContainer() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.boxClip = true;
-            _this.boxOverflow = RUIOverflow.Clip;
-            _this.boxOrientation = RUIOrientation.Vertical;
-            _this.children = [];
-            return _this;
-        }
-        RUIContainer.prototype.addChild = function (ui) {
-            if (ui == null)
-                return;
-            var c = this.children;
-            if (c.indexOf(ui) >= 0)
-                return;
-            ui.parent = this;
-            ui._root = this._root;
-            c.push(ui);
-            ui.setDirty();
-        };
-        RUIContainer.prototype.removeChild = function (ui) {
-            if (ui == null)
-                return;
-            var c = this.children;
-            var index = c.indexOf(ui);
-            if (index < 0)
-                return;
-            this.children = c.splice(index, 1);
-            this.isdirty = true;
-            ui.parent = null;
-            ui._root = null;
-        };
-        RUIContainer.prototype.onLayout = function () {
-            var isVertical = this.boxOrientation == RUIOrientation.Vertical;
-            var children = this.children;
-            var offset = 0;
-            var maxsize = 0;
-            var offsetside = 0;
-            //padding
-            var padding = this.padding;
-            offset += padding[isVertical ? RUIConst.TOP : RUIConst.LEFT];
-            offsetside = padding[isVertical ? RUIConst.LEFT : RUIConst.TOP];
-            //margin
-            var marginLast = 0;
-            if (children.length != 0) {
-                for (var i = 0, len = children.length; i < len; i++) {
-                    var c = children[i];
-                    c.onLayout();
-                    var cw = c._calwidth;
-                    var ch = c._calheight;
-                    if (cw == null)
-                        throw new Error("children width is null");
-                    if (ch == null)
-                        throw new Error("children height is null");
-                    var cmargin = c.margin;
-                    if (isVertical) {
-                        marginLast = Math.max(marginLast, cmargin[RUIConst.TOP]);
-                        c._caloffsety = offset + marginLast;
-                        c._caloffsetx = offsetside + cmargin[RUIConst.LEFT];
-                        offset += ch + marginLast;
-                        marginLast = cmargin[RUIConst.BOTTOM];
-                        maxsize = Math.max(maxsize, cw + cmargin[RUIConst.LEFT] + cmargin[RUIConst.RIGHT]);
-                    }
-                    else {
-                        marginLast = Math.max(marginLast, cmargin[RUIConst.LEFT]);
-                        c._caloffsetx = offset + marginLast;
-                        c._caloffsety = offsetside + cmargin[RUIConst.TOP];
-                        offset += cw + marginLast;
-                        marginLast = cmargin[RUIConst.RIGHT];
-                        maxsize = Math.max(maxsize, ch + cmargin[RUIConst.TOP] + cmargin[RUIConst.BOTTOM]);
-                    }
-                }
-                offset += marginLast;
-            }
-            else {
-            }
-            if (isVertical) {
-                this._calwidth = maxsize + padding[RUIConst.RIGHT] + padding[RUIConst.LEFT];
-                this._calheight = offset + padding[RUIConst.BOTTOM];
-            }
-            else {
-                this._calheight = maxsize + padding[RUIConst.BOTTOM] + padding[RUIConst.TOP];
-                this._calwidth = offset + padding[RUIConst.RIGHT];
-            }
-            if (this.width != exports.RUIAuto)
-                this._calwidth = this.width;
-            if (this.height != exports.RUIAuto)
-                this._calheight = this.height;
-        };
-        RUIContainer.prototype.onDraw = function (cmd) {
-            this.onDrawPre(cmd);
-            var children = this.children;
-            for (var i = 0, clen = children.length; i < clen; i++) {
-                var c = children[i];
-                c.onDraw(cmd);
-            }
-            this.onDrawPost(cmd);
-        };
-        RUIContainer.prototype.onDrawPre = function (cmd) {
-            var rect = [this._calx, this._caly, this._calwidth, this._calheight];
-            this._rect = rect;
-            if (this.boxClip)
-                cmd.PushClipRect(rect);
-            cmd.DrawBorder(rect, RUIStyle_1.RUIStyle.Default.primary);
-        };
-        RUIContainer.prototype.onDrawPost = function (cmd) {
-            if (this.boxClip)
-                cmd.PopClipRect();
-        };
-        return RUIContainer;
-    }(RUIObject));
-    exports.RUIContainer = RUIContainer;
-    var RUIRoot = /** @class */ (function () {
-        function RUIRoot(ui) {
-            this.isdirty = true;
-            if (ui.parent != null)
-                throw new Error("root ui must have no parent.");
-            this.root = ui;
-            ui._root = this;
-        }
-        RUIRoot.prototype.resizeRoot = function (width, height) {
-            this.isdirty = true;
-            this.root.width = width;
-            this.root.height = height;
-        };
-        return RUIRoot;
-    }());
-    exports.RUIRoot = RUIRoot;
-    var RUIRectangle = /** @class */ (function (_super) {
-        __extends(RUIRectangle, _super);
-        function RUIRectangle() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        RUIRectangle.prototype.onDraw = function (cmd) {
-            var noclip = !this.isClip;
-            if (noclip)
-                cmd.PushClipRect();
-            var rect = [this._calx, this._caly, this._calwidth, this._calheight];
-            cmd.DrawRectWithColor(rect, UIUtil_2.UIUtil.RandomColor());
-            if (noclip)
-                cmd.PopClipRect();
-        };
-        return RUIRectangle;
-    }(RUIObject));
-    exports.RUIRectangle = RUIRectangle;
-    var RUILayouter = /** @class */ (function () {
-        function RUILayouter() {
-        }
-        RUILayouter.prototype.build = function (uiroot) {
-            var isdirty = uiroot.isdirty;
-            if (!isdirty)
-                return;
-            //Layout
-            var ui = uiroot.root;
-            ui.onLayout();
-            uiroot.isdirty = false;
-            ui._calx = 0;
-            ui._caly = 0;
-            //Calculate All offset
-            if (ui instanceof RUIContainer) {
-                this.calculateOffset(ui);
-            }
-            console.log(ui);
-        };
-        RUILayouter.prototype.calculateOffset = function (cui) {
-            var children = cui.children;
-            var clen = children.length;
-            var isVertical = cui.boxOrientation == RUIOrientation.Vertical;
-            if (clen > 0) {
-                var offx = cui._calx;
-                var offy = cui._caly;
-                for (var i = 0; i < clen; i++) {
-                    var c = children[i];
-                    c._calx = offx + c._caloffsetx;
-                    c._caly = offy + c._caloffsety;
-                    if (c instanceof RUIContainer) {
-                        this.calculateOffset(c);
-                    }
-                }
-            }
-        };
-        return RUILayouter;
-    }());
-    exports.RUILayouter = RUILayouter;
 });
 define("rui/UIUtil", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -497,6 +328,14 @@ define("rui/UIUtil", ["require", "exports"], function (require, exports) {
             //TODO 
             throw new Error("not implemented!");
             return null;
+        };
+        UIUtil.RectMinus = function (recta, offset) {
+            return [
+                recta[0] - offset[0],
+                recta[1] - offset[1],
+                recta[2] - offset[2],
+                recta[3] - offset[3]
+            ];
         };
         return UIUtil;
     }());
@@ -698,7 +537,25 @@ define("rui/RUIEventSys", ["require", "exports"], function (require, exports) {
     }());
     exports.RUIEventEmitter = RUIEventEmitter;
 });
-define("rui/UIObject", ["require", "exports", "rui/RUIStyle"], function (require, exports, RUIStyle_2) {
+define("rui/RUIStyle", ["require", "exports", "rui/UIUtil"], function (require, exports, UIUtil_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUIStyle = /** @class */ (function () {
+        function RUIStyle() {
+            this.background0 = UIUtil_1.UIUtil.ColorUNorm(30, 30, 30, 255);
+            this.background1 = UIUtil_1.UIUtil.ColorUNorm(37, 37, 38);
+            this.background2 = UIUtil_1.UIUtil.ColorUNorm(51, 51, 51);
+            this.primary = UIUtil_1.UIUtil.ColorUNorm(0, 122, 204);
+            this.primary0 = UIUtil_1.UIUtil.ColorUNorm(9, 71, 113);
+            this.inactive = UIUtil_1.UIUtil.ColorUNorm(63, 63, 70);
+            this.border0 = UIUtil_1.UIUtil.ColorUNorm(3, 3, 3);
+        }
+        RUIStyle.Default = new RUIStyle();
+        return RUIStyle;
+    }());
+    exports.RUIStyle = RUIStyle;
+});
+define("rui/UIObject", ["require", "exports", "rui/RUIStyle"], function (require, exports, RUIStyle_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var UIDisplayMode;
@@ -732,7 +589,7 @@ define("rui/UIObject", ["require", "exports", "rui/RUIStyle"], function (require
             this.visibleSelf = false;
             this.displayMode = UIDisplayMode.Default;
             this.orientation = UIOrientation.Vertical;
-            this.color = RUIStyle_2.RUIStyle.Default.background0;
+            this.color = RUIStyle_1.RUIStyle.Default.background0;
             this.width = null;
             this.height = null;
             this.zorder = 0;
@@ -1035,7 +892,7 @@ define("rui/RUICursor", ["require", "exports"], function (require, exports) {
     }());
     exports.RUICursor = RUICursor;
 });
-define("rui/widget/UIInput", ["require", "exports", "rui/UIObject", "rui/RUIStyle", "rui/RUICursor", "rui/RUIInput"], function (require, exports, UIObject_1, RUIStyle_3, RUICursor_1, RUIInput_1) {
+define("rui/widget/UIInput", ["require", "exports", "rui/UIObject", "rui/RUIStyle", "rui/RUICursor", "rui/RUIInput"], function (require, exports, UIObject_1, RUIStyle_2, RUICursor_1, RUIInput_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var UIInput = /** @class */ (function (_super) {
@@ -1046,7 +903,7 @@ define("rui/widget/UIInput", ["require", "exports", "rui/UIObject", "rui/RUIStyl
             _this.m_isOnHover = false;
             _this.height = 23;
             _this.m_text = content;
-            _this.color = RUIStyle_3.RUIStyle.Default.background0;
+            _this.color = RUIStyle_2.RUIStyle.Default.background0;
             return _this;
         }
         Object.defineProperty(UIInput.prototype, "text", {
@@ -1096,7 +953,7 @@ define("rui/widget/UIInput", ["require", "exports", "rui/UIObject", "rui/RUIStyl
             this.setDirty(true);
         };
         UIInput.prototype.setColor = function () {
-            var style = RUIStyle_3.RUIStyle.Default;
+            var style = RUIStyle_2.RUIStyle.Default;
             if (this.m_isFocuesd) {
                 this.color = style.background2;
             }
@@ -1114,7 +971,7 @@ define("rui/widget/UIInput", ["require", "exports", "rui/UIObject", "rui/RUIStyl
             if (this.m_isFocuesd) {
                 var offset = 1;
                 var borderR = [rect[0] + offset, rect[1] + offset, rect[2] - 2 * offset, rect[3] - 2 * offset];
-                cmd.DrawBorder(borderR, RUIStyle_3.RUIStyle.Default.primary);
+                cmd.DrawBorder(borderR, RUIStyle_2.RUIStyle.Default.primary);
             }
         };
         return UIInput;
@@ -1516,7 +1373,7 @@ define("rui/RUIDrawCall", ["require", "exports", "rui/UIObject"], function (requ
     }());
     exports.RUIDrawCall = RUIDrawCall;
 });
-define("rui/widget/UIButton", ["require", "exports", "rui/UIObject", "rui/RUIEventSys", "rui/RUICursor", "rui/RUIStyle"], function (require, exports, UIObject_3, RUIEventSys_2, RUICursor_2, RUIStyle_4) {
+define("rui/widget/UIButton", ["require", "exports", "rui/UIObject", "rui/RUIEventSys", "rui/RUICursor", "rui/RUIStyle"], function (require, exports, UIObject_3, RUIEventSys_2, RUICursor_2, RUIStyle_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var UIButton = /** @class */ (function (_super) {
@@ -1532,17 +1389,17 @@ define("rui/widget/UIButton", ["require", "exports", "rui/UIObject", "rui/RUIEve
             this.visibleSelf = true;
             this.width = 100;
             this.height = 23;
-            this.color = RUIStyle_4.RUIStyle.Default.background1;
+            this.color = RUIStyle_3.RUIStyle.Default.background1;
         };
         UIButton.prototype.onMouseEnter = function (e) {
             e.canvas.cursor.SetCursor(RUICursor_2.RUICursorType.pointer);
-            this.color = RUIStyle_4.RUIStyle.Default.background2;
+            this.color = RUIStyle_3.RUIStyle.Default.background2;
             this.setDirty(true);
             e.prevent();
         };
         UIButton.prototype.onMouseLeave = function (e) {
             e.canvas.cursor.SetCursor(RUICursor_2.RUICursorType.default);
-            this.color = RUIStyle_4.RUIStyle.Default.background1;
+            this.color = RUIStyle_3.RUIStyle.Default.background1;
             this.setDirty(true);
             e.prevent();
         };
@@ -1580,7 +1437,7 @@ define("rui/widget/UIRect", ["require", "exports", "rui/UIObject"], function (re
     }(UIObject_4.UIObject));
     exports.UIRect = UIRect;
 });
-define("rui/widget/UISlider", ["require", "exports", "rui/UIObject", "rui/RUIStyle"], function (require, exports, UIObject_5, RUIStyle_5) {
+define("rui/widget/UISlider", ["require", "exports", "rui/UIObject", "rui/RUIStyle"], function (require, exports, UIObject_5, RUIStyle_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var UISlider = /** @class */ (function (_super) {
@@ -1624,10 +1481,10 @@ define("rui/widget/UISlider", ["require", "exports", "rui/UIObject", "rui/RUISty
         };
         UISlider.prototype.onDraw = function (cmd) {
             var rect = [this._calculateX + UISlider.OFFSET, this._calculateY + UISlider.OFFSET, this._width - 2 * UISlider.OFFSET, this._height - 2 * UISlider.OFFSET];
-            cmd.DrawRectWithColor(rect, RUIStyle_5.RUIStyle.Default.background1);
+            cmd.DrawRectWithColor(rect, RUIStyle_4.RUIStyle.Default.background1);
             var width = rect[2] * this.m_value;
             var srect = [rect[0], rect[1], width, rect[3]];
-            cmd.DrawRectWithColor(srect, this.m_onDrag ? RUIStyle_5.RUIStyle.Default.primary : RUIStyle_5.RUIStyle.Default.inactive);
+            cmd.DrawRectWithColor(srect, this.m_onDrag ? RUIStyle_4.RUIStyle.Default.primary : RUIStyle_4.RUIStyle.Default.inactive);
         };
         UISlider.OFFSET = 2;
         return UISlider;
@@ -1658,7 +1515,7 @@ define("rui/widget/UILabel", ["require", "exports", "rui/UIObject"], function (r
     }(UIObject_6.UIObject));
     exports.UILable = UILable;
 });
-define("rui/widget/UICheckbox", ["require", "exports", "rui/UIObject", "rui/RUIStyle", "rui/UIUtil"], function (require, exports, UIObject_7, RUIStyle_6, UIUtil_3) {
+define("rui/widget/UICheckbox", ["require", "exports", "rui/UIObject", "rui/RUIStyle", "rui/UIUtil"], function (require, exports, UIObject_7, RUIStyle_5, UIUtil_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var UICheckbox = /** @class */ (function (_super) {
@@ -1681,7 +1538,7 @@ define("rui/widget/UICheckbox", ["require", "exports", "rui/UIObject", "rui/RUIS
             this.visibleSelf = true;
         };
         UICheckbox.prototype.onMouseClick = function (e) {
-            if (UIUtil_3.UIUtil.RectContains(this.m_rectOuter, e.mousex, e.mousey)) {
+            if (UIUtil_2.UIUtil.RectContains(this.m_rectOuter, e.mousex, e.mousey)) {
                 this.m_checked = !this.m_checked;
                 this.setDirty(true);
             }
@@ -1704,10 +1561,10 @@ define("rui/widget/UICheckbox", ["require", "exports", "rui/UIObject", "rui/RUIS
             var offsety = (this._height - UICheckbox.BoxSize) / 2;
             var rectOuter = [this._calculateX + offsetx, this._calculateY + offsety, UICheckbox.BoxSize, UICheckbox.BoxSize];
             this.m_rectOuter = rectOuter;
-            cmd.DrawBorder(rectOuter, RUIStyle_6.RUIStyle.Default.inactive);
+            cmd.DrawBorder(rectOuter, RUIStyle_5.RUIStyle.Default.inactive);
             if (this.m_checked) {
                 var rectInner = [rectOuter[0] + 2, rectOuter[1] + 2, rectOuter[2] - 4, rectOuter[3] - 4];
-                cmd.DrawRectWithColor(rectInner, this.m_active ? RUIStyle_6.RUIStyle.Default.primary : RUIStyle_6.RUIStyle.Default.primary0);
+                cmd.DrawRectWithColor(rectInner, this.m_active ? RUIStyle_5.RUIStyle.Default.primary : RUIStyle_5.RUIStyle.Default.primary0);
             }
         };
         UICheckbox.BoxSize = 16;
@@ -1821,19 +1678,19 @@ define("rui/widget/UIField", ["require", "exports", "rui/UIObject", "rui/RUIFont
     }(UIObject_8.UIObject));
     exports.UISliderFiled = UISliderFiled;
 });
-define("rui/RUIColor", ["require", "exports", "rui/UIUtil"], function (require, exports, UIUtil_4) {
+define("rui/RUIColor", ["require", "exports", "rui/UIUtil"], function (require, exports, UIUtil_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUIColor = /** @class */ (function () {
         function RUIColor() {
         }
         RUIColor.White = [1, 1, 1, 0];
-        RUIColor.Grey = UIUtil_4.UIUtil.ColorUNorm(200, 200, 200, 255);
+        RUIColor.Grey = UIUtil_3.UIUtil.ColorUNorm(200, 200, 200, 255);
         return RUIColor;
     }());
     exports.RUIColor = RUIColor;
 });
-define("rui/widget/UIContextMenu", ["require", "exports", "rui/UIObject", "rui/RUIDrawCall", "rui/RUIStyle", "rui/widget/UIButton"], function (require, exports, UIObject_9, RUIDrawCall_1, RUIStyle_7, UIButton_1) {
+define("rui/widget/UIContextMenu", ["require", "exports", "rui/UIObject", "rui/RUIDrawCall", "rui/RUIStyle", "rui/widget/UIButton"], function (require, exports, UIObject_9, RUIDrawCall_1, RUIStyle_6, UIButton_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var UIContextMenu = /** @class */ (function (_super) {
@@ -1892,14 +1749,14 @@ define("rui/widget/UIContextMenu", ["require", "exports", "rui/UIObject", "rui/R
             if (this.m_isshow) {
                 var attui = this.m_attatchUI;
                 var rect = [this._calculateX, this._calculateY, this._width, this._height];
-                cmd.DrawBorder(rect, RUIStyle_7.RUIStyle.Default.primary0);
+                cmd.DrawBorder(rect, RUIStyle_6.RUIStyle.Default.primary0);
             }
         };
         return UIContextMenu;
     }(UIObject_9.UIObject));
     exports.UIContextMenu = UIContextMenu;
 });
-define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButton", "rui/RUIStyle", "rui/widget/UIField", "rui/RUIColor", "rui/widget/UIContextMenu"], function (require, exports, UIObject_10, UIButton_2, RUIStyle_8, UIField_1, RUIColor_1, UIContextMenu_1) {
+define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButton", "rui/RUIStyle", "rui/widget/UIField", "rui/RUIColor", "rui/widget/UIContextMenu"], function (require, exports, UIObject_10, UIButton_2, RUIStyle_7, UIField_1, RUIColor_1, UIContextMenu_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var HeaderUI = /** @class */ (function (_super) {
@@ -1929,7 +1786,7 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButto
         }
         EditorUI.prototype.onBuild = function () {
             this.visibleSelf = true;
-            this.color = RUIStyle_8.RUIStyle.Default.background1;
+            this.color = RUIStyle_7.RUIStyle.Default.background1;
             this.addChild(new UIButton_2.UIButton('Clear'));
             this.addChild(new UIField_1.UIInputField("Hello"));
             this.addChild(new UIField_1.UISliderFiled("Count", 20, 10, 100));
@@ -2324,7 +2181,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "gl/wglShaderLib", "rui/R
     }());
     exports.RUIDrawCallBuffer = RUIDrawCallBuffer;
 });
-define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer", "rui/RUIFontTexture", "rui/RUIStyle"], function (require, exports, wglut_1, RUIDrawCallBuffer_1, RUIFontTexture_3, RUIStyle_9) {
+define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer", "rui/RUIFontTexture", "rui/RUIStyle"], function (require, exports, wglut_1, RUIDrawCallBuffer_1, RUIFontTexture_3, RUIStyle_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUIRenderer = /** @class */ (function () {
@@ -2378,7 +2235,7 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             gl.depthFunc(gl.LEQUAL);
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-            var clearColor = RUIStyle_9.RUIStyle.Default.background0;
+            var clearColor = RUIStyle_8.RUIStyle.Default.background0;
             gl.clearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
         };
         RUIRenderer.prototype.DrawCmdList = function (cmdlist) {
@@ -2536,7 +2393,125 @@ define("rui/RUICanvas", ["require", "exports", "rui/RUIInput", "rui/RUICursor", 
     }());
     exports.RUICanvas = RUICanvas;
 });
-define("rui/RUIFlexContainer", ["require", "exports", "rui/RUI"], function (require, exports, RUI_2) {
+define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUIStyle", "rui/UIUtil"], function (require, exports, RUIObject_2, RUIStyle_9, UIUtil_4) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUIContainer = /** @class */ (function (_super) {
+        __extends(RUIContainer, _super);
+        function RUIContainer() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.boxClip = true;
+            _this.boxOverflow = RUIObject_2.RUIOverflow.Clip;
+            _this.boxOrientation = RUIObject_2.RUIOrientation.Vertical;
+            _this.children = [];
+            return _this;
+        }
+        RUIContainer.prototype.addChild = function (ui) {
+            if (ui == null)
+                return;
+            var c = this.children;
+            if (c.indexOf(ui) >= 0)
+                return;
+            ui.parent = this;
+            ui._root = this._root;
+            c.push(ui);
+            ui.setDirty();
+        };
+        RUIContainer.prototype.removeChild = function (ui) {
+            if (ui == null)
+                return;
+            var c = this.children;
+            var index = c.indexOf(ui);
+            if (index < 0)
+                return;
+            this.children = c.splice(index, 1);
+            this.isdirty = true;
+            ui.parent = null;
+            ui._root = null;
+        };
+        RUIContainer.prototype.onLayout = function () {
+            var isVertical = this.boxOrientation == RUIObject_2.RUIOrientation.Vertical;
+            var children = this.children;
+            var offset = 0;
+            var maxsize = 0;
+            var offsetside = 0;
+            //padding
+            var padding = this.padding;
+            offset += padding[isVertical ? RUIObject_2.RUIConst.TOP : RUIObject_2.RUIConst.LEFT];
+            offsetside = padding[isVertical ? RUIObject_2.RUIConst.LEFT : RUIObject_2.RUIConst.TOP];
+            //margin
+            var marginLast = 0;
+            if (children.length != 0) {
+                for (var i = 0, len = children.length; i < len; i++) {
+                    var c = children[i];
+                    c.onLayout();
+                    var cw = c._calwidth;
+                    var ch = c._calheight;
+                    if (cw == null)
+                        throw new Error("children width is null");
+                    if (ch == null)
+                        throw new Error("children height is null");
+                    var cmargin = c.margin;
+                    if (isVertical) {
+                        marginLast = Math.max(marginLast, cmargin[RUIObject_2.RUIConst.TOP]);
+                        c._caloffsety = offset + marginLast;
+                        c._caloffsetx = offsetside + cmargin[RUIObject_2.RUIConst.LEFT];
+                        offset += ch + marginLast;
+                        marginLast = cmargin[RUIObject_2.RUIConst.BOTTOM];
+                        maxsize = Math.max(maxsize, cw + cmargin[RUIObject_2.RUIConst.LEFT] + cmargin[RUIObject_2.RUIConst.RIGHT]);
+                    }
+                    else {
+                        marginLast = Math.max(marginLast, cmargin[RUIObject_2.RUIConst.LEFT]);
+                        c._caloffsetx = offset + marginLast;
+                        c._caloffsety = offsetside + cmargin[RUIObject_2.RUIConst.TOP];
+                        offset += cw + marginLast;
+                        marginLast = cmargin[RUIObject_2.RUIConst.RIGHT];
+                        maxsize = Math.max(maxsize, ch + cmargin[RUIObject_2.RUIConst.TOP] + cmargin[RUIObject_2.RUIConst.BOTTOM]);
+                    }
+                    c.fillPositionOffset();
+                }
+                offset += marginLast;
+            }
+            else {
+            }
+            if (isVertical) {
+                this._calwidth = maxsize + padding[RUIObject_2.RUIConst.RIGHT] + padding[RUIObject_2.RUIConst.LEFT];
+                this._calheight = offset + padding[RUIObject_2.RUIConst.BOTTOM];
+            }
+            else {
+                this._calheight = maxsize + padding[RUIObject_2.RUIConst.BOTTOM] + padding[RUIObject_2.RUIConst.TOP];
+                this._calwidth = offset + padding[RUIObject_2.RUIConst.RIGHT];
+            }
+            if (this.width != RUIObject_2.RUIAuto)
+                this._calwidth = this.width;
+            if (this.height != RUIObject_2.RUIAuto)
+                this._calheight = this.height;
+        };
+        RUIContainer.prototype.onDraw = function (cmd) {
+            this.onDrawPre(cmd);
+            var children = this.children;
+            for (var i = 0, clen = children.length; i < clen; i++) {
+                var c = children[i];
+                c.onDraw(cmd);
+            }
+            this.onDrawPost(cmd);
+        };
+        RUIContainer.prototype.onDrawPre = function (cmd) {
+            var rect = [this._calx, this._caly, this._calwidth, this._calheight];
+            this._rect = rect;
+            cmd.DrawBorder(rect, RUIStyle_9.RUIStyle.Default.primary);
+            if (this.boxClip)
+                cmd.PushClipRect(UIUtil_4.UIUtil.RectMinus(rect, this.padding));
+        };
+        RUIContainer.prototype.onDrawPost = function (cmd) {
+            if (this.boxClip)
+                cmd.PopClipRect();
+        };
+        return RUIContainer;
+    }(RUIObject_2.RUIObject));
+    exports.RUIContainer = RUIContainer;
+});
+define("rui/RUIFlexContainer", ["require", "exports", "rui/RUIObject", "rui/RUIContainer"], function (require, exports, RUIObject_3, RUIContainer_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUIFlexContainer = /** @class */ (function (_super) {
@@ -2545,7 +2520,7 @@ define("rui/RUIFlexContainer", ["require", "exports", "rui/RUI"], function (requ
             return _super !== null && _super.apply(this, arguments) || this;
         }
         RUIFlexContainer.prototype.onLayout = function () {
-            var isVertical = this.boxOrientation == RUI_2.RUIOrientation.Vertical;
+            var isVertical = this.boxOrientation == RUIObject_3.RUIOrientation.Vertical;
             var children = this.children;
             this.fillSize();
             if (null == (isVertical ? this._calheight : this._calwidth))
@@ -2557,8 +2532,8 @@ define("rui/RUIFlexContainer", ["require", "exports", "rui/RUI"], function (requ
                 var fixedaccu = 0;
                 var contentTotal = 0;
                 var contentSide = 0;
-                var contentwidth = contentTotal = this._calwidth - this.padding[RUI_2.RUIConst.LEFT] - this.padding[RUI_2.RUIConst.RIGHT];
-                var contentheight = this._calheight - this.padding[RUI_2.RUIConst.TOP] - this.padding[RUI_2.RUIConst.BOTTOM];
+                var contentwidth = contentTotal = this._calwidth - this.padding[RUIObject_3.RUIConst.LEFT] - this.padding[RUIObject_3.RUIConst.RIGHT];
+                var contentheight = this._calheight - this.padding[RUIObject_3.RUIConst.TOP] - this.padding[RUIObject_3.RUIConst.BOTTOM];
                 var sideIsAuto = false;
                 if (isVertical) {
                     contentTotal = contentheight;
@@ -2570,17 +2545,17 @@ define("rui/RUIFlexContainer", ["require", "exports", "rui/RUI"], function (requ
                     contentSide = contentheight;
                     sideIsAuto = this._calheight == null;
                 }
-                var childMaxSide = RUI_2.RUIAuto;
+                var childMaxSide = RUIObject_3.RUIAuto;
                 var marginAry = [];
                 var marginValue = 0;
-                var marginPos = isVertical ? RUI_2.RUIConst.TOP : RUI_2.RUIConst.LEFT;
-                var marginPosSide = isVertical ? RUI_2.RUIConst.BOTTOM : RUI_2.RUIConst.RIGHT;
+                var marginPos = isVertical ? RUIObject_3.RUIConst.TOP : RUIObject_3.RUIConst.LEFT;
+                var marginPosSide = isVertical ? RUIObject_3.RUIConst.BOTTOM : RUIObject_3.RUIConst.RIGHT;
                 var marginTotal = 0;
                 for (var i = 0; i < clen; i++) {
                     var c = children[i];
                     if (c.flex == null) {
                         var cfixed = isVertical ? c.height : c.width;
-                        if (cfixed == RUI_2.RUIAuto) {
+                        if (cfixed == RUIObject_3.RUIAuto) {
                             throw new Error("flex object must have fixed size");
                         }
                         else {
@@ -2598,58 +2573,124 @@ define("rui/RUIFlexContainer", ["require", "exports", "rui/RUI"], function (requ
                     marginValue = cmargin[marginPosSide];
                     var cmaxside = 0;
                     if (isVertical) {
-                        cmaxside = c.width + cmargin[RUI_2.RUIConst.LEFT] + cmargin[RUI_2.RUIConst.RIGHT];
+                        cmaxside = c.width + cmargin[RUIObject_3.RUIConst.LEFT] + cmargin[RUIObject_3.RUIConst.RIGHT];
                     }
                     else {
-                        cmaxside = c.height + cmargin[RUI_2.RUIConst.TOP] + cmargin[RUI_2.RUIConst.BOTTOM];
+                        cmaxside = c.height + cmargin[RUIObject_3.RUIConst.TOP] + cmargin[RUIObject_3.RUIConst.BOTTOM];
                     }
                     childMaxSide = Math.max(childMaxSide, cmaxside);
                 }
                 marginAry.push(marginValue);
                 marginTotal += marginValue;
                 var sizePerFlex = (contentTotal - fixedaccu - marginTotal) / flexaccu;
-                var offset = this.padding[isVertical ? RUI_2.RUIConst.TOP : RUI_2.RUIConst.LEFT];
-                var offsetside = this.padding[isVertical ? RUI_2.RUIConst.LEFT : RUI_2.RUIConst.TOP];
-                if (childMaxSide != RUI_2.RUIAuto && sideIsAuto) {
+                var offset = this.padding[isVertical ? RUIObject_3.RUIConst.TOP : RUIObject_3.RUIConst.LEFT];
+                var offsetside = this.padding[isVertical ? RUIObject_3.RUIConst.LEFT : RUIObject_3.RUIConst.TOP];
+                if (childMaxSide != RUIObject_3.RUIAuto && sideIsAuto) {
                     contentSide = childMaxSide;
                     if (isVertical) {
-                        this._calwidth = childMaxSide + this.padding[RUI_2.RUIConst.LEFT] + this.padding[RUI_2.RUIConst.RIGHT];
+                        this._calwidth = childMaxSide + this.padding[RUIObject_3.RUIConst.LEFT] + this.padding[RUIObject_3.RUIConst.RIGHT];
                     }
                     else {
-                        this._calheight = childMaxSide + this.padding[RUI_2.RUIConst.TOP] + this.padding[RUI_2.RUIConst.BOTTOM];
+                        this._calheight = childMaxSide + this.padding[RUIObject_3.RUIConst.TOP] + this.padding[RUIObject_3.RUIConst.BOTTOM];
                     }
                 }
                 for (var i = 0; i < clen; i++) {
                     var c = children[i];
-                    var flowsize = c.flex == null ? (isVertical ? c.height : c.width) : (c.flex * sizePerFlex);
+                    var flowsize = c.flex == null ? (isVertical ? c.height : c.width) : RUIObject_3.ROUND(c.flex * sizePerFlex);
                     if (isVertical) {
                         c._flexheight = flowsize;
-                        c._flexwidth = (c.width == RUI_2.RUIAuto) ? contentSide : c.width;
+                        c._flexwidth = (c.width == RUIObject_3.RUIAuto) ? contentSide : c.width;
                     }
                     else {
-                        c._flexheight = (c.height == RUI_2.RUIAuto) ? contentSide : c.height;
+                        c._flexheight = (c.height == RUIObject_3.RUIAuto) ? contentSide : c.height;
                         c._flexwidth = flowsize;
                     }
                     c.onLayout();
                     offset += marginAry[i];
                     if (isVertical) {
                         c._caloffsety = offset;
-                        c._caloffsetx = offsetside + c.margin[RUI_2.RUIConst.LEFT];
+                        c._caloffsetx = offsetside + c.margin[RUIObject_3.RUIConst.LEFT];
                         offset += c._calheight;
                     }
                     else {
-                        c._caloffsety = offsetside + c.margin[RUI_2.RUIConst.TOP];
+                        c._caloffsety = offsetside + c.margin[RUIObject_3.RUIConst.TOP];
                         c._caloffsetx = offset;
                         offset += c._calwidth;
                     }
+                    //offset
+                    c.fillPositionOffset();
                 }
             }
         };
         return RUIFlexContainer;
-    }(RUI_2.RUIContainer));
+    }(RUIContainer_1.RUIContainer));
     exports.RUIFlexContainer = RUIFlexContainer;
 });
-define("rui/RUITest", ["require", "exports", "rui/RUI", "rui/RUICanvas", "rui/RUICmdList", "rui/RUIFlexContainer"], function (require, exports, RUI_3, RUICanvas_1, RUICmdList_2, RUIFlexContainer_1) {
+define("rui/RUILayouter", ["require", "exports", "rui/RUIContainer", "rui/RUIObject"], function (require, exports, RUIContainer_2, RUIObject_4) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUILayouter = /** @class */ (function () {
+        function RUILayouter() {
+        }
+        RUILayouter.prototype.build = function (uiroot) {
+            var isdirty = uiroot.isdirty;
+            if (!isdirty)
+                return;
+            //Layout
+            var ui = uiroot.root;
+            ui.onLayout();
+            uiroot.isdirty = false;
+            ui._calx = 0;
+            ui._caly = 0;
+            //Calculate All offset
+            if (ui instanceof RUIContainer_2.RUIContainer) {
+                this.calculateOffset(ui);
+            }
+            console.log(ui);
+        };
+        RUILayouter.prototype.calculateOffset = function (cui) {
+            var children = cui.children;
+            var clen = children.length;
+            var isVertical = cui.boxOrientation == RUIObject_4.RUIOrientation.Vertical;
+            if (clen > 0) {
+                var offx = cui._calx;
+                var offy = cui._caly;
+                for (var i = 0; i < clen; i++) {
+                    var c = children[i];
+                    c._calx = offx + c._caloffsetx;
+                    c._caly = offy + c._caloffsety;
+                    if (c instanceof RUIContainer_2.RUIContainer) {
+                        this.calculateOffset(c);
+                    }
+                }
+            }
+        };
+        return RUILayouter;
+    }());
+    exports.RUILayouter = RUILayouter;
+});
+define("rui/RUIRectangle", ["require", "exports", "rui/RUIObject", "rui/UIUtil"], function (require, exports, RUIObject_5, UIUtil_5) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUIRectangle = /** @class */ (function (_super) {
+        __extends(RUIRectangle, _super);
+        function RUIRectangle() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        RUIRectangle.prototype.onDraw = function (cmd) {
+            var noclip = !this.isClip;
+            if (noclip)
+                cmd.PushClipRect();
+            var rect = [this._calx, this._caly, this._calwidth, this._calheight];
+            cmd.DrawRectWithColor(rect, UIUtil_5.UIUtil.RandomColor());
+            if (noclip)
+                cmd.PopClipRect();
+        };
+        return RUIRectangle;
+    }(RUIObject_5.RUIObject));
+    exports.RUIRectangle = RUIRectangle;
+});
+define("rui/RUITest", ["require", "exports", "rui/RUICanvas", "rui/RUICmdList", "rui/RUIFlexContainer", "rui/RUIRoot", "rui/RUIObject", "rui/RUIContainer", "rui/RUILayouter", "rui/RUIRectangle"], function (require, exports, RUICanvas_1, RUICmdList_2, RUIFlexContainer_1, RUIRoot_1, RUIObject_6, RUIContainer_3, RUILayouter_1, RUIRectangle_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUITest = /** @class */ (function () {
@@ -2659,32 +2700,35 @@ define("rui/RUITest", ["require", "exports", "rui/RUI", "rui/RUICanvas", "rui/RU
         }
         RUITest.prototype.buildUI = function () {
             this.m_ruicmdlist = new RUICmdList_2.RUICmdList();
-            this.m_ruilayouter = new RUI_3.RUILayouter();
-            var ui = new RUI_3.RUIContainer();
+            this.m_ruilayouter = new RUILayouter_1.RUILayouter();
+            var ui = new RUIContainer_3.RUIContainer();
             ui.padding = [5, 5, 5, 5];
-            var root = new RUI_3.RUIRoot(ui);
+            var root = new RUIRoot_1.RUIRoot(ui);
             root.root = ui;
             {
-                var rect1 = new RUI_3.RUIRectangle();
+                var rect1 = new RUIRectangle_1.RUIRectangle();
                 rect1.width = 100;
                 rect1.height = 100;
                 ui.addChild(rect1);
-                var container1 = new RUI_3.RUIContainer();
-                container1.boxOrientation = RUI_3.RUIOrientation.Horizontal;
+                var container1 = new RUIContainer_3.RUIContainer();
+                container1.boxOrientation = RUIObject_6.RUIOrientation.Horizontal;
                 //container1.padding = [10,10,10,5];
                 container1.margin = [10, 0, 5, 0];
                 container1.width = 150;
                 ui.addChild(container1);
                 {
-                    var rectc1 = new RUI_3.RUIRectangle();
+                    var rectc1 = new RUIRectangle_1.RUIRectangle();
                     rectc1.width = 70;
                     rectc1.height = 30;
                     rectc1.margin[3] = 20;
                     rectc1.margin[1] = 20;
                     container1.addChild(rectc1);
-                    var rectc2 = new RUI_3.RUIRectangle();
+                    var rectc2 = new RUIRectangle_1.RUIRectangle();
                     rectc2.width = 130;
                     rectc2.height = 50;
+                    rectc2.position = RUIObject_6.RUIPosition.Offset;
+                    rectc2.left = 20;
+                    rectc2.top = -20;
                     rectc2.margin[3] = 25;
                     rectc2.isClip = false;
                     container1.addChild(rectc2);
@@ -2694,18 +2738,18 @@ define("rui/RUITest", ["require", "exports", "rui/RUI", "rui/RUICanvas", "rui/RU
                     container2.width = 200;
                     container2.padding = [5, 5, 5, 5];
                     container2.height = 100;
-                    container2.boxOrientation = RUI_3.RUIOrientation.Horizontal;
+                    container2.boxOrientation = RUIObject_6.RUIOrientation.Horizontal;
                     ui.addChild(container2);
-                    var rectfc1 = new RUI_3.RUIRectangle();
+                    var rectfc1 = new RUIRectangle_1.RUIRectangle();
                     rectfc1.flex = 1;
                     rectfc1.margin = [10, 2, 5, 3];
                     container2.addChild(rectfc1);
                     rectfc1.height = 30;
-                    var rectfc2 = new RUI_3.RUIRectangle();
+                    var rectfc2 = new RUIRectangle_1.RUIRectangle();
                     rectfc2.width = 50;
                     container2.addChild(rectfc2);
                     rectfc2.margin[1] = 7;
-                    var rectfc3 = new RUI_3.RUIRectangle();
+                    var rectfc3 = new RUIRectangle_1.RUIRectangle();
                     rectfc3.height = 100;
                     rectfc3.flex = 2;
                     rectfc3.margin[0] = 70;
@@ -2713,19 +2757,21 @@ define("rui/RUITest", ["require", "exports", "rui/RUI", "rui/RUICanvas", "rui/RU
                     container2.addChild(rectfc3);
                     {
                         var container3 = new RUIFlexContainer_1.RUIFlexContainer();
-                        container3.boxOrientation = RUI_3.RUIOrientation.Vertical;
+                        container3.boxOrientation = RUIObject_6.RUIOrientation.Vertical;
                         container3.flex = 1;
+                        container3.position = RUIObject_6.RUIPosition.Offset;
+                        container3.left = 20;
                         container2.addChild(container3);
                         console.log(container3);
-                        var rfc1 = new RUI_3.RUIRectangle();
+                        var rfc1 = new RUIRectangle_1.RUIRectangle();
                         rfc1.flex = 1;
                         container3.addChild(rfc1);
-                        var rfc2 = new RUI_3.RUIRectangle();
+                        var rfc2 = new RUIRectangle_1.RUIRectangle();
                         rfc2.flex = 2;
                         container3.addChild(rfc2);
                     }
                 }
-                var rect2 = new RUI_3.RUIRectangle();
+                var rect2 = new RUIRectangle_1.RUIRectangle();
                 rect2.width = 50;
                 rect2.height = 30;
                 ui.addChild(rect2);

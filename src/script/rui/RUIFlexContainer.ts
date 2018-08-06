@@ -1,4 +1,6 @@
-import { RUIOrientation, RUIAuto, RUIConst, ROUND, RUIPosition, RUIContainer } from "./RUI";
+import { RUIOrientation, RUIConst, RUIAuto, ROUND } from "./RUIObject";
+import { RUIContainer } from "./RUIContainer";
+
 
 export class RUIFlexContainer extends RUIContainer{
 

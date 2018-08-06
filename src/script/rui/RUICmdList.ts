@@ -1,4 +1,5 @@
-import { RUIRoot, RUIRect, RUICLIP_MAX } from "./RUI";
+import { RUIRect, RUICLIP_MAX } from "./RUIObject";
+import { RUIRoot } from "./RUIRoot";
 
 export enum RUIDrawCmdType {
     rect,
