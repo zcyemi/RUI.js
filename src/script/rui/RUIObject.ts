@@ -157,6 +157,10 @@ export class RUIObject{
 
     public onMouseDown(e:RUIMouseEvent){}
     public onMouseUp(e:RUIMouseEvent){}
+    public onActive(){}
+    public onInactive(){}
+    public onMouseLeave(){}
+    public onMouseEnter(){}
 
     protected fillSize(){
 

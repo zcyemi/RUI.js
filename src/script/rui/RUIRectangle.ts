@@ -25,15 +25,35 @@ export class RUIRectangle extends RUIObject{
         if(noclip) cmd.PopClipRect();
     }
 
-    public onMouseUp(){
-        this.m_debugColor = UIUtil.RandomColor();
-        this.setDirty();
-    }
+    // public onMouseUp(){
+    //     this.m_debugColor = UIUtil.RandomColor();
+    //     this.setDirty();
+    // }
 
-    public onMouseDown(){
-        this.m_debugColor = RUIStyle.Default.primary;
-        this.setDirty();
-    }
+    // public onMouseDown(){
+    //     this.m_debugColor = RUIStyle.Default.primary;
+    //     this.setDirty();
+    // }
+
+    // public onActive(){
+    //     this.m_debugColor = RUIStyle.Default.primary;
+    //     this.setDirty();
+    // }
+
+    // public onInactive(){
+    //     this.m_debugColor = UIUtil.RandomColor();
+    //     this.setDirty();
+    // }
+
+    // public onMouseEnter(){
+    //     this.m_debugColor = RUIStyle.Default.primary;
+    //     this.setDirty();
+    // }
+
+    // public onMouseLeave(){
+    //     this.m_debugColor = UIUtil.RandomColor();
+    //     this.setDirty();
+    // }
 
 
 }
