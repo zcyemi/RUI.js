@@ -32,7 +32,7 @@ export class RUITest{
         var ui = new RUIContainer();
         ui.padding = [5,5,5,5];
 
-        var root = new RUIRoot(ui);
+        var root = new RUIRoot(ui,false);
         root.root = ui;
         this.m_ruicanvas.EventOnResize.on((e)=>{
             root.resizeRoot(e.object.width,e.object.height);

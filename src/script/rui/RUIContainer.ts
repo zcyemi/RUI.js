@@ -43,7 +43,7 @@ export class RUIContainer extends RUIObject {
     }
 
     protected containerUpdateCheck(): RUIContainerUpdateMode{
-        if(!this.isdirty){
+        if(!this.isdirty && !this._resized){
 
             let children = this.children;
             let cisdirty = false;
@@ -62,7 +62,7 @@ export class RUIContainer extends RUIObject {
             if(!cisdirty && !cisresize){
                 return RUIContainerUpdateMode.None;
             }
-            if(!cisresize && cisdirty && !this._resized){
+            if(!cisresize && cisdirty){
                 return RUIContainerUpdateMode.LayoutUpdate;
             }
         }
@@ -162,6 +162,7 @@ export class RUIContainer extends RUIObject {
         this.onLayoutRelativeUI(relativeChildren);
 
         this.isdirty = false;
+        this._resized = false;
     }
 
     protected onLayoutRelativeUI(ui: RUIObject[]) {

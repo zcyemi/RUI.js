@@ -96,8 +96,11 @@ export class RUIObject{
     }
 
     public set width(val:RUISize){
-        this._width = val;
-        this._resized = true;
+        if(val != this._width){
+            this._width = val;
+            this._resized = true;
+        }
+        
     }
 
     public get width():RUISize{
@@ -105,8 +108,10 @@ export class RUIObject{
     }
 
     public set height(val:RUISize){
-        this._height = val;
-        this._resized = true;
+        if(val != this._height){
+            this._height = val;
+            this._resized = true;
+        }
     }
     public get height():RUISize{
         return this._height;

@@ -11,7 +11,9 @@ export class RUILayouter{
 
         //Layout
         let ui = uiroot.root;
-        ui.onLayout();
+        if(ui.isdirty || ui._resized){
+            ui.onLayout();
+        }
         uiroot.isdirty = false;
         
 
@@ -22,6 +24,8 @@ export class RUILayouter{
         if(ui instanceof RUIContainer){
             this.calculateOffset(ui);
         }
+
+
 
         console.log(ui);
     }

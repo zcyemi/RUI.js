@@ -171,6 +171,7 @@ export class RUIFlexContainer extends RUIContainer{
         }
 
         this.isdirty = false;
+        this._resized = false;
 
     }
 
