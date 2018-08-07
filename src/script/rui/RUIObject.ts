@@ -201,7 +201,7 @@ export class RUIObject{
         let caly = this._caly;
 
         if(x < calx || x > calx +this._calwidth) return false;
-        if(y < caly || y > caly + this._calwidth) return false;
+        if(y < caly || y > caly + this._calheight) return false;
         return true;
     }
 
