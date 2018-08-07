@@ -4,6 +4,12 @@ import { UIUtil } from "./UIUtil";
 
 export class RUIRectangle extends RUIObject{
 
+    private m_debugColor : number[] = UIUtil.RandomColor();
+
+    public onLayout(){
+        this.m_debugColor = UIUtil.RandomColor();
+        super.onLayout();
+    }
 
     public onDraw(cmd:RUICmdList){
 
@@ -12,7 +18,7 @@ export class RUIRectangle extends RUIObject{
         if(noclip) cmd.PushClipRect();
         
         let rect = [this._calx,this._caly,this._calwidth,this._calheight];
-        cmd.DrawRectWithColor(rect,UIUtil.RandomColor());
+        cmd.DrawRectWithColor(rect,this.m_debugColor);
 
         if(noclip) cmd.PopClipRect();
     }

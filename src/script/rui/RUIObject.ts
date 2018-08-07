@@ -114,6 +114,7 @@ export class RUIObject{
 
     public onLayout(){
         let isRoot = this.isRoot;
+        this.isdirty = false;
 
         if(!this._resized){
             if(this._calwidth == null) throw new Error();

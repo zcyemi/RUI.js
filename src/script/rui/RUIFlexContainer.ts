@@ -1,5 +1,5 @@
 import { RUIOrientation, RUIConst, RUIAuto, ROUND, RUIObject } from "./RUIObject";
-import { RUIContainer } from "./RUIContainer";
+import { RUIContainer, RUIContainerUpdateMode } from "./RUIContainer";
 
 
 export class RUIFlexContainer extends RUIContainer{
@@ -10,12 +10,25 @@ export class RUIFlexContainer extends RUIContainer{
         let isVertical = this.boxOrientation == RUIOrientation.Vertical;
         let children = this.children;
 
+        let clen = children.length;
+
+        //check for dirty
+        let updateMode = this.containerUpdateCheck();
+        if(updateMode == RUIContainerUpdateMode.None) return;
+        if(updateMode == RUIContainerUpdateMode.LayoutUpdate){
+            for(var i=0;i<clen;i++){
+                children[i].onLayout();
+            }
+            return;
+        }
+
+
 
         this.fillSize();
 
         if(null == (isVertical? this._calheight: this._calwidth)) throw new Error();
 
-        let clen = children.length;
+        
 
         if(clen != 0){
             //accumulate flex
@@ -156,6 +169,8 @@ export class RUIFlexContainer extends RUIContainer{
 
             this.onLayoutRelativeUI(relativeChildren);
         }
+
+        this.isdirty = false;
 
     }
 

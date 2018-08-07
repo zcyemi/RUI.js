@@ -188,10 +188,10 @@ define("rui/RUIObject", ["require", "exports"], function (require, exports) {
             // top right bottom left
             this.padding = [0, 0, 0, 0];
             this.position = RUIPosition.Default;
-            this.left = 0;
-            this.right = 0;
-            this.top = 0;
-            this.bottom = 0;
+            this.left = exports.RUIAuto;
+            this.right = exports.RUIAuto;
+            this.top = exports.RUIAuto;
+            this.bottom = exports.RUIAuto;
             this.visible = false;
             this.zorder = 0;
             this.parent = null;
@@ -229,6 +229,7 @@ define("rui/RUIObject", ["require", "exports"], function (require, exports) {
         });
         RUIObject.prototype.onLayout = function () {
             var isRoot = this.isRoot;
+            this.isdirty = false;
             if (!this._resized) {
                 if (this._calwidth == null)
                     throw new Error();
@@ -242,6 +243,14 @@ define("rui/RUIObject", ["require", "exports"], function (require, exports) {
         Object.defineProperty(RUIObject.prototype, "isRoot", {
             get: function () {
                 return this._root.root === this;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RUIObject.prototype, "isOnFlow", {
+            get: function () {
+                var pos = this.position;
+                return (pos == RUIPosition.Default || pos == RUIPosition.Offset);
             },
             enumerable: true,
             configurable: true
@@ -284,8 +293,8 @@ define("rui/RUIObject", ["require", "exports"], function (require, exports) {
         };
         RUIObject.prototype.fillPositionOffset = function () {
             if (this.position == RUIPosition.Offset) {
-                this._caloffsetx += this.left;
-                this._caloffsety += this.top;
+                this._caloffsetx += this.left == exports.RUIAuto ? 0 : this.left;
+                this._caloffsety += this.top == exports.RUIAuto ? 0 : this.top;
             }
         };
         return RUIObject;
@@ -2330,13 +2339,91 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
     }());
     exports.RUIRenderer = RUIRenderer;
 });
-define("rui/RUICanvas", ["require", "exports", "rui/RUIInput", "rui/RUICursor", "rui/RUIRenderer", "rui/RUIEventSys"], function (require, exports, RUIInput_2, RUICursor_3, RUIRenderer_1, RUIEventSys_3) {
+define("rui/EventSystem", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var REvent = /** @class */ (function () {
+        function REvent(object) {
+            this.isUsed = false;
+            this.m_isPrevented = false;
+            this.object = object;
+        }
+        REvent.prototype.prevent = function () {
+            this.m_isPrevented = true;
+        };
+        REvent.prototype.Use = function () {
+            this.isUsed = true;
+        };
+        return REvent;
+    }());
+    exports.REvent = REvent;
+    var REventEmitter = /** @class */ (function () {
+        function REventEmitter() {
+            this.m_listener = [];
+        }
+        REventEmitter.prototype.on = function (listener) {
+            var l = this.m_listener;
+            var index = l.indexOf(listener);
+            if (index >= 0)
+                return;
+            l.push(listener);
+        };
+        REventEmitter.prototype.removeListener = function (listener) {
+            var l = this.m_listener;
+            var index = l.indexOf(listener);
+            if (index >= 0) {
+                l.splice(index, 1);
+            }
+        };
+        REventEmitter.prototype.removeAllListener = function () {
+            this.m_listener = [];
+        };
+        REventEmitter.prototype.emit = function (e) {
+            var l = this.m_listener;
+            var lc = l.length;
+            for (var i = 0; i < lc; i++) {
+                var li = l[i];
+                li(e);
+                if (e['_isPrevented'])
+                    return;
+            }
+        };
+        REventEmitter.prototype.emitRaw = function (e) {
+            this.emit(new REvent(e));
+        };
+        return REventEmitter;
+    }());
+    exports.REventEmitter = REventEmitter;
+    var RUIObjEvent = /** @class */ (function (_super) {
+        __extends(RUIObjEvent, _super);
+        function RUIObjEvent() {
+            var _this = _super.call(this, null) || this;
+            _this.object = _this;
+            return _this;
+        }
+        return RUIObjEvent;
+    }(REvent));
+    exports.RUIObjEvent = RUIObjEvent;
+    var RUIResizeEvent = /** @class */ (function (_super) {
+        __extends(RUIResizeEvent, _super);
+        function RUIResizeEvent(w, h) {
+            var _this = _super.call(this, null) || this;
+            _this.object = _this;
+            _this.width = w;
+            _this.height = h;
+            return _this;
+        }
+        return RUIResizeEvent;
+    }(REvent));
+    exports.RUIResizeEvent = RUIResizeEvent;
+});
+define("rui/RUICanvas", ["require", "exports", "rui/RUIInput", "rui/RUICursor", "rui/RUIRenderer", "rui/EventSystem"], function (require, exports, RUIInput_2, RUICursor_3, RUIRenderer_1, EventSystem_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUICanvas = /** @class */ (function () {
         function RUICanvas(canvas) {
             this.m_isResized = false;
-            this.EventOnResize = new RUIEventSys_3.RUIEventEmitter();
+            this.EventOnResize = new EventSystem_1.REventEmitter();
             this.m_canvas = canvas;
             this.m_renderer = new RUIRenderer_1.RUIRenderer(this);
             this.m_input = new RUIInput_2.RUIInput(this);
@@ -2353,6 +2440,7 @@ define("rui/RUICanvas", ["require", "exports", "rui/RUIInput", "rui/RUICursor", 
         };
         RUICanvas.prototype.onResizeCanvas = function (width, height) {
             this.m_renderer.resizeCanvas(width, height);
+            this.EventOnResize.emit(new EventSystem_1.RUIResizeEvent(width, height));
         };
         Object.defineProperty(RUICanvas.prototype, "canvas", {
             get: function () {
@@ -2393,9 +2481,15 @@ define("rui/RUICanvas", ["require", "exports", "rui/RUIInput", "rui/RUICursor", 
     }());
     exports.RUICanvas = RUICanvas;
 });
-define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUIStyle", "rui/UIUtil"], function (require, exports, RUIObject_2, RUIStyle_9, UIUtil_4) {
+define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUIStyle"], function (require, exports, RUIObject_2, RUIStyle_9) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var RUIContainerUpdateMode;
+    (function (RUIContainerUpdateMode) {
+        RUIContainerUpdateMode[RUIContainerUpdateMode["None"] = 0] = "None";
+        RUIContainerUpdateMode[RUIContainerUpdateMode["LayoutUpdate"] = 1] = "LayoutUpdate";
+        RUIContainerUpdateMode[RUIContainerUpdateMode["LayoutFull"] = 2] = "LayoutFull";
+    })(RUIContainerUpdateMode = exports.RUIContainerUpdateMode || (exports.RUIContainerUpdateMode = {}));
     var RUIContainer = /** @class */ (function (_super) {
         __extends(RUIContainer, _super);
         function RUIContainer() {
@@ -2429,9 +2523,42 @@ define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUIStyle
             ui.parent = null;
             ui._root = null;
         };
+        RUIContainer.prototype.containerUpdateCheck = function () {
+            if (!this.isdirty) {
+                var children = this.children;
+                var cisdirty = false;
+                var cisresize = false;
+                for (var i = 0, clen = children.length; i < clen; i++) {
+                    var c = children[i];
+                    if (c.isdirty) {
+                        cisdirty = true;
+                    }
+                    if (c._resized) {
+                        cisresize = true;
+                    }
+                }
+                if (!cisdirty && !cisresize) {
+                    return RUIContainerUpdateMode.None;
+                }
+                if (!cisresize && cisdirty && !this._resized) {
+                    return RUIContainerUpdateMode.LayoutUpdate;
+                }
+            }
+            return RUIContainerUpdateMode.LayoutFull;
+        };
         RUIContainer.prototype.onLayout = function () {
             var isVertical = this.boxOrientation == RUIObject_2.RUIOrientation.Vertical;
             var children = this.children;
+            //check for dirty
+            var updateMode = this.containerUpdateCheck();
+            if (updateMode == RUIContainerUpdateMode.None)
+                return;
+            if (updateMode == RUIContainerUpdateMode.LayoutUpdate) {
+                for (var i = 0, clen = children.length; i < clen; i++) {
+                    children[i].onLayout();
+                }
+                return;
+            }
             var offset = 0;
             var maxsize = 0;
             var offsetside = 0;
@@ -2441,9 +2568,14 @@ define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUIStyle
             offsetside = padding[isVertical ? RUIObject_2.RUIConst.LEFT : RUIObject_2.RUIConst.TOP];
             //margin
             var marginLast = 0;
+            var relativeChildren = [];
             if (children.length != 0) {
                 for (var i = 0, len = children.length; i < len; i++) {
                     var c = children[i];
+                    if (!c.isOnFlow) {
+                        relativeChildren.push(c);
+                        continue;
+                    }
                     c.onLayout();
                     var cw = c._calwidth;
                     var ch = c._calheight;
@@ -2486,6 +2618,74 @@ define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUIStyle
                 this._calwidth = this.width;
             if (this.height != RUIObject_2.RUIAuto)
                 this._calheight = this.height;
+            //process relative children
+            this.onLayoutRelativeUI(relativeChildren);
+            this.isdirty = false;
+        };
+        RUIContainer.prototype.onLayoutRelativeUI = function (ui) {
+            if (ui.length == 0)
+                return;
+            var pWdith = this._calwidth;
+            var pHeight = this._calheight;
+            var root = this._root.root;
+            var rWidth = root._calwidth;
+            var rHeight = root._calheight;
+            for (var i = 0, clen = ui.length; i < clen; i++) {
+                var c = ui[i];
+                var isrelative = c.position == RUIObject_2.RUIPosition.Relative;
+                var cpw = isrelative ? pWdith : rWidth;
+                var cph = isrelative ? pHeight : rHeight;
+                var cleft = c.left;
+                var cright = c.right;
+                var ctop = c.top;
+                var cbottom = c.bottom;
+                var cwidth = c.width;
+                var cheight = c.height;
+                var constraintHori = cleft != RUIObject_2.RUIAuto && c.right != RUIObject_2.RUIAuto;
+                var constraintVert = ctop != RUIObject_2.RUIAuto && c.bottom != RUIObject_2.RUIAuto;
+                if (constraintHori) {
+                    c._caloffsetx = cleft;
+                    c._calwidth = cpw - cleft - cright;
+                }
+                else {
+                    if (cwidth != RUIObject_2.RUIAuto) {
+                        c._calwidth = cwidth;
+                        if (cleft != RUIObject_2.RUIAuto) {
+                            c._caloffsetx = cleft;
+                        }
+                        else if (cright != RUIObject_2.RUIAuto) {
+                            c._caloffsetx = cpw - cright - cwidth;
+                        }
+                        else {
+                            c._caloffsetx = RUIObject_2.ROUND((cpw - c._calwidth) / 2);
+                        }
+                    }
+                    else {
+                        throw new Error("relative ui have invalid horizontal constraint.");
+                    }
+                }
+                if (constraintVert) {
+                    c._caloffsety = ctop;
+                    c._calheight = cph - ctop - cbottom;
+                }
+                else {
+                    if (c.height != RUIObject_2.RUIAuto) {
+                        c._calheight = cheight;
+                        if (ctop != RUIObject_2.RUIAuto) {
+                            c._caloffsety = ctop;
+                        }
+                        else if (cbottom != RUIObject_2.RUIAuto) {
+                            c._caloffsety = cph - cbottom - cheight;
+                        }
+                        else {
+                            c._caloffsety = RUIObject_2.ROUND((cph - c._calheight) / 2);
+                        }
+                    }
+                    else {
+                        throw new Error("relative ui have invalid vertical constraint.");
+                    }
+                }
+            }
         };
         RUIContainer.prototype.onDraw = function (cmd) {
             this.onDrawPre(cmd);
@@ -2501,11 +2701,21 @@ define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUIStyle
             this._rect = rect;
             cmd.DrawBorder(rect, RUIStyle_9.RUIStyle.Default.primary);
             if (this.boxClip)
-                cmd.PushClipRect(UIUtil_4.UIUtil.RectMinus(rect, this.padding));
+                cmd.PushClipRect(this.RectMinusePadding(rect, this.padding));
         };
         RUIContainer.prototype.onDrawPost = function (cmd) {
             if (this.boxClip)
                 cmd.PopClipRect();
+        };
+        RUIContainer.prototype.RectMinusePadding = function (recta, offset) {
+            var pleft = offset[3];
+            var ptop = offset[0];
+            return [
+                recta[0] + pleft,
+                recta[1] + ptop,
+                recta[2] - offset[2] - pleft,
+                recta[3] - offset[3] - ptop
+            ];
         };
         return RUIContainer;
     }(RUIObject_2.RUIObject));
@@ -2522,10 +2732,20 @@ define("rui/RUIFlexContainer", ["require", "exports", "rui/RUIObject", "rui/RUIC
         RUIFlexContainer.prototype.onLayout = function () {
             var isVertical = this.boxOrientation == RUIObject_3.RUIOrientation.Vertical;
             var children = this.children;
+            var clen = children.length;
+            //check for dirty
+            var updateMode = this.containerUpdateCheck();
+            if (updateMode == RUIContainer_1.RUIContainerUpdateMode.None)
+                return;
+            if (updateMode == RUIContainer_1.RUIContainerUpdateMode.LayoutUpdate) {
+                for (var i = 0; i < clen; i++) {
+                    children[i].onLayout();
+                }
+                return;
+            }
             this.fillSize();
             if (null == (isVertical ? this._calheight : this._calwidth))
                 throw new Error();
-            var clen = children.length;
             if (clen != 0) {
                 //accumulate flex
                 var flexaccu = 0;
@@ -2551,8 +2771,13 @@ define("rui/RUIFlexContainer", ["require", "exports", "rui/RUIObject", "rui/RUIC
                 var marginPos = isVertical ? RUIObject_3.RUIConst.TOP : RUIObject_3.RUIConst.LEFT;
                 var marginPosSide = isVertical ? RUIObject_3.RUIConst.BOTTOM : RUIObject_3.RUIConst.RIGHT;
                 var marginTotal = 0;
+                var relativeChildren = [];
                 for (var i = 0; i < clen; i++) {
                     var c = children[i];
+                    if (!c.isOnFlow) {
+                        relativeChildren.push(c);
+                        continue;
+                    }
                     if (c.flex == null) {
                         var cfixed = isVertical ? c.height : c.width;
                         if (cfixed == RUIObject_3.RUIAuto) {
@@ -2596,6 +2821,8 @@ define("rui/RUIFlexContainer", ["require", "exports", "rui/RUIObject", "rui/RUIC
                 }
                 for (var i = 0; i < clen; i++) {
                     var c = children[i];
+                    if (!c.isOnFlow)
+                        continue;
                     var flowsize = c.flex == null ? (isVertical ? c.height : c.width) : RUIObject_3.ROUND(c.flex * sizePerFlex);
                     if (isVertical) {
                         c._flexheight = flowsize;
@@ -2620,7 +2847,9 @@ define("rui/RUIFlexContainer", ["require", "exports", "rui/RUIObject", "rui/RUIC
                     //offset
                     c.fillPositionOffset();
                 }
+                this.onLayoutRelativeUI(relativeChildren);
             }
+            this.isdirty = false;
         };
         return RUIFlexContainer;
     }(RUIContainer_1.RUIContainer));
@@ -2669,20 +2898,26 @@ define("rui/RUILayouter", ["require", "exports", "rui/RUIContainer", "rui/RUIObj
     }());
     exports.RUILayouter = RUILayouter;
 });
-define("rui/RUIRectangle", ["require", "exports", "rui/RUIObject", "rui/UIUtil"], function (require, exports, RUIObject_5, UIUtil_5) {
+define("rui/RUIRectangle", ["require", "exports", "rui/RUIObject", "rui/UIUtil"], function (require, exports, RUIObject_5, UIUtil_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUIRectangle = /** @class */ (function (_super) {
         __extends(RUIRectangle, _super);
         function RUIRectangle() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.m_debugColor = UIUtil_4.UIUtil.RandomColor();
+            return _this;
         }
+        RUIRectangle.prototype.onLayout = function () {
+            this.m_debugColor = UIUtil_4.UIUtil.RandomColor();
+            _super.prototype.onLayout.call(this);
+        };
         RUIRectangle.prototype.onDraw = function (cmd) {
             var noclip = !this.isClip;
             if (noclip)
                 cmd.PushClipRect();
             var rect = [this._calx, this._caly, this._calwidth, this._calheight];
-            cmd.DrawRectWithColor(rect, UIUtil_5.UIUtil.RandomColor());
+            cmd.DrawRectWithColor(rect, this.m_debugColor);
             if (noclip)
                 cmd.PopClipRect();
         };
@@ -2705,6 +2940,9 @@ define("rui/RUITest", ["require", "exports", "rui/RUICanvas", "rui/RUICmdList", 
             ui.padding = [5, 5, 5, 5];
             var root = new RUIRoot_1.RUIRoot(ui);
             root.root = ui;
+            this.m_ruicanvas.EventOnResize.on(function (e) {
+                root.resizeRoot(e.object.width, e.object.height);
+            });
             {
                 var rect1 = new RUIRectangle_1.RUIRectangle();
                 rect1.width = 100;
@@ -2770,6 +3008,13 @@ define("rui/RUITest", ["require", "exports", "rui/RUICanvas", "rui/RUICmdList", 
                         rfc2.flex = 2;
                         container3.addChild(rfc2);
                     }
+                    var rfcf1 = new RUIRectangle_1.RUIRectangle();
+                    rfcf1.position = RUIObject_6.RUIPosition.Relative;
+                    rfcf1.left = 20;
+                    rfcf1.right = 20;
+                    rfcf1.height = 100;
+                    rfcf1.isClip = false;
+                    container2.addChild(rfcf1);
                 }
                 var rect2 = new RUIRectangle_1.RUIRectangle();
                 rect2.width = 50;
@@ -2799,6 +3044,45 @@ define("rui", ["require", "exports", "rui/RUICanvas", "rui/RUITest"], function (
     Object.defineProperty(exports, "__esModule", { value: true });
     __export(RUICanvas_2);
     __export(RUITest_1);
+});
+define("rui/RUIBinder", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function RUIBind(tar, property, f) {
+        if (f == null)
+            return;
+        var descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(tar), property);
+        if (descriptor != null) {
+            var getter = descriptor.get;
+            var setter = descriptor.set;
+            if (getter == null || setter == null)
+                return;
+            Object.defineProperty(tar, property, {
+                enumerable: descriptor.enumerable,
+                get: function () {
+                    return getter.call(tar);
+                },
+                set: function (newval) {
+                    setter.call(tar, newval);
+                    f(tar[property]);
+                }
+            });
+        }
+        else {
+            var value = tar[property];
+            Object.defineProperty(tar, property, {
+                enumerable: true,
+                get: function () {
+                    return value;
+                },
+                set: function (newval) {
+                    value = newval;
+                    f(value);
+                }
+            });
+        }
+    }
+    exports.RUIBind = RUIBind;
 });
 define("rui/RUIQTree", ["require", "exports"], function (require, exports) {
     "use strict";

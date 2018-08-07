@@ -5,6 +5,7 @@ import { RUIInput, IInputUI } from "./RUIInput";
 import { RUICursor } from "./RUICursor";
 import { RUIRenderer } from "./RUIRenderer";
 import { RUIEventEmitter } from "./RUIEventSys";
+import { REventEmitter, RUIResizeEvent } from "./EventSystem";
 
 export class RUICanvas {
     private m_canvas: HTMLCanvasElement;
@@ -18,7 +19,7 @@ export class RUICanvas {
 
     private m_isResized: boolean = false;
 
-    public EventOnResize: RUIEventEmitter = new RUIEventEmitter()
+    public EventOnResize: REventEmitter<RUIResizeEvent> = new REventEmitter();
 
     constructor(canvas: HTMLCanvasElement) {
         this.m_canvas = canvas;
@@ -37,11 +38,13 @@ export class RUICanvas {
         this.m_canvas.addEventListener('contextmenu', (e) => { e.preventDefault(); return false });
         window.addEventListener('resize',()=>{
             ruicanvas.onResizeCanvas(window.innerWidth,window.innerHeight);
+
         })
     }
 
     private onResizeCanvas(width:number,height:number){
         this.m_renderer.resizeCanvas(width,height);
+        this.EventOnResize.emit(new RUIResizeEvent(width,height));
     }
 
 

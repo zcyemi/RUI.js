@@ -4,6 +4,12 @@ import { RUIStyle } from "./RUIStyle";
 import { UIUtil } from "./UIUtil";
 
 
+export enum RUIContainerUpdateMode{
+    None,
+    LayoutUpdate,
+    LayoutFull,
+}
+
 export class RUIContainer extends RUIObject {
     public boxClip: boolean = true;
     public boxOverflow: RUIOverflow = RUIOverflow.Clip;
@@ -36,11 +42,49 @@ export class RUIContainer extends RUIObject {
         ui._root = null;
     }
 
+    protected containerUpdateCheck(): RUIContainerUpdateMode{
+        if(!this.isdirty){
+
+            let children = this.children;
+            let cisdirty = false;
+            let cisresize = false;
+
+            for(var i=0,clen=children.length;i<clen;i++){
+                let c = children[i];
+                if( c.isdirty){
+                    cisdirty = true;
+                }
+                if(c._resized){
+                    cisresize = true;
+                }
+            }
+
+            if(!cisdirty && !cisresize){
+                return RUIContainerUpdateMode.None;
+            }
+            if(!cisresize && cisdirty && !this._resized){
+                return RUIContainerUpdateMode.LayoutUpdate;
+            }
+        }
+        return RUIContainerUpdateMode.LayoutFull;
+    }
+
     public onLayout() {
 
         let isVertical = this.boxOrientation == RUIOrientation.Vertical;
 
         let children = this.children;
+
+
+        //check for dirty
+        let updateMode = this.containerUpdateCheck();
+        if(updateMode == RUIContainerUpdateMode.None) return;
+        if(updateMode == RUIContainerUpdateMode.LayoutUpdate){
+            for(var i=0,clen = children.length;i<clen;i++){
+                children[i].onLayout();
+            }
+            return;
+        }
 
         let offset = 0;
         let maxsize = 0;
@@ -116,6 +160,8 @@ export class RUIContainer extends RUIObject {
 
         //process relative children
         this.onLayoutRelativeUI(relativeChildren);
+
+        this.isdirty = false;
     }
 
     protected onLayoutRelativeUI(ui: RUIObject[]) {
