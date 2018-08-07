@@ -2,6 +2,7 @@ import { RUIObject, RUIAuto } from "./RUIObject";
 import { RUICmdList } from "./RUICmdList";
 import { UIUtil } from "./UIUtil";
 import { RUIStyle } from "./RUIStyle";
+import { RUIMouseEvent, RUIMouseDragEvent } from "./EventSystem";
 
 export class RUIRectangle extends RUIObject{
 
@@ -25,35 +26,36 @@ export class RUIRectangle extends RUIObject{
         if(noclip) cmd.PopClipRect();
     }
 
-    // public onMouseUp(){
-    //     this.m_debugColor = UIUtil.RandomColor();
-    //     this.setDirty();
-    // }
+    public onMouseUp(){
+        //console.log('mouseup');
+    }
 
-    // public onMouseDown(){
-    //     this.m_debugColor = RUIStyle.Default.primary;
-    //     this.setDirty();
-    // }
+    public onMouseDown(){
+        //console.log('mousedown');
+    }
 
-    // public onActive(){
-    //     this.m_debugColor = RUIStyle.Default.primary;
-    //     this.setDirty();
-    // }
+    public onActive(){
+        //console.log('onactive');
+    }
 
-    // public onInactive(){
-    //     this.m_debugColor = UIUtil.RandomColor();
-    //     this.setDirty();
-    // }
+    public onInactive(){
+        //console.log('inactive');
+    }
 
-    // public onMouseEnter(){
-    //     this.m_debugColor = RUIStyle.Default.primary;
-    //     this.setDirty();
-    // }
+    public onMouseEnter(){
+        //console.log('enter');
+    }
 
-    // public onMouseLeave(){
-    //     this.m_debugColor = UIUtil.RandomColor();
-    //     this.setDirty();
-    // }
+    public onMouseLeave(){
+        //console.log('leave');
+    }
 
+    public onMouseClick(e:RUIMouseEvent){
+        //console.log('click');
+    }
+
+    public onMouseDrag(e:RUIMouseDragEvent){
+        //console.log('ondrag:' + e.ondrag);
+    }
 
 }

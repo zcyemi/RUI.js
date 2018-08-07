@@ -1,6 +1,6 @@
 import { RUIRoot } from "./RUIRoot";
 import { RUICmdList } from "./RUICmdList";
-import { RUIMouseEvent } from "./EventSystem";
+import { RUIMouseEvent, RUIMouseDragEvent } from "./EventSystem";
 
 export const RUIAuto: number= -1;
 
@@ -161,6 +161,8 @@ export class RUIObject{
     public onInactive(){}
     public onMouseLeave(){}
     public onMouseEnter(){}
+    public onMouseClick(e:RUIMouseEvent){}
+    public onMouseDrag(e:RUIMouseDragEvent){}
 
     protected fillSize(){
 
