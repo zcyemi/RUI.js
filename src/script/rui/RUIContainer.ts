@@ -2,6 +2,7 @@ import { RUIObject, RUIOverflow, RUIOrientation, RUIConst, RUIAuto, RUIPosition,
 import { RUICmdList } from "./RUICmdList";
 import { RUIStyle } from "./RUIStyle";
 import { UIUtil } from "./UIUtil";
+import { RUIFlexContainer } from "./RUIFlexContainer";
 
 
 export enum RUIContainerUpdateMode{
@@ -16,6 +17,9 @@ export class RUIContainer extends RUIObject {
     public boxOrientation: RUIOrientation = RUIOrientation.Vertical;
 
     public children: RUIObject[] = [];
+
+    /** mark execute for children ui of @function traversal */
+    public skipChildTraversal: boolean = false;
 
 
     public addChild(ui: RUIObject) {
@@ -277,5 +281,22 @@ export class RUIContainer extends RUIObject {
             recta[2] - offset[2] - pleft,
             recta[3] - offset[3] - ptop
         ];
+    }
+
+    public traversal(f:(c:RUIObject)=>void){
+
+        if(f == null)return;
+        f(this);
+        if(this.skipChildTraversal)return;
+        let children = this.children;
+        for(var i=0,clen = children.length;i<clen;i++){
+            let c = children[i];
+            if(c instanceof RUIContainer){
+                c.traversal(f);
+            }
+            else{
+                f(c);
+            }
+        }
     }
 }

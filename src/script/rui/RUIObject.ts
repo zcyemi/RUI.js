@@ -1,5 +1,6 @@
 import { RUIRoot } from "./RUIRoot";
 import { RUICmdList } from "./RUICmdList";
+import { RUIMouseEvent } from "./EventSystem";
 
 export const RUIAuto: number= -1;
 
@@ -64,6 +65,7 @@ export class RUIObject{
 
     public visible: boolean = false;
     public zorder: number = 0;
+    public _level:number;
     public flex?: number;
 
     public parent: RUIObject = null;
@@ -87,6 +89,8 @@ export class RUIObject{
     public _root :RUIRoot;
 
     public _resized:boolean = true;
+
+    public _debugname:string;
 
     public onBuild(){
 
@@ -150,6 +154,10 @@ export class RUIObject{
         root.isdirty = true;
     }
 
+
+    public onMouseDown(e:RUIMouseEvent){}
+    public onMouseUp(e:RUIMouseEvent){}
+
     protected fillSize(){
 
         this._calwidth= null;
@@ -186,6 +194,15 @@ export class RUIObject{
             this._caloffsetx += this.left == RUIAuto? 0 : this.left;
             this._caloffsety += this.top == RUIAuto? 0: this.top;
         }
+    }
+
+    public rectContains(x:number,y:number){
+        let calx = this._calx;
+        let caly = this._caly;
+
+        if(x < calx || x > calx +this._calwidth) return false;
+        if(y < caly || y > caly + this._calwidth) return false;
+        return true;
     }
 
 }

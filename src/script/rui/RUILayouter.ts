@@ -19,15 +19,12 @@ export class RUILayouter{
 
         ui._calx = 0;
         ui._caly = 0;
+        ui._level = 0;
 
         //Calculate All offset
         if(ui instanceof RUIContainer){
             this.calculateOffset(ui);
         }
-
-
-
-        console.log(ui);
     }
 
     private calculateOffset(cui:RUIContainer){
@@ -42,8 +39,11 @@ export class RUILayouter{
             let offx = cui._calx;
             let offy = cui._caly;
 
+            let clevel = cui._level + 1;
+
             for(var i=0;i<clen;i++){
                 var c= children[i];
+                c._level = clevel;
 
                 c._calx = offx + c._caloffsetx;
                 c._caly = offy + c._caloffsety;

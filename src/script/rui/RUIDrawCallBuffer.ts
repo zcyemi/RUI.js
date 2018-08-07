@@ -1,4 +1,3 @@
-import { RUIDrawCall, DrawCmdType } from "./RUIDrawCall";
 import { GLProgram, GLContext } from "wglut";
 import { GLSL_VERT_DEF, GLSL_FRAG_COLOR, GLSL_VERT_TEXT, GLSL_FRAG_TEXT } from "../gl/wglShaderLib";
 import { RUIFontTexture } from "./RUIFontTexture";

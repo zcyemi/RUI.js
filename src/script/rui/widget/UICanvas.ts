@@ -1,10 +1,10 @@
-import { UIObject } from "../UIObject";
+// import { UIObject } from "../UIObject";
 
 
-export class UICanvas extends UIObject{
-    public constructor(){
-        super();
-    }
+// export class UICanvas extends UIObject{
+//     public constructor(){
+//         super();
+//     }
 
     
-}
+// }

@@ -1,5 +1,4 @@
-import { RUIEvent } from "./RUIEventSys";
-
+import { RUIButton, RUIEventType } from "./RUIInput";
 
 export class REvent<T>{
     
@@ -64,11 +63,10 @@ export class REventEmitter<T>{
     }
 }
 
-export class RUIObjEvent extends REvent<RUIObjEvent>{
+export abstract class RUIObjEvent extends REvent<RUIObjEvent>{
 
     public constructor(){
         super(null);
-        this.object = this;
     }
 }
 
@@ -82,5 +80,33 @@ export class RUIResizeEvent extends REvent<RUIResizeEvent>{
 
         this.width= w;
         this.height = h;
+    }
+}
+
+export class RUIKeyboardEvent extends RUIObjEvent{
+
+    private m_keyboardEvent: KeyboardEvent;
+    public constructor(e: KeyboardEvent){
+        super();
+        this.object = this;
+    }
+}
+
+export class RUIMouseEvent extends RUIObjEvent{
+
+    public m_eventtype : RUIEventType;
+    public mousex: number;
+    public mousey:number;
+    public constructor(e:MouseEvent,type:RUIEventType){
+        super();
+        this.object = this;
+
+        this.object,this.m_eventtype = type;
+        this.mousex = e.offsetX;
+        this.mousey = e.offsetY;
+
+    }
+    public get type(): RUIEventType{
+        return this.m_eventtype;
     }
 }

@@ -38,16 +38,20 @@ export class RUITest{
             root.resizeRoot(e.object.width,e.object.height);
         });
 
+        this.m_ruicanvas.EventOnUIEvent.on((e)=>root.dispatchEvent(e));
+
         {
             let rect1 = new RUIRectangle();
             rect1.width = 100;
             rect1.height= 100;
+            rect1._debugname = "rect1";
             ui.addChild(rect1);
 
             let container1 =new RUIContainer();
             container1.boxOrientation = RUIOrientation.Horizontal;
             //container1.padding = [10,10,10,5];
             container1.margin = [10,0,5,0];
+            container1._debugname = "container1";
             
             container1.width = 150;
             ui.addChild(container1);
@@ -57,6 +61,7 @@ export class RUITest{
                 rectc1.height = 30;
                 rectc1.margin[3] = 20;
                 rectc1.margin[1] = 20;
+                rectc1._debugname = "rect3";
                 container1.addChild(rectc1);
 
 
@@ -66,6 +71,7 @@ export class RUITest{
                 rectc2.position = RUIPosition.Offset;
                 rectc2.left = 20;
                 rectc2.top = -20;
+                rectc2._debugname = "rect4";
                 
                 rectc2.margin[3] = 25;
                 rectc2.isClip = false;
@@ -79,6 +85,7 @@ export class RUITest{
                 container2.padding = [5,5,5,5];
                 container2.height = 100;
                 container2.boxOrientation = RUIOrientation.Horizontal;
+                container2._debugname = "container2";
 
 
                 ui.addChild(container2);
@@ -88,10 +95,12 @@ export class RUITest{
                 rectfc1.margin = [10,2,5,3];
                 container2.addChild(rectfc1);
                 rectfc1.height = 30;
+                rectfc1._debugname = "rect5";
 
                 let rectfc2 = new RUIRectangle();
                 rectfc2.width = 50;
-                container2.addChild(rectfc2);
+                rectfc2._debugname= "rect6";
+                
 
                 rectfc2.margin[1] = 7;
 
@@ -101,7 +110,10 @@ export class RUITest{
                 rectfc3.margin[0] = 70;
                 rectfc3.margin[1] = 5;
 
+                rectfc3._debugname = "rect7";
+
                 container2.addChild(rectfc3);
+                container2.addChild(rectfc2);
 
                 {
                     let container3 =new RUIFlexContainer();
@@ -112,8 +124,6 @@ export class RUITest{
                     container3.left = 20;
 
                     container2.addChild(container3);
-
-                    console.log(container3);
 
                     let rfc1 = new RUIRectangle();
                     rfc1.flex = 1;
@@ -128,19 +138,20 @@ export class RUITest{
                 }
 
                 
-                let rfcf1 = new RUIRectangle();
-                rfcf1.position = RUIPosition.Relative;
-                rfcf1.left = 20;
-                rfcf1.right = 20;
-                rfcf1.height =100;
-                rfcf1.isClip = false;
+                // let rfcf1 = new RUIRectangle();
+                // rfcf1.position = RUIPosition.Relative;
+                // rfcf1.left = 20;
+                // rfcf1.right = 20;
+                // rfcf1.height =100;
+                // rfcf1.isClip = false;
 
-                container2.addChild(rfcf1);
+                // container2.addChild(rfcf1);
             }
 
             let rect2 = new RUIRectangle();
             rect2.width = 50;
             rect2.height = 30;
+            rect2._debugname = "rect2";
             ui.addChild(rect2);
 
         }
@@ -156,8 +167,6 @@ export class RUITest{
 
             this.m_ruilayouter.build(uiroot);
             this.m_ruicmdlist.draw(uiroot);
-
-            console.log(this.m_ruicmdlist);
 
             this.m_ruicanvas.renderer.DrawCmdList(this.m_ruicmdlist);
         }

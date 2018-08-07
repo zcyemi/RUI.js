@@ -1,6 +1,5 @@
-import { UIObject } from "./UIObject";
 import { RUICanvas } from "./RUICanvas";
-import { RUIEvent, RUIMouseEvent, RUIEventEmitter, RUIMouseDragEvent } from "./RUIEventSys";
+import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent } from "./EventSystem";
 
 
 export class IInputUI{
@@ -21,42 +20,66 @@ export enum RUIButton{
     Right = 2
 }
 
+export enum RUIEventType{
+    MouseDown,
+    MouseUp,
+    MouseClick,
+    MouseEnter,
+    MouseLeave,
+    MouseDrag,
+    MouseDrop,
+    MouseMove,
+}
+
 
 export class RUIInput{
 
     private m_target : RUICanvas;
 
-    private m_activeMouseUI: UIObject = null;
-    private m_activeMouseUIDrag:boolean = false;
-    private m_onMouseDown:boolean = false;
+    // private m_activeMouseUI: UIObject = null;
+    // private m_activeMouseUIDrag:boolean = false;
+    // private m_onMouseDown:boolean = false;
 
-    public EvtMouseEnter: RUIEventEmitter;
-    public EvtMouseLeave: RUIEventEmitter;
+    // public EvtMouseEnter: RUIEventEmitter;
+    // public EvtMouseLeave: RUIEventEmitter;
+
+    public static readonly MOUSE_DOWN:string = "onMouseDown";
+    public static readonly MOUSE_UP:string = "onMouseUp";
+    public static readonly MOUSE_CLICK:string = "onMouseClick";
+    public static readonly MOUSE_ENTER:string = "onMouseEnter";
+    public static readonly MOUSE_LEAVE:string = "onMouseLeave";
+    public static readonly MOUSE_DRAG:string = "onMouseDrag";
+    public static readonly MOUSE_DROP:string = "onMouseDrop";
 
 
     public constructor(uicanvas:RUICanvas){
 
         this.m_target = uicanvas;
-        this.EvtMouseEnter = new RUIEventEmitter();
-        this.EvtMouseLeave = new RUIEventEmitter();
+        // this.EvtMouseEnter = new RUIEventEmitter();
+        // this.EvtMouseLeave = new RUIEventEmitter();
 
         this.RegisterEvent();
     }
 
-    public setActiveUI(ui:UIObject){
-        let curActiveUI = this.m_activeMouseUI;
-        if(ui == curActiveUI) return;
-        if(curActiveUI != null){
-            curActiveUI.onInactive();
-        }
+    // public setActiveUI(ui:UIObject){
+    //     let curActiveUI = this.m_activeMouseUI;
+    //     if(ui == curActiveUI) return;
+    //     if(curActiveUI != null){
+    //         curActiveUI.onInactive();
+    //     }
 
-        ui.onActive();
-        this.m_activeMouseUI = ui;
-    }
+    //     ui.onActive();
+    //     this.m_activeMouseUI = ui;
+    // }
 
     private RegisterEvent(){
-        let c = this.m_target.canvas;
+        let c = this.m_target;
         let tar = this.m_target;
+
+        window.addEventListener('keypress',(e)=>c.EventOnUIEvent.emit(new RUIKeyboardEvent(e)));
+        window.addEventListener('mousedown',(e)=>c.EventOnUIEvent.emit(new RUIMouseEvent(e,RUIEventType.MouseDown)));
+        window.addEventListener('mouseup',(e)=>c.EventOnUIEvent.emit(new RUIMouseEvent(e,RUIEventType.MouseUp)));
+        window.addEventListener('mousemove',(e)=>c.EventOnUIEvent.emit(new RUIMouseEvent(e,RUIEventType.MouseMove)));
 
         // window.addEventListener('keypress',this.onKeyboardEvent.bind(this));
         // window.addEventListener('keydown',this.onKeyboardDown.bind(this));
@@ -116,27 +139,27 @@ export class RUIInput{
         // });
     }
 
-    private onKeyboardEvent(e:KeyboardEvent){
-        // let activeUI = this.m_target.activeUI;
-        // if(activeUI != null) activeUI.onKeyPress(e);
-    }
-    private onKeyboardDown(e:KeyboardEvent){
-        // let activeUI = this.m_target.activeUI;
-        // if(activeUI != null) activeUI.onKeyDown(e);
-    }
+    // private onKeyboardEvent(e:KeyboardEvent){
+    //     // let activeUI = this.m_target.activeUI;
+    //     // if(activeUI != null) activeUI.onKeyPress(e);
+    // }
+    // private onKeyboardDown(e:KeyboardEvent){
+    //     // let activeUI = this.m_target.activeUI;
+    //     // if(activeUI != null) activeUI.onKeyDown(e);
+    // }
 
-    public static ProcessTextKeyPress(text:string,e:KeyboardEvent):string{
-        return text +e.key;
-    }
+    // public static ProcessTextKeyPress(text:string,e:KeyboardEvent):string{
+    //     return text +e.key;
+    // }
 
-    public static ProcessTextKeyDown(text:string,e:KeyboardEvent): string{
-        if(text == null || text.length == 0) return text;
-        if(e.key == 'Backspace'){
-            if(e.shiftKey){
-                return '';
-            }
-            text = text.slice(0,text.length-1);
-        }
-        return text;
-    }
+    // public static ProcessTextKeyDown(text:string,e:KeyboardEvent): string{
+    //     if(text == null || text.length == 0) return text;
+    //     if(e.key == 'Backspace'){
+    //         if(e.shiftKey){
+    //             return '';
+    //         }
+    //         text = text.slice(0,text.length-1);
+    //     }
+    //     return text;
+    // }
 }
