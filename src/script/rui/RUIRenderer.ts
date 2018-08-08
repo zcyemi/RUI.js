@@ -25,6 +25,9 @@ export class RUIRenderer{
     private m_uicanvas:RUICanvas;
 
 
+    private m_needRedraw: boolean = false;
+
+
     public constructor(uicanvas: RUICanvas){
         this.m_uicanvas = uicanvas;
         this.glctx = GLContext.createFromCanvas(uicanvas.canvas);
@@ -38,6 +41,10 @@ export class RUIRenderer{
         this.m_isvalid =true;
         this.gl = this.glctx.gl;
 
+        var self = this;
+        RUIFontTexture.EventOnTextureLoaded.on((ft)=>{
+            self.m_needRedraw = true;
+        });
         RUIFontTexture.Init(this.glctx);
         this.SetupGL();
 
@@ -60,6 +67,10 @@ export class RUIRenderer{
 
     public get isResized():boolean{
         return this.m_isResized;
+    }
+
+    public get needRedraw():boolean{
+        return this.m_needRedraw;
     }
 
     public useResized(){
@@ -89,6 +100,7 @@ export class RUIRenderer{
     }
 
     public DrawCmdList(cmdlist:RUICmdList){
+
         
         if(cmdlist == null) return;
         if(this.m_drawcallBuffer == null){
@@ -127,6 +139,7 @@ export class RUIRenderer{
         }
 
         let drawTextCount = drawbuffer.drawCountText;
+
         if(drawTextCount > 0){
             if(fonttex.isTextureValid){
                 let programText: GLProgram|any = drawbuffer.programText;
@@ -141,9 +154,12 @@ export class RUIRenderer{
                 gl.drawElements(gl.TRIANGLES,drawTextCount *6, gl.UNSIGNED_SHORT,0)
             }
             else{
+                console.log('texture not valid');
                 drawbuffer.isDirty = true;
             }
         }
+        this.m_needRedraw = false;
+
     }
     
 }

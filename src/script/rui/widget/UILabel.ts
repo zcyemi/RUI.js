@@ -1,3 +1,7 @@
+import { RUIObject } from "../RUIObject";
+import { RUICmdList } from "../RUICmdList";
+import { UIUtil } from "../UIUtil";
+
 // import { UIObject } from "../UIObject";
 // import { RUIDrawCall } from "../RUIDrawCall";
 
@@ -22,3 +26,20 @@
 //         }
 //     }
 // }
+
+export class RUILabel extends RUIObject{
+
+    public label:string;
+    public constructor(label:string){
+        super();
+        this.label= label;
+    }
+
+    public onDraw(cmd:RUICmdList){
+        let rect = [this._calx,this._caly,this._calwidth,this._calheight];
+
+        this._rect = rect;
+
+        cmd.DrawText(this.label,rect);
+    }
+}

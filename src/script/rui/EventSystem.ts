@@ -1,5 +1,4 @@
 import { RUIButton, RUIEventType } from "./RUIInput";
-import { extname } from "path";
 
 export class REvent<T>{
     

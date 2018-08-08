@@ -3,6 +3,7 @@ import { RUICmdList } from "./RUICmdList";
 import { RUIStyle } from "./RUIStyle";
 import { UIUtil } from "./UIUtil";
 import { RUIFlexContainer } from "./RUIFlexContainer";
+import { RUIRoot } from "./RUIRoot";
 
 
 export enum RUIContainerUpdateMode{
@@ -20,6 +21,10 @@ export class RUIContainer extends RUIObject {
 
     /** mark execute for children ui of @function traversal */
     public skipChildTraversal: boolean = false;
+
+    public onBuild(){
+
+    }
 
 
     public addChild(ui: RUIObject) {
@@ -281,6 +286,23 @@ export class RUIContainer extends RUIObject {
             recta[2] - offset[2] - pleft,
             recta[3] - offset[3] - ptop
         ];
+    }
+
+    public setRoot(root: RUIRoot){
+        if(this._root == root) return;
+
+        this._root = root;
+
+        let children =this.children;
+        for(var i=0,clen=children.length;i<clen;i++){
+            let c = children[i];
+            if(c instanceof RUIContainer){
+                c.setRoot(root);
+            }
+            else{
+                c._root = root;
+            }
+        }
     }
 
     public traversal(f:(c:RUIObject)=>void){

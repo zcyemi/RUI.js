@@ -7,7 +7,7 @@ export class RUIRoot {
 
     public root: RUIObject;
 
-    public isdirty: boolean = false;
+    public isdirty: boolean = true;
 
     public expandSize: boolean = false;
 
@@ -21,7 +21,12 @@ export class RUIRoot {
 
         this.expandSize = expandSize;
         this.root = ui;
-        ui._root = this;
+        if(ui instanceof RUIContainer){
+            ui.setRoot(this);
+        }
+        else{
+            ui._root = this;
+        }
     }
 
     public resizeRoot(width: number, height: number) {

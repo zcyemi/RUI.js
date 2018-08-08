@@ -1,6 +1,8 @@
 import { RUIRoot } from "./RUIRoot";
 import { RUICmdList } from "./RUICmdList";
 import { RUIMouseEvent, RUIMouseDragEvent } from "./EventSystem";
+import { RUIFlexContainer } from "./RUIFlexContainer";
+import { RUIContainer } from "./RUIContainer";
 
 export const RUIAuto: number= -1;
 
@@ -92,9 +94,6 @@ export class RUIObject{
 
     public _debugname:string;
 
-    public onBuild(){
-
-    }
 
     public onDraw(cmd:RUICmdList){
     }
@@ -148,10 +147,9 @@ export class RUIObject{
     public setDirty(){
         this.isdirty =true;
         let root = this._root;
-        if(root == null){
-            throw new Error("setDirty must be called in hierachied uiobject.");
+        if(root != null){
+            root.isdirty =true;
         }
-        root.isdirty = true;
     }
 
 
@@ -177,6 +175,11 @@ export class RUIObject{
                 if(this.parent == null){
                     throw new Error();
                 }
+                else{
+                    if(this.parent.width != RUIAuto){
+                        this._calwidth = this.parent.width;
+                    }
+                }
             }
             else{
                 this._calwidth= this.width;
@@ -187,6 +190,9 @@ export class RUIObject{
             if(this.height == RUIAuto){
                 if(this.parent == null){
                     throw new Error();
+                }
+                else{
+                    this._calheight = this.minheight;
                 }
             }
             else{
