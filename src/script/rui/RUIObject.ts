@@ -208,6 +208,10 @@ export class RUIObject{
         }
     }
 
+    public calculateRect():RUIRect{
+        return [this._calx,this._caly,this._calwidth,this._calheight];
+    }
+
     public rectContains(x:number,y:number){
         let calx = this._calx;
         let caly = this._caly;

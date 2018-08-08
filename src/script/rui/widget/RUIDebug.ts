@@ -1,5 +1,6 @@
 import { RUIContainer } from "../RUIContainer";
 import { RUILabel } from "./UILabel";
+import { RUIButton } from "./RUIButton";
 
 
 export class RUIDebug extends RUIContainer{
@@ -14,6 +15,10 @@ export class RUIDebug extends RUIContainer{
 
         let label1 = new RUILabel('typescript !');
         this.addChild(label1);
+
+        let button = new RUIButton("button1");
+        this.addChild(button);
+
         let label3 = new RUILabel('xdwa-');
         this.addChild(label3);
     }
