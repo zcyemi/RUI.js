@@ -67,7 +67,7 @@ export class RUIObject{
 
     public visible: boolean = false;
     public zorder: number = 0;
-    public _level:number;
+    public _level:number = 0;
     public flex?: number;
 
     public parent: RUIObject = null;
@@ -80,8 +80,8 @@ export class RUIObject{
     public _calheight?:number;
     public _caloffsetx:number = 0;
     public _caloffsety:number = 0;
-    public _calx:number;
-    public _caly:number;
+    public _calx:number = 0;
+    public _caly:number = 0;
 
     public _flexwidth?:number;
     public _flexheight?:number;
@@ -133,6 +133,10 @@ export class RUIObject{
         this.fillSize();
 
         this._resized = false;
+    }
+
+    public onLayoutPost(){
+
     }
 
     public get isRoot():boolean{

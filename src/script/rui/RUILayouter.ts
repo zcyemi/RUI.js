@@ -17,9 +17,9 @@ export class RUILayouter{
         uiroot.isdirty = false;
         
 
-        ui._calx = 0;
-        ui._caly = 0;
-        ui._level = 0;
+        // ui._calx = 0;
+        // ui._caly = 0;
+        // ui._level = 0;
 
         //Calculate All offset
         if(ui instanceof RUIContainer){
@@ -51,6 +51,7 @@ export class RUILayouter{
                 if(c instanceof RUIContainer){
                     this.calculateOffset(c);
                 }
+                c.onLayoutPost();
             }
         }
     }

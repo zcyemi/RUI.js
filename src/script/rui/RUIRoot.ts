@@ -16,6 +16,9 @@ export class RUIRoot {
     private m_activeUIonDrag:boolean = false;
     private m_hoverUI: RUIObject[] = [];
 
+    private m_rootSizeWidth:number;
+    private m_rootSizeHeight:number;
+
     public constructor(ui: RUIObject, expandSize: boolean = false) {
         if (ui.parent != null) throw new Error("root ui must have no parent.");
 
@@ -30,12 +33,21 @@ export class RUIRoot {
     }
 
     public resizeRoot(width: number, height: number) {
+
+        if(this.m_rootSizeWidth == width && this.m_rootSizeHeight == height) return; 
+
         this.isdirty = true;
 
         if (this.expandSize) {
-            this.root.width = width;
-            this.root.height = height;
+            let rootui =this.root;
+            let uiwidth = rootui.width;
+            if(uiwidth != width)  rootui.width = width;
+            let uiheight = rootui.height;
+            if(uiheight != height) rootui.height= height;
         }
+
+        this.m_rootSizeWidth = width;
+        this.m_rootSizeHeight = height;
 
     }
 

@@ -78,8 +78,6 @@ export class RUICmdList{
         root.root.onDraw(this);
         
         this.isDirty = true;
-
-
     }
 
 
