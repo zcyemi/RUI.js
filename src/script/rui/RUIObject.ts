@@ -148,12 +148,18 @@ export class RUIObject{
         return (pos == RUIPosition.Default || pos == RUIPosition.Offset);
     }
 
-    public setDirty(){
+    public setDirty(resize:boolean = false){
         this.isdirty =true;
         let root = this._root;
         if(root != null){
             root.isdirty =true;
         }
+
+        if(this.parent != null){
+            this.parent.isdirty = true;
+        }
+
+        if(resize) this._resized = true;
     }
 
 

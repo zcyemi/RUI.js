@@ -245,6 +245,8 @@ export class RUIContainer extends RUIObject {
                     throw new Error("relative ui have invalid vertical constraint.");
                 }
             }
+
+            c.fillPositionOffset();
         }
     }
 

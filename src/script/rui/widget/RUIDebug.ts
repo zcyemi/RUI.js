@@ -1,7 +1,7 @@
 import { RUIContainer } from "../RUIContainer";
 import { RUILabel } from "./UILabel";
 import { RUIButton } from "./RUIButton";
-import { RUINodeCanvas } from "./RUICanvas";
+import { RUICanvas } from "./RUICanvas";
 
 
 export class RUIDebug extends RUIContainer{
@@ -18,7 +18,7 @@ export class RUIDebug extends RUIContainer{
         let button = new RUIButton("button1");
         this.addChild(button);
 
-        let canvas = new RUINodeCanvas();
+        let canvas = new RUICanvas();
         this.addChild(canvas);
 
     }
