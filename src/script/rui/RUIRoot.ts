@@ -1,5 +1,5 @@
 import { RUIObject } from "./RUIObject";
-import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIMouseDragEvent } from "./EventSystem";
+import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIMouseDragEvent, RUIMouseDragStage } from "./EventSystem";
 import { RUIContainer } from "./RUIContainer";
 import { RUIEventType } from "./RUIInput";
 
@@ -70,7 +70,14 @@ export class RUIRoot {
 
             if(this.m_onMouseDown && this.m_activeUI !=null){
                 //drag move
-                this.m_activeUI.onMouseDrag(new RUIMouseDragEvent(e,true));
+                if(!this.m_activeUIonDrag){
+                    this.m_activeUIonDrag = true;
+                    this.m_activeUI.onMouseDrag(new RUIMouseDragEvent(e,RUIMouseDragStage.Begin));
+                }
+                else{
+                    this.m_activeUI.onMouseDrag(new RUIMouseDragEvent(e,RUIMouseDragStage.Update));
+                }
+                
             }
         }
         else {
@@ -86,7 +93,7 @@ export class RUIRoot {
                         if (newActiveUI != null){
                             newActiveUI.onMouseDown(e);
                             if(newActiveUI != curActiveUI) newActiveUI.onActive();
-                            this.m_activeUIonDrag = true;
+                            
                         }
                         this.m_activeUI = newActiveUI;
 
@@ -103,8 +110,8 @@ export class RUIRoot {
                             }
                         }
 
-                        if(curActiveUI != null && this.m_activeUIonDrag && curActiveUI != newActiveUI){
-                            curActiveUI.onMouseDrag(new RUIMouseDragEvent(e,false));
+                        if(curActiveUI != null && this.m_activeUIonDrag){
+                            curActiveUI.onMouseDrag(new RUIMouseDragEvent(e,RUIMouseDragStage.End));
                         }
 
                         this.m_activeUIonDrag = false;

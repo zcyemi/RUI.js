@@ -119,11 +119,17 @@ export class RUIMouseEvent extends RUIObjEvent{
 }
 
 
+export enum RUIMouseDragStage{
+    Begin,
+    Update,
+    End,
+}
+
 export class RUIMouseDragEvent extends RUIMouseEvent{
     /** false when drag end. */
-    public ondrag:boolean = false;
-    public constructor(e:RUIMouseEvent,ondrag:boolean){
+    public stage:RUIMouseDragStage;
+    public constructor(e:RUIMouseEvent,stage:RUIMouseDragStage){
         super(e.raw,RUIEventType.MouseDrag);
-        this.ondrag = ondrag; 
+        this.stage = stage; 
     }
 }
