@@ -6,7 +6,7 @@ import { RUIMouseEvent, RUIMouseDragEvent } from "./EventSystem";
 
 export class RUIRectangle extends RUIObject{
 
-    private m_debugColor : number[] = UIUtil.RandomColor();
+    protected m_debugColor : number[] = UIUtil.RandomColor();
 
 
     public static create(color:number[]):RUIRectangle{

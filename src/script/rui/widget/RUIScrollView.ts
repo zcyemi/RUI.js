@@ -3,6 +3,7 @@ import { RUIPosition, RUIObject, RUIOrientation, RUIAuto } from "../RUIObject";
 import { RUISlider } from "./RUISlider";
 import { RUIBind } from "../RUIBinder";
 import { RUIScrollBar } from "./RUIScrollBar";
+import { RUIWheelEvent } from "../EventSystem";
 
 
 export enum RUIScrollType{
@@ -43,20 +44,27 @@ export class RUIScrollView extends RUIContainer{
         slider.bottom = 0;
         this.m_scrollBarV = slider;
         super.addChild(slider);
+
+        
     }
 
     public onLayoutPost(){
-
+        this.applyScrollBar();
     }
 
-    public onMouseEnter(){
-        
+
+    public onMouseWheel(e:RUIWheelEvent){
+        this.m_content.top -= 0.5 * e.delta;
+        this.m_content.setDirty();
+        e.Use();
     }
-    
+
+
 
     private applyScrollBar(){
-        let val =  this._calheight / this.m_content._calheight;
-        this.m_scrollBarV.value = val;
+        // let val =  this._calheight / this.m_content._calheight;
+        // console.log(val);
+        // this.m_scrollBarV.value = val;
     }
 
     public addChild(ui:RUIObject){

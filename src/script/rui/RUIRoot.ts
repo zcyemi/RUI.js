@@ -1,5 +1,5 @@
 import { RUIObject } from "./RUIObject";
-import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIMouseDragEvent, RUIMouseDragStage } from "./EventSystem";
+import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIMouseDragEvent, RUIMouseDragStage, RUIWheelEvent } from "./EventSystem";
 import { RUIContainer } from "./RUIContainer";
 import { RUIEventType } from "./RUIInput";
 
@@ -57,6 +57,18 @@ export class RUIRoot {
         if (event instanceof RUIKeyboardEvent) {
 
         }
+        else if(event instanceof RUIWheelEvent){
+            let hoverUI = this.m_hoverUI;
+
+            let wheele = <RUIWheelEvent>event;
+            for(var i=0,clen = hoverUI.length;i< clen;i++){
+                let c = hoverUI[i];
+                if(c instanceof RUIContainer){
+                    c.onMouseWheel(wheele);
+                    if(wheele.isUsed) break;
+                }
+            }
+        }
         else if (event instanceof RUIMouseEvent) {
             this.dispatchMouseEvent(event);
         }
@@ -79,8 +91,7 @@ export class RUIRoot {
                 }
                 
             }
-        }
-        else {
+        }else {
             let newActiveUI = this.traversalNormal(e.mousex, e.mousey);
             let curActiveUI = this.m_activeUI;
             switch (etype) {

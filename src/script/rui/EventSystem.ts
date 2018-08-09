@@ -1,4 +1,5 @@
 import { RUIButton, RUIEventType } from "./RUIInput";
+import { RUIObject } from "./RUIObject";
 
 export class REvent<T>{
     
@@ -131,5 +132,14 @@ export class RUIMouseDragEvent extends RUIMouseEvent{
     public constructor(e:RUIMouseEvent,stage:RUIMouseDragStage){
         super(e.raw,RUIEventType.MouseDrag);
         this.stage = stage; 
+    }
+}
+
+export class RUIWheelEvent extends RUIObjEvent{
+    public delta: number;
+    public constructor(e:WheelEvent){
+        super();
+        this.object = this;
+        this.delta = e.deltaY;
     }
 }

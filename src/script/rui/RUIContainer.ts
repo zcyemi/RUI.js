@@ -4,6 +4,7 @@ import { RUIStyle } from "./RUIStyle";
 import { UIUtil } from "./UIUtil";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIRoot } from "./RUIRoot";
+import { RUIWheelEvent } from "./EventSystem";
 
 
 export enum RUIContainerUpdateMode{
@@ -341,6 +342,10 @@ export class RUIContainer extends RUIObject {
                 c._root = root;
             }
         }
+    }
+
+    public onMouseWheel(e:RUIWheelEvent){
+
     }
 
     public traversal(f:(c:RUIObject)=>void){

@@ -1,5 +1,5 @@
 import { RUICanvas } from "./RUICanvas";
-import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent } from "./EventSystem";
+import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIWheelEvent } from "./EventSystem";
 
 
 export class IInputUI{
@@ -29,6 +29,7 @@ export enum RUIEventType{
     MouseDrag,
     MouseDrop,
     MouseMove,
+    MouseWheel,
 }
 
 
@@ -80,7 +81,7 @@ export class RUIInput{
         window.addEventListener('mousedown',(e)=>c.EventOnUIEvent.emit(new RUIMouseEvent(e,RUIEventType.MouseDown)));
         window.addEventListener('mouseup',(e)=>c.EventOnUIEvent.emit(new RUIMouseEvent(e,RUIEventType.MouseUp)));
         window.addEventListener('mousemove',(e)=>c.EventOnUIEvent.emit(new RUIMouseEvent(e,RUIEventType.MouseMove)));
-
+        window.addEventListener('mousewheel',(e)=>c.EventOnUIEvent.emit(new RUIWheelEvent(e)));
         // window.addEventListener('keypress',this.onKeyboardEvent.bind(this));
         // window.addEventListener('keydown',this.onKeyboardDown.bind(this));
 
