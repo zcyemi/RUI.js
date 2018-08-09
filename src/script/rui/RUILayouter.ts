@@ -11,9 +11,12 @@ export class RUILayouter{
 
         //Layout
         let ui = uiroot.root;
-        if(ui.isdirty || ui._resized){
-            ui.onLayout();
-        }
+        // if(ui.isdirty || ui._resized){
+        //     ui.onLayout();
+        // }
+
+        ui.onLayout();
+
         uiroot.isdirty = false;
         
 

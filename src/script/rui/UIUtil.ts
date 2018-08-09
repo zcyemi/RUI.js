@@ -29,17 +29,19 @@ export class UIUtil{
         if(y2 < clip[1]) return null;
 
         let cx2 = clip[0] + clip[2];
-        let cy2 = clip[1]+ clip[3];
+        let cy2 = clip[1] + clip[3];
 
         if(cx2 < content[0]) return null;
         if(cy2 < confirm[1]) return null;
 
-        //TODO 
-
-        throw new Error("not implemented!");
-
-        return null;
+        return [
+            Math.max(content[0],clip[0]),
+            Math.max(content[1],clip[1]),
+            Math.min(content[2],clip[2]),
+            Math.min(content[3],clip[3])
+        ]
     }
+
 
     public static RectMinus(recta:RUIRect,offset:RUIRect):RUIRect{
         return [

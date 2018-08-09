@@ -8,8 +8,14 @@ export class RUIRectangle extends RUIObject{
 
     private m_debugColor : number[] = UIUtil.RandomColor();
 
+
+    public static create(color:number[]):RUIRectangle{
+        let rect= new RUIRectangle();
+        rect.m_debugColor = color;
+        return rect;
+    }
+
     public onLayout(){
-        //this.m_debugColor = UIUtil.RandomColor();
         super.onLayout();
     }
 

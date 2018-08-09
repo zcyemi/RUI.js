@@ -94,6 +94,7 @@ export class RUIObject{
 
     public _debugname:string;
     public _debuglog:boolean = false;
+    public _debugOnLayout:()=>void;
 
 
     public onDraw(cmd:RUICmdList){
@@ -122,6 +123,7 @@ export class RUIObject{
     }
 
     public onLayout(){
+        if(this._debugOnLayout != null) this._debugOnLayout();
         let isRoot = this.isRoot;
         this.isdirty = false;
 
@@ -174,6 +176,7 @@ export class RUIObject{
     public onMouseDrag(e:RUIMouseDragEvent){}
 
     protected fillSize(){
+
 
         this._calwidth= null;
         this._calheight = null;

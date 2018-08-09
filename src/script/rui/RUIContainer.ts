@@ -93,6 +93,10 @@ export class RUIContainer extends RUIObject {
 
     public onLayout() {
 
+        if(this._debugname == "dwdw"){
+            console.log(">");
+        }
+
         let isVertical = this.boxOrientation == RUIOrientation.Vertical;
 
         let children = this.children;
@@ -128,7 +132,7 @@ export class RUIContainer extends RUIObject {
             for (var i = 0, len = children.length; i < len; i++) {
                 let c = children[i];
 
-                if (!c.isOnFlow) {
+                if (c.isOnFlow == false) {
                     relativeChildren.push(c);
                     continue;
                 }
@@ -137,8 +141,14 @@ export class RUIContainer extends RUIObject {
 
                 let cw = c._calwidth;
                 let ch = c._calheight;
-                if (cw == null) throw new Error("children width is null");
-                if (ch == null) throw new Error("children height is null");
+                if (cw == null){
+                    console.error(c);
+                    throw new Error("children width is null");
+                }
+                if (ch == null){
+                    console.error(c);
+                    throw new Error("children height is null");
+                }
 
                 let cmargin = c.margin;
                 if (isVertical) {
@@ -168,17 +178,21 @@ export class RUIContainer extends RUIObject {
         else {
         }
 
-        if (isVertical) {
-            this._calwidth = maxsize + padding[RUIConst.RIGHT] + padding[RUIConst.LEFT];
-            this._calheight = offset + padding[RUIConst.BOTTOM];
-        }
-        else {
-            this._calheight = maxsize + padding[RUIConst.BOTTOM] + padding[RUIConst.TOP];
-            this._calwidth = offset + padding[RUIConst.RIGHT];
-        }
+        let isRelative = (this.position == RUIPosition.Relative || this.position == RUIPosition.Absolute);
 
-        if (this.width != RUIAuto) this._calwidth = this.width;
-        if (this.height != RUIAuto) this._calheight = this.height;
+        if(!isRelative){
+            if (isVertical) {
+                this._calwidth = maxsize + padding[RUIConst.RIGHT] + padding[RUIConst.LEFT];
+                this._calheight = offset + padding[RUIConst.BOTTOM];
+            }
+            else {
+                this._calheight = maxsize + padding[RUIConst.BOTTOM] + padding[RUIConst.TOP];
+                this._calwidth = offset + padding[RUIConst.RIGHT];
+            }
+    
+            if (this.width != RUIAuto) this._calwidth = this.width;
+            if (this.height != RUIAuto) this._calheight = this.height;
+        }
 
         //process relative children
         this.onLayoutRelativeUI(relativeChildren);
@@ -234,6 +248,7 @@ export class RUIContainer extends RUIObject {
                     }
                 }
                 else {
+                    console.error(c);
                     throw new Error("relative ui have invalid horizontal constraint.");
                 }
             }
@@ -243,6 +258,7 @@ export class RUIContainer extends RUIObject {
                 c._calheight = cph - ctop - cbottom;
             }
             else {
+                
                 if (c.height != RUIAuto) {
                     c._calheight = cheight;
                     if (ctop != RUIAuto) {
@@ -258,6 +274,10 @@ export class RUIContainer extends RUIObject {
                     throw new Error("relative ui have invalid vertical constraint.");
                 }
             }
+
+        
+
+            c.onLayout();
 
             c.fillPositionOffset();
         }
