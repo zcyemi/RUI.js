@@ -112,7 +112,7 @@ export class RUICmdList{
         this.drawList.push(cmd);
     }
 
-    public PushClipRect(rect?:RUIRect){
+    public PushClipRect(rect?:RUIRect,nested? :boolean){
         let clip  = null;
         if(rect == null){
             clip = RUICLIP_MAX;

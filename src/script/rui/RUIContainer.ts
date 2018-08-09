@@ -12,8 +12,15 @@ export enum RUIContainerUpdateMode{
     LayoutFull,
 }
 
+
+export enum RUIContainerClipType{
+    NoClip,
+    Clip, /** Nesting clip */
+    ClipSelf,
+}
+
 export class RUIContainer extends RUIObject {
-    public boxClip: boolean = true;
+    public boxClip: RUIContainerClipType = RUIContainerClipType.Clip;
     public boxOverflow: RUIOverflow = RUIOverflow.Clip;
     public boxOrientation: RUIOrientation = RUIOrientation.Vertical;
 
@@ -28,9 +35,15 @@ export class RUIContainer extends RUIObject {
 
 
     public addChild(ui: RUIObject) {
-        if (ui == null) return;
+        if (ui == null){
+            console.warn('can not add undefined child');
+            return;
+        }
         let c = this.children;
-        if (c.indexOf(ui) >= 0) return;
+        if (c.indexOf(ui) >= 0) {
+            console.warn('skip add child');
+            return;
+        }
 
         ui.parent = this;
         ui._root = this._root;
@@ -252,6 +265,8 @@ export class RUIContainer extends RUIObject {
 
 
     public onDraw(cmd: RUICmdList) {
+
+
         this.onDrawPre(cmd);
 
         let children = this.children;
@@ -267,14 +282,15 @@ export class RUIContainer extends RUIObject {
 
         let rect = [this._calx, this._caly, this._calwidth, this._calheight];
         this._rect = rect;
-
         cmd.DrawBorder(rect, RUIStyle.Default.primary);
+        let cliprect = this.RectMinusePadding(rect, this.padding);
 
-        if (this.boxClip) cmd.PushClipRect(this.RectMinusePadding(rect, this.padding));
+        let boxclip = this.boxClip;
+        if (boxclip != RUIContainerClipType.NoClip) cmd.PushClipRect(cliprect,boxclip == RUIContainerClipType.Clip);
     }
 
     public onDrawPost(cmd: RUICmdList) {
-        if (this.boxClip) cmd.PopClipRect();
+        if (this.boxClip != RUIContainerClipType.NoClip) cmd.PopClipRect();
     }
 
     protected RectMinusePadding(recta: RUIRect, offset: number[]): RUIRect {

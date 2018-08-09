@@ -93,6 +93,7 @@ export class RUIObject{
     public _resized:boolean = true;
 
     public _debugname:string;
+    public _debuglog:boolean = false;
 
 
     public onDraw(cmd:RUICmdList){

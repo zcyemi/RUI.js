@@ -2,6 +2,18 @@ import { RUIInput, IInputUI } from "./RUIInput";
 import { RUICursor } from "./RUICursor";
 import { RUIRenderer } from "./RUIRenderer";
 import { REventEmitter, RUIResizeEvent, RUIObjEvent } from "./EventSystem";
+import { RUIContainer } from "./RUIContainer";
+
+
+type RUICanvasNodeFunc = (f:RUICanvasNode) =>void;
+
+export class RUICanvasNode extends RUIContainer{
+
+    public constructor(creation: RUICanvasNodeFunc){
+        super();
+        if(creation !=null) creation.call(this);
+    }
+}
 
 export class RUICanvas {
     private m_canvas: HTMLCanvasElement;
