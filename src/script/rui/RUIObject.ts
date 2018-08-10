@@ -80,6 +80,7 @@ export class RUIObject{
     public isdirty: boolean = true;
     public isClip: boolean = true;
 
+
     public _calwidth?: number;
     public _calheight?:number;
     public _caloffsetx:number = 0;

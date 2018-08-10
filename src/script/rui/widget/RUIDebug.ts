@@ -72,15 +72,13 @@ export class RUIDebug extends RUIContainer{
 
             for(var i=0;i<10;i++){
                 let rect1 = new RUIRectangle();
-                rect1.width = 20 + 100* Math.random();
+                rect1.width = 20 + 600* Math.random();
                 rect1.height = 20 + 50 * Math.random();
 
                 scrollview.addChild(rect1);
             }
 
-            
 
-            console.log(scrollview);
             
         }
 

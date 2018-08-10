@@ -36,7 +36,7 @@ export class RUIScrollView extends RUIContainer{
         super();
 
         this.m_scrollHorizontal = scrollHorizontal;
-        this.m_scrollVertical = RUIScrollType.Disabled;
+        this.m_scrollVertical = scrollVertical;
         this.boxBorder = RUIStyle.Default.border0;
 
         //add container
@@ -130,15 +130,30 @@ export class RUIScrollView extends RUIContainer{
 
 
         if(this.m_scrollVertical != RUIScrollType.Disabled){
-            this.m_maxscrollV = this._calheight -  this.m_content._calheight;
-            let val = this._calheight / this.m_content._calheight;
-            this.m_scrollBarV.setBarSizeVal(val);
+            let maxScrollV = this._calheight -  this.m_content._calheight;
+            if(maxScrollV >=0 ){
+                this.m_scrollBarV.setEnable(false);
+            }
+            else{
+                this.m_scrollBarV.setEnable(true);
+                this.m_maxscrollV = maxScrollV;
+                let val = this._calheight / this.m_content._calheight;
+                this.m_scrollBarV.setBarSizeVal(val);
+            }
         }
 
         if(this.m_scrollHorizontal != RUIScrollType.Disabled){
-            this.m_maxscrollH = this._calwidth - this.m_content._calwidth;
-            let val =this._calwidth / this.m_content._calwidth;
-            this.m_scrollBarH.setBarSizeVal(val);
+
+            let maxScrollH =  this._calwidth - this.m_content._calwidth;
+            if(maxScrollH >= 0){
+                this.m_scrollBarH.setEnable(false);
+            }
+            else{
+                this.m_scrollBarH.setEnable(true);
+                this.m_maxscrollH = maxScrollH;
+                let val =this._calwidth / this.m_content._calwidth;
+                this.m_scrollBarH.setBarSizeVal(val);
+            }
         }
     }
 
@@ -162,6 +177,7 @@ export class RUIScrollView extends RUIContainer{
                 return;
             }
         }
+
 
 
         let delta = e.delta *0.5;
