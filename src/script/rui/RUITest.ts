@@ -52,6 +52,7 @@ export class RUITest{
         let renderer= this.m_ruicanvas.renderer;
         if(uiroot.isdirty || renderer.needRedraw){
 
+            console.log(">");
             this.m_ruilayouter.build(uiroot);
             this.m_ruicmdlist.draw(uiroot);
             renderer.DrawCmdList(this.m_ruicmdlist);

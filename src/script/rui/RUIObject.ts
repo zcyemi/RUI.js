@@ -69,7 +69,7 @@ export class RUIObject{
     public top: RUISize = RUIAuto;
     public bottom:RUISize = RUIAuto;
 
-    public visible: boolean = false;
+    public visible: boolean = true;
     public zorder: number = 0;
     public _level:number = 0;
     public flex?: number;

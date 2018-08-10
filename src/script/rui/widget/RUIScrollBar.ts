@@ -1,5 +1,5 @@
 import { RUISlider } from "./RUISlider";
-import { RUIOrientation, RUIPosition, RUIObject, ROUND } from "../RUIObject";
+import { RUIOrientation, RUIPosition, RUIObject, ROUND, CLAMP } from "../RUIObject";
 import { RUIScrollType } from "./RUIScrollView";
 import { RUICmdList } from "../RUICmdList";
 import { RUIStyle } from "../RUIStyle";
@@ -13,6 +13,9 @@ class RUIScrollBarThumb extends RUIRectangle{
 
     private m_scrollBar: RUIScrollBar;
     private m_dragStart: number;
+    private m_dragStartTop:number;
+
+    public position: number;
     public constructor(scrollbar: RUIScrollBar){
         super();
         this.m_scrollBar = scrollbar;
@@ -25,8 +28,13 @@ class RUIScrollBarThumb extends RUIRectangle{
         let stage = e.stage;
         if(stage == RUIMouseDragStage.Begin){
             this.m_dragStart = e.mousey;
+            this.m_dragStartTop = this.top;
         }
         else if(stage == RUIMouseDragStage.Update){
+            this.position = (e.mousey - this.m_dragStart + this.m_dragStartTop);
+            this.m_scrollBar.setBarPos(this.position);
+
+            
         }
     }
 }
@@ -39,6 +47,12 @@ export class RUIScrollBar extends RUIContainer{
     private m_thumb: RUIScrollBarThumb;
 
 
+    private m_thumbMaxSize: number;
+
+    public static readonly BAR_SIZE:number = 10;
+    public static readonly THUMB_SIZE:number = 10;
+
+
     public constructor(orientation: RUIOrientation,scrollType: RUIScrollType){
         super();
         this.boxOrientation = orientation;
@@ -47,9 +61,9 @@ export class RUIScrollBar extends RUIContainer{
         //add thumb
         let rect = new RUIScrollBarThumb(this);
         rect.position = RUIPosition.Offset;
-        rect.left = 1;
-        rect.width = 13;
-        rect.height = 10;
+        rect.left = 0;
+        rect.width = RUIScrollBar.THUMB_SIZE;
+        rect.height = 0;
         this.m_thumb = rect;
         this.addChild(rect);
 
@@ -86,19 +100,27 @@ export class RUIScrollBar extends RUIContainer{
 
     public onMouseEnter(){
         this.m_onHover = true;
-        this.m_show = true;
-        this.setDirty();
+        this.show();
     }
 
     private doHide(){
         if(!this.m_onHover){
             this.m_show = false;
+            this.m_thumb.visible= false;
+            this.m_thumb.setDirty();
             this.setDirty();
         }
     }
 
     public show(){
+
+        if(this.m_show) return;
         if(this.scrollType == RUIScrollType.Enabled){
+
+            this.m_show=true;
+            this.m_thumb.visible= true;
+            this.setDirty();
+
             var self = this;
             setTimeout(() => {
                 self.doHide();
@@ -110,6 +132,7 @@ export class RUIScrollBar extends RUIContainer{
         if(isNaN(px)) return;
         let thumb= this.m_thumb;
         if(thumb.height != px){
+            this.m_thumbMaxSize = this._calheight - px;
             thumb.height = px;
             thumb.setDirty(true);
         }
@@ -118,11 +141,15 @@ export class RUIScrollBar extends RUIContainer{
     public setBarPos(px:number){
         if(isNaN(px)) return;
 
+        px = CLAMP(px,0,this.m_thumbMaxSize);
         let thumb = this.m_thumb;
+
       
         if(thumb.top != px){
+            this.show();
             thumb.top = px;
             thumb.setDirty();
+            this.setDirty();
         }
     }
 

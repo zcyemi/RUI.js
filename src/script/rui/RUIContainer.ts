@@ -24,6 +24,7 @@ export class RUIContainer extends RUIObject {
     public boxClip: RUIContainerClipType = RUIContainerClipType.Clip;
     public boxOverflow: RUIOverflow = RUIOverflow.Clip;
     public boxOrientation: RUIOrientation = RUIOrientation.Vertical;
+    public boxBorder?: number[] = null;
 
     public children: RUIObject[] = [];
 
@@ -293,7 +294,7 @@ export class RUIContainer extends RUIObject {
         let children = this.children;
         for (var i = 0, clen = children.length; i < clen; i++) {
             let c = children[i];
-            c.onDraw(cmd);
+            if(c.visible) c.onDraw(cmd);
         }
 
         this.onDrawPost(cmd);
@@ -303,7 +304,7 @@ export class RUIContainer extends RUIObject {
 
         let rect = [this._calx, this._caly, this._calwidth, this._calheight];
         this._rect = rect;
-        cmd.DrawBorder(rect, RUIStyle.Default.primary);
+        if(this.boxBorder != null) cmd.DrawBorder(rect, this.boxBorder);
         let cliprect = this.RectMinusePadding(rect, this.padding);
 
         let boxclip = this.boxClip;

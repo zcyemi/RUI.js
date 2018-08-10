@@ -4,6 +4,7 @@ import { RUISlider } from "./RUISlider";
 import { RUIBind } from "../RUIBinder";
 import { RUIScrollBar } from "./RUIScrollBar";
 import { RUIWheelEvent } from "../EventSystem";
+import { RUIStyle } from "../RUIStyle";
 
 
 
@@ -32,8 +33,10 @@ export class RUIScrollView extends RUIContainer{
 
         this.scrollHorizontal = scrollHorizontal;
         this.scrollVertical = scrollVertical;
+        this.boxBorder = RUIStyle.Default.border0;
 
         let content = new RUIContainer();
+        content.visible =true;
         content.position = RUIPosition.Offset;
         super.addChild(content);
         this.m_content = content;
@@ -43,7 +46,7 @@ export class RUIScrollView extends RUIContainer{
     private processScrollBar(){
 
         let slider = new RUIScrollBar(RUIOrientation.Vertical,this.scrollVertical);
-        slider.width = 15;
+        slider.width = RUIScrollBar.BAR_SIZE;
         slider.position = RUIPosition.Relative;
         slider.right = 0;
         slider.top = 0;
