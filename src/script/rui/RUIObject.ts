@@ -14,6 +14,10 @@ export function ROUND(x:number){
     return Math.round(x);
 }
 
+export function CLAMP(val:number,min:number,max:number){
+    return Math.min(Math.max(min, val), max);
+}
+
 
 export class RUIConst{
     public static readonly TOP:number = 0;

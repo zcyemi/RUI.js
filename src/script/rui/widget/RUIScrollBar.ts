@@ -5,7 +5,7 @@ import { RUICmdList } from "../RUICmdList";
 import { RUIStyle } from "../RUIStyle";
 import { RUIContainer } from "../RUIContainer";
 import { RUIRectangle } from "../RUIRectangle";
-import { RUIMouseDragEvent, RUIMouseDragStage } from "../EventSystem";
+import { RUIMouseDragEvent, RUIMouseDragStage, RUIMouseEvent } from "../EventSystem";
 
 
 
@@ -36,9 +36,6 @@ export class RUIScrollBar extends RUIContainer{
     public scrollType: RUIScrollType;
     private m_show : boolean= false;
     private m_onHover:boolean = false;
-    private m_offset: number = 0;
-    private m_value:number = 0;
-
     private m_thumb: RUIScrollBarThumb;
 
 
@@ -58,21 +55,6 @@ export class RUIScrollBar extends RUIContainer{
 
     }
 
-    public get value(){
-        return this.m_value;
-    }
-    public set value(val:number){
-        
-        this.m_value = val;
-        let h = ROUND(val * this._calheight);
-
-        if(h != this.m_thumb.height){
-
-            console.log('update');
-            this.m_thumb.height = h;
-            this.m_thumb.setDirty(true);
-        }
-    }
 
     public onMouseLeave(){
         this.m_onHover= false;
@@ -82,6 +64,20 @@ export class RUIScrollBar extends RUIContainer{
                 self.doHide();
             }, 1000);
         }
+    }
+
+    public onMouseDown(e:RUIMouseEvent){
+        let offset = e.mousey - this._caly;
+
+        let thumb = this.m_thumb;
+        if(offset < thumb.top){
+            this.setBarPos(offset);
+        }
+        else{
+            let pos = offset - thumb.height;
+            this.setBarPos(pos);
+        }
+        this.setDirty();
     }
 
     public onLayout(){
@@ -110,8 +106,32 @@ export class RUIScrollBar extends RUIContainer{
         }
     }
 
-    public setOffset(offset:number){
-        this.m_offset = offset;
+    public setBarSize(px:number){
+        if(isNaN(px)) return;
+        let thumb= this.m_thumb;
+        if(thumb.height != px){
+            thumb.height = px;
+            thumb.setDirty(true);
+        }
+    }
+
+    public setBarPos(px:number){
+        if(isNaN(px)) return;
+
+        let thumb = this.m_thumb;
+      
+        if(thumb.top != px){
+            thumb.top = px;
+            thumb.setDirty();
+        }
+    }
+
+    public setBarSizeVal(v:number){
+        this.setBarSize(ROUND(v * this._calheight));
+    }
+
+    public setBarPosVal(v:number){
+        this.setBarPos(ROUND(v * this._calheight));
     }
 
     public onDrawPre(cmd:RUICmdList){
