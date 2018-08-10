@@ -66,9 +66,8 @@ export class RUIDebug extends RUIContainer{
 
         {
             let scrollview = new RUIScrollView();
-            scrollview._debuglog = true;
             scrollview.width = 400;
-            scrollview.height= 300;
+            scrollview.height= 200;
             this.addChild(scrollview);
 
             for(var i=0;i<10;i++){

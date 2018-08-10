@@ -5,7 +5,8 @@ import { RUICmdList } from "../RUICmdList";
 import { RUIStyle } from "../RUIStyle";
 import { RUIContainer } from "../RUIContainer";
 import { RUIRectangle } from "../RUIRectangle";
-import { RUIMouseDragEvent, RUIMouseDragStage, RUIMouseEvent } from "../EventSystem";
+import { RUIMouseDragEvent, RUIMouseDragStage, RUIMouseEvent, REvent, REventEmitter } from "../EventSystem";
+import { RUIColor } from "../RUIColor";
 
 
 
@@ -16,10 +17,12 @@ class RUIScrollBarThumb extends RUIRectangle{
     private m_dragStartTop:number;
 
     public position: number;
+
+
     public constructor(scrollbar: RUIScrollBar){
         super();
         this.m_scrollBar = scrollbar;
-        this.m_debugColor = RUIStyle.Default.primary;
+        this.m_debugColor = RUIStyle.Default.background2;
     }
 
 
@@ -40,6 +43,9 @@ class RUIScrollBarThumb extends RUIRectangle{
 }
 
 export class RUIScrollBar extends RUIContainer{
+
+    public EventOnScroll: REventEmitter<number> = new REventEmitter();
+
 
     public scrollType: RUIScrollType;
     private m_show : boolean= false;
@@ -143,9 +149,9 @@ export class RUIScrollBar extends RUIContainer{
 
         px = CLAMP(px,0,this.m_thumbMaxSize);
         let thumb = this.m_thumb;
-
-      
+        
         if(thumb.top != px){
+            this.EventOnScroll.emitRaw(px / this._calheight);
             this.show();
             thumb.top = px;
             thumb.setDirty();
@@ -167,7 +173,7 @@ export class RUIScrollBar extends RUIContainer{
         let scrolltype = this.scrollType;
         if(scrolltype == RUIScrollType.Disabled) return;
         if(scrolltype == RUIScrollType.Always || this.m_show){
-            cmd.DrawRectWithColor(this._rect,RUIStyle.Default.primary0);
+            cmd.DrawRectWithColor(this._rect,RUIColor.Black);
             //draw thumb
         }
     }

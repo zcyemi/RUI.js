@@ -94,11 +94,6 @@ export class RUIContainer extends RUIObject {
     }
 
     public onLayout() {
-
-        if(this._debugname == "dwdw"){
-            console.log(">");
-        }
-
         let isVertical = this.boxOrientation == RUIOrientation.Vertical;
 
         let children = this.children;
