@@ -414,6 +414,44 @@ export class RUIDebug extends RUIContainer {
             container1.addChild(r3);
         }
 
+        {
+            var c = new RUIContainer();
+            c.padding = [2, 2, 2, 2];
+            c.margin = [0,0,0,50];
+            c.height = 100;
+            c.width = 100;
+            c.boxBorder = RUIStyle.Default.primary;
+            container.addChild(c);
+
+            var c1 = new RUIContainer();
+            c1.padding = RUI.Vector(10);
+            c1.width = 70;
+            c1.height = 70;
+            c1.boxBorder = RUIStyle.Default.primary;
+            c1.position = RUIPosition.Offset;
+            c1.left = 50;
+            c1.top = 70;
+            c1.addChild(new RUIRectangle(60,60));
+            c.addChild(c1);
+
+            var c2 = new RUIContainer();
+            c2.boxBorder = RUIStyle.Default.primary;
+            c2.boxClip = RUIContainerClipType.ClipSelf;
+            c2.position = RUIPosition.Relative;
+            c2.padding = RUI.Vector(2);
+            c2.width = 70;
+            c2.height = 60;
+            c2.top = 0;
+            c2.right = -30;
+
+            var r2 = new RUIRectangle(70,60);
+            r2.position = RUIPosition.Offset;
+            r2.left = -50;
+            r2.top = -20;
+            c2.addChild(r2);
+            c.addChild(c2);
+
+        }
         
 
     }
@@ -433,13 +471,13 @@ export class RUIDebug extends RUIContainer {
         //Button in container
         {
             var c = new RUIContainer();
-            c._debugname ="QQQ";
             c.width = 100;
             c.padding = [1,1,1,50];
             c.boxBorder = RUIStyle.Default.primary;
             this.addChild(c);
             
             let btn = new RUIButton('AQD');
+            btn._debugname = "test";
             btn.width = 100;
             c.addChild(btn);
 

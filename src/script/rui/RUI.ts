@@ -22,7 +22,7 @@ export class RUI{
         return [x,y,Math.min(x2,cx2) -x,Math.min(y2,cy2)-y];
     }
 
-    public static RectClipP(content:RUIRectP,clip:RUIRectP){
+    public static RectClipP(content:RUIRectP,clip:RUIRectP) : RUIRectP{
         if(content[2] <= clip[0]) return null;
         if(content[3] <= clip[1]) return null;
         if(clip[2] <= content[0]) return null;
@@ -35,4 +35,13 @@ export class RUI{
             Math.min(content[3],clip[3]),
         ]
     }
+
+    public static toRect(rect:RUIRectP):RUIRect{
+        return [rect[0],rect[1],rect[2]- rect[0],rect[3]-rect[1]];
+    }
+
+    public static Vector(v:number):number[]{
+        return [v,v,v,v];
+    }
+
 }

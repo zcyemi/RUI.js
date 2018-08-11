@@ -2,6 +2,7 @@ import { RUIObject } from "../RUIObject";
 import { RUICmdList } from "../RUICmdList";
 import { RUIStyle } from "../RUIStyle";
 import { RUIMouseEvent } from "../EventSystem";
+import { RUI } from "../RUI";
 
 export type RUIButtonFunc = (btn:RUIButton)=>void;
 
@@ -21,10 +22,10 @@ export class RUIButton extends RUIObject{
     }
 
     public onDraw(cmd:RUICmdList){
-        let rect=  this.calculateRect();
-
-        this._rect= rect;
-
+        let rect= this.calculateRect();
+        this._rectclip = RUI.RectClip(rect,cmd.clipRect);
+        this._rect= this._rectclip;
+        
         cmd.DrawRectWithColor(rect,this.m_color);
         cmd.DrawText(this.label,rect);
     }

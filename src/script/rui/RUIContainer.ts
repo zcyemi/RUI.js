@@ -5,6 +5,7 @@ import { UIUtil } from "./UIUtil";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIRoot } from "./RUIRoot";
 import { RUIWheelEvent } from "./EventSystem";
+import { RUI } from "./RUI";
 
 
 export enum RUIContainerUpdateMode{
@@ -297,20 +298,18 @@ export class RUIContainer extends RUIObject {
 
     public onDrawPre(cmd: RUICmdList) {
 
-        let rect = [this._calx, this._caly, this._calwidth, this._calheight];
+        let rect = this.calculateRect()
         this._rect = rect;
         if(this.boxBorder != null) cmd.DrawBorder(rect, this.boxBorder);
-        let cliprect = this.RectMinusePadding(rect, this.padding);
+        let paddingrect = this.RectMinusePadding(rect, this.padding);
+
+        let cliprect = RUI.RectClip(paddingrect,cmd.clipRect);
+        this._rectclip = cliprect;
 
         let boxclip = this.boxClip;
 
-        var debug = this._debugname == "QQQ";
         if (boxclip != RUIContainerClipType.NoClip) {
-            if(debug) console.log(">>>QQQ" + cliprect);
-            cmd.PushClipRect(cliprect,boxclip == RUIContainerClipType.Clip);
-        }
-        else{
-            if(debug) console.log(">>>QQQ NO CLIP");
+            cmd.PushClipRect(boxclip == RUIContainerClipType.Clip ? cliprect : paddingrect, false);
         }
     }
 

@@ -36,7 +36,7 @@ export class RUILabel extends RUIObject{
     }
 
     public onDraw(cmd:RUICmdList){
-        let rect = [this._calx,this._caly,this._calwidth,this._calheight];
+        let rect = this.calculateRect();
 
         this._rect = rect;
 

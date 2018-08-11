@@ -3,6 +3,7 @@ import { RUICmdList } from "./RUICmdList";
 import { RUIMouseEvent, RUIMouseDragEvent } from "./EventSystem";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIContainer } from "./RUIContainer";
+import { RUI } from "./RUI";
 
 export const RUIAuto: number= -1;
 
@@ -93,6 +94,7 @@ export class RUIObject{
     public _flexheight?:number;
 
     protected _rect :RUIRect;
+    protected _rectclip: RUIRect;
 
     public _root :RUIRoot;
 
@@ -239,16 +241,24 @@ export class RUIObject{
         }
     }
 
-    public calculateRect():RUIRect{
-        return [this._calx,this._caly,this._calwidth,this._calheight];
+    public calculateRect(cliprect?:RUIRect):RUIRect{
+        let rect =  [this._calx,this._caly,this._calwidth,this._calheight];
+        if(cliprect != null){
+            return RUI.RectClip(rect,cliprect);
+        }
+        return rect;
     }
 
-    public rectContains(x:number,y:number){
-        let calx = this._calx;
-        let caly = this._caly;
+    public rectContains(x:number,y:number):boolean{
 
-        if(x < calx || x > calx +this._calwidth) return false;
-        if(y < caly || y > caly + this._calheight) return false;
+        let rect = this._rectclip == null ? this._rect:this._rectclip;
+
+        if(rect == null) return false;
+        let calx = rect[0];
+        let caly = rect[1];
+
+        if(x < calx || x > calx + rect[2]) return false;
+        if(y < caly || y > caly + rect[3]) return false;
         return true;
     }
 

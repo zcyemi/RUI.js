@@ -34,7 +34,7 @@ export class RUIRectangle extends RUIObject{
 
         if(noclip) cmd.PushClipRect();
         
-        let rect = [this._calx,this._caly,this._calwidth,this._calheight];
+        let rect = this.calculateRect();
         this._rect = rect;
         cmd.DrawRectWithColor(rect,this.m_debugColor);
 
