@@ -1,7 +1,6 @@
 import { RUIObject, RUIOverflow, RUIOrientation, RUIConst, RUIAuto, RUIPosition, ROUND, RUIRect } from "./RUIObject";
 import { RUICmdList } from "./RUICmdList";
 import { RUIStyle } from "./RUIStyle";
-import { UIUtil } from "./UIUtil";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIRoot } from "./RUIRoot";
 import { RUIWheelEvent } from "./EventSystem";

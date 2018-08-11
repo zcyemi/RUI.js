@@ -6,7 +6,6 @@ import { RUIStyle } from "../RUIStyle";
 import { RUIContainer } from "../RUIContainer";
 import { RUIRectangle } from "../RUIRectangle";
 import { RUIMouseDragEvent, RUIMouseDragStage, RUIMouseEvent, REvent, REventEmitter } from "../EventSystem";
-import { RUIColor } from "../RUIColor";
 import { RUI } from "../RUI";
 
 

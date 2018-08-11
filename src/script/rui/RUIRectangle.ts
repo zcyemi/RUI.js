@@ -1,12 +1,12 @@
 import { RUIObject, RUIAuto } from "./RUIObject";
 import { RUICmdList } from "./RUICmdList";
-import { UIUtil } from "./UIUtil";
 import { RUIStyle } from "./RUIStyle";
 import { RUIMouseEvent, RUIMouseDragEvent } from "./EventSystem";
+import { RUI } from "./RUI";
 
 export class RUIRectangle extends RUIObject{
 
-    protected m_debugColor : number[] = UIUtil.RandomColor();
+    protected m_debugColor : number[] = RUI.RandomColor();
 
 
     public constructor(w:number = RUIAuto,h:number = RUIAuto){

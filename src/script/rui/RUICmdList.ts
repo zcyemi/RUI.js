@@ -1,7 +1,5 @@
 import { RUIRect, RUICLIP_MAX, RUIRectP } from "./RUIObject";
 import { RUIRoot } from "./RUIRoot";
-import { UIUtil } from "./UIUtil";
-import { RUIColor } from "./RUIColor";
 import { RUI } from "./RUI";
 
 export enum RUIDrawCmdType {
