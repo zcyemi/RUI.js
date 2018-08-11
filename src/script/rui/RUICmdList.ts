@@ -1,6 +1,7 @@
 import { RUIRect, RUICLIP_MAX } from "./RUIObject";
 import { RUIRoot } from "./RUIRoot";
 import { UIUtil } from "./UIUtil";
+import { RUIColor } from "./RUIColor";
 
 export enum RUIDrawCmdType {
     rect,
@@ -96,9 +97,14 @@ export class RUICmdList{
     }
 
     public DrawText(text: string, clirect: number[], color?: number[]) {
+
+        let clip = clirect.slice(0);
+        clip = UIUtil.RectClip(clip,this.m_clipRect);
         let cmd = RUIDrawCmd.CmdText(text, clirect, color);
-        cmd.clip = this.m_clipRect;
+        cmd.clip =clip;
         this.drawList.push(cmd);
+        
+        //this.DrawBorder(clirect,RUIColor.Red);
     }
 
     public DrawBorder(rect: number[], color: number[]) {

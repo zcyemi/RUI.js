@@ -321,8 +321,9 @@ export class RUIDrawCallBuffer {
                             let w = rect[2];
                             let h = rect[3];
 
-                            clip = cmd.Rect;
-                            clip[2] += clip[0];
+
+                            //clip = cmd.Rect;
+                            clip[2]+= clip[0];
                             clip[3]+=clip[1];
 
                             let contentW = fonttex.MeasureTextWith(content);

@@ -1,4 +1,4 @@
-import { RUIContainer } from "../RUIContainer";
+import { RUIContainer, RUIContainerClipType } from "../RUIContainer";
 import { RUILabel } from "./UILabel";
 import { RUIButton } from "./RUIButton";
 import { RUICanvas } from "./RUICanvas";
@@ -7,51 +7,53 @@ import { RUIRectangle } from "../RUIRectangle";
 import { RUIPosition, RUIOrientation, RUIAuto } from "../RUIObject";
 import { RUITestWidget } from "./RUITestWidget";
 import { RUIButtonGroup } from "./RUIButtonGroup";
+import { RUIStyle } from "../RUIStyle";
+import { RUIRenderer } from "../RUIRenderer";
 
 
-export class RUIDebug extends RUIContainer{
+export class RUIDebug extends RUIContainer {
 
-    public constructor(){
+    public constructor() {
         super();
         this.width = 800;
+        this.padding = [10, 10, 10, 10];
 
+        this.LayoutContainer();
+        this.LayoutClip();
 
-        let label = new RUILabel('hello world');
-        this.addChild(label);
+        // let button = new RUIButton("button1");
+        // this.addChild(button);
 
+        // {
+        //     var btnGroup = new RUIButtonGroup([
+        //         new RUIButton('AAA'),
+        //         new RUIButton('BBB'),
+        //         new RUIButton('CCC'),
+        //         new RUIButton('DDD'),
+        //         new RUIButton('EEE'),
+        //     ],RUIOrientation.Horizontal);
+        //     btnGroup.width = 450;
+        //     this.addChild(btnGroup);
 
-        let button = new RUIButton("button1");
-        this.addChild(button);
+        //     // let canvas = new RUICanvas();
+        //     // this.addChild(canvas);
 
-        {
-            var btnGroup = new RUIButtonGroup([
-                new RUIButton('AAA'),
-                new RUIButton('BBB'),
-                new RUIButton('CCC'),
-                new RUIButton('DDD'),
-                new RUIButton('EEE'),
-            ],RUIOrientation.Horizontal);
-            btnGroup.width = 450;
-            this.addChild(btnGroup);
-    
-            // let canvas = new RUICanvas();
-            // this.addChild(canvas);
-    
-            let btnGroupSwitch = new RUIButton('Switch BtnGroup',(b)=>{
-                let orit = btnGroup.boxOrientation == RUIOrientation.Horizontal;
-                btnGroup.boxOrientation = orit ? RUIOrientation.Vertical : RUIOrientation.Horizontal;
-                if(orit){
-                    btnGroup.width =120;
-                    btnGroup.height = 70;
-                }
-                else{
-                    btnGroup.width = 450;
-                    btnGroup.height = RUIAuto;
-                }
-                
-            });
-            this.addChild(btnGroupSwitch);
-        }
+        //     let btnGroupSwitch = new RUIButton('Switch BtnGroup',(b)=>{
+        //         let orit = btnGroup.boxOrientation == RUIOrientation.Horizontal;
+        //         btnGroup.boxOrientation = orit ? RUIOrientation.Vertical : RUIOrientation.Horizontal;
+        //         if(orit){
+        //             btnGroup.width =120;
+        //             btnGroup.height = 70;
+        //         }
+        //         else{
+        //             btnGroup.width = 450;
+        //             btnGroup.height = RUIAuto;
+        //         }
+
+        //     });
+        //     this.addChild(btnGroupSwitch);
+        // }
+
 
 
 
@@ -66,7 +68,7 @@ export class RUIDebug extends RUIContainer{
 
         // {
         //     //relative container test
-            
+
 
         //     var rcontainer = new RUIContainer();
         //     rcontainer.position = RUIPosition.Relative;
@@ -91,7 +93,7 @@ export class RUIDebug extends RUIContainer{
         //     rcontainer.addChild(rect1);
         // }
 
-        
+
 
 
         // {
@@ -109,9 +111,186 @@ export class RUIDebug extends RUIContainer{
         //     }
 
 
-            
+
         // }
 
+
+    }
+
+    private LayoutContainer(){
+        var label = new RUILabel('1.0-Container');
+        this.addChild(label);
+
+        var container = new RUIContainer();
+        this.addChild(container);
+        container.boxOrientation = RUIOrientation.Horizontal;
+        container.boxBorder = RUIStyle.Default.primary;
+        container.padding = [3,3,3,3];
+        container.margin = [0,0,10,0];
+        this.addChild(container);
+
+        //vertical
+        {
+            var c =new RUIContainer();
+            c.boxOrientation = RUIOrientation.Vertical;
+            c.boxBorder = RUIStyle.Default.primary;
+            container.addChild(c);
+
+            c.addChild(new RUIRectangle(50,30));
+            c.addChild(new RUIRectangle(100,30));
+        }
+
+        //horizontal
+        {
+            var c = new RUIContainer();
+            c.boxBorder = RUIStyle.Default.primary;
+            c.margin = [0,0,0,10];
+            c.boxOrientation = RUIOrientation.Horizontal;
+            container.addChild(c);
+
+            c.addChild(new RUIRectangle(30,50));
+            c.addChild(new RUIRectangle(30,100));
+            c.addChild(new RUIRectangle(30,70));
+        }
+
+        //nested 
+        {
+            var c = new RUIContainer();
+            c.boxBorder = RUIStyle.Default.primary;
+            c.margin = [0,0,0,10];
+            c.boxOrientation = RUIOrientation.Vertical;
+            container.addChild(c);
+
+            c.addChild(new RUIRectangle(50,30));
+            {
+                var c1 = new RUIContainer();
+                c1.boxOrientation = RUIOrientation.Horizontal;
+                c1.addChild(new RUIRectangle(30,30));
+                c1.addChild(new RUIRectangle(30,50));
+                c1.addChild(new RUIRectangle(30,10));
+
+                c.addChild(c1);
+            }
+            c.addChild(new RUIRectangle(70,30));
+        }
+    }
+
+    private LayoutClip() {
+
+        var label = new RUILabel('1.1-LayoutClip');
+        this.addChild(label);
+
+        var container = new RUIContainer();
+        this.addChild(container);
+        container.boxOrientation = RUIOrientation.Horizontal;
+        container.boxBorder = RUIStyle.Default.primary;
+        container.padding = [3,3,3,3];
+
+        {
+            var container2 = new RUIContainer();
+            container2.padding = [2, 2, 2, 2];
+            container2.margin = [0,50,0,0];
+            container2.height = 94;
+            container2.width = 40;
+            container2.boxBorder = RUIStyle.Default.primary;
+            container2.boxClip = RUIContainerClipType.NoClip;
+            container.addChild(container2);
+
+
+            //clip default
+            var r1 = new RUIRectangle();
+            r1.width = 50;
+            r1.height = 30;
+            container2.addChild(r1);
+
+            //clip offset
+            var r2 = new RUIRectangle();
+            r2.width = 50;
+            r2.height = 30;
+            r2.position = RUIPosition.Offset;
+            r2.left = 20;
+            container2.addChild(r2);
+
+            //clip relative clip
+            var r3 = new RUIRectangle();
+            r3.width = 50;
+            r3.height = 30;
+            r3.position = RUIPosition.Relative;
+            r3.left = 22;
+            r3.top = 62;
+            container2.addChild(r3);
+        }
+
+
+        {
+            var container1 = new RUIContainer();
+            container1.padding = [2, 2, 2, 2];
+            container1.margin = [0,50,0,0];
+            container1.height = 94;
+            container1.width = 40;
+            container1.boxBorder = RUIStyle.Default.primary;
+            container.addChild(container1);
+
+            //clip default
+            var r1 = new RUIRectangle();
+            r1.width = 50;
+            r1.height = 30;
+            container1.addChild(r1);
+
+            //clip offset
+            var r2 = new RUIRectangle();
+            r2.width = 50;
+            r2.height = 30;
+            r2.position = RUIPosition.Offset;
+            r2.left = 20;
+            container1.addChild(r2);
+
+            //clip relative clip
+            var r3 = new RUIRectangle();
+            r3.width = 50;
+            r3.height = 30;
+            r3.position = RUIPosition.Relative;
+            r3.left = 22;
+            r3.top = 62;
+            container1.addChild(r3);
+        }
+
+        {
+            var container1 = new RUIContainer();
+            container1.padding = [2, 2, 2, 2];
+            container1.height = 94;
+            container1.width = 40;
+            container1.boxBorder = RUIStyle.Default.primary;
+            container.addChild(container1);
+
+            //clip default
+            var r1 = new RUIRectangle();
+            r1.width = 50;
+            r1.height = 30;
+            r1.isClip = false;
+            container1.addChild(r1);
+
+            //clip offset
+            var r2 = new RUIRectangle();
+            r2.width = 50;
+            r2.height = 30;
+            r2.position = RUIPosition.Offset;
+            r2.left = 20;
+            r2.isClip = false;
+            container1.addChild(r2);
+
+            //clip relative clip
+            var r3 = new RUIRectangle();
+            r3.width = 50;
+            r3.height = 30;
+            r3.position = RUIPosition.Relative;
+            r3.left = 22;
+            r3.top = 62;
+            r3.isClip = false;
+            container1.addChild(r3);
+        }
+
+        
 
     }
 }

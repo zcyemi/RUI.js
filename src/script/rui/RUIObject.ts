@@ -7,6 +7,7 @@ import { RUIContainer } from "./RUIContainer";
 export const RUIAuto: number= -1;
 
 export type RUIRect = number[];
+export type RUIRectP = number[];
 export const RUICLIP_MAX = [0,0,5000,5000];
 
 

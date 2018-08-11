@@ -9,11 +9,20 @@ export class RUIRectangle extends RUIObject{
     protected m_debugColor : number[] = UIUtil.RandomColor();
 
 
+    public constructor(w:number = RUIAuto,h:number = RUIAuto){
+        super();
+
+        this.width= w;
+        this.height =h;
+    }
+
     public static create(color:number[]):RUIRectangle{
         let rect= new RUIRectangle();
         rect.m_debugColor = color;
         return rect;
     }
+
+
 
     public onLayout(){
         super.onLayout();
