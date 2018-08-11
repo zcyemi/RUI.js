@@ -14,7 +14,7 @@ export class IInputUI{
 }
 
 
-export enum RUIButton{
+export enum RUIMouseButton{
     Left = 0,
     Middle = 1,
     Right = 2

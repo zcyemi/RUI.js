@@ -1,4 +1,4 @@
-import { RUIButton, RUIEventType } from "./RUIInput";
+import { RUIMouseButton, RUIEventType } from "./RUIInput";
 import { RUIObject } from "./RUIObject";
 
 export class REvent<T>{
@@ -98,7 +98,7 @@ export class RUIMouseEvent extends RUIObjEvent{
     public m_eventtype : RUIEventType;
     public mousex: number;
     public mousey:number;
-    private m_button:RUIButton;
+    private m_button:RUIMouseButton;
     public raw:MouseEvent;
     public constructor(e:MouseEvent,type:RUIEventType){
         super();
@@ -107,14 +107,14 @@ export class RUIMouseEvent extends RUIObjEvent{
         this.m_eventtype = type;
         this.mousex = e.offsetX;
         this.mousey = e.offsetY;
-        this.m_button = <RUIButton>(e.button);
+        this.m_button = <RUIMouseButton>(e.button);
 
     }
     public get type(): RUIEventType{
         return this.m_eventtype;
     }
 
-    public get button():RUIButton{
+    public get button():RUIMouseButton{
         return this.m_button;
     }
 }

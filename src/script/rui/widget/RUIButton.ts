@@ -1,6 +1,9 @@
 import { RUIObject } from "../RUIObject";
 import { RUICmdList } from "../RUICmdList";
 import { RUIStyle } from "../RUIStyle";
+import { RUIMouseEvent } from "../EventSystem";
+
+export type RUIButtonFunc = (btn:RUIButton)=>void;
 
 export class RUIButton extends RUIObject{
 
@@ -9,9 +12,12 @@ export class RUIButton extends RUIObject{
     private m_color:number[] = RUIStyle.Default.background1;
     private m_onhover:boolean = false;
 
-    public constructor(label:string){
+    public clickFunction?: RUIButtonFunc;
+
+    public constructor(label:string,f?:RUIButtonFunc){
         super();
         this.label = label;
+        this.clickFunction = f;
     }
 
     public onDraw(cmd:RUICmdList){
@@ -35,6 +41,11 @@ export class RUIButton extends RUIObject{
         this.m_onhover = false;
     }
 
+    public onMouseClick(e:RUIMouseEvent){
+        let f = this.clickFunction;
+        if(f != null) f(this);
+    }
+
     public onMouseDown(){
         this.m_color = RUIStyle.Default.primary0;
         this.setDirty();
@@ -45,7 +56,7 @@ export class RUIButton extends RUIObject{
             this.m_color = RUIStyle.Default.primary;
         }
         else{
-            this.m_color = RUIStyle.Default.background1;
+            this.m_color = RUIStyle.Default.background2;
         }
         this.setDirty();
     }

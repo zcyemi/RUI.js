@@ -4,8 +4,9 @@ import { RUIButton } from "./RUIButton";
 import { RUICanvas } from "./RUICanvas";
 import { RUIScrollView } from "./RUIScrollView";
 import { RUIRectangle } from "../RUIRectangle";
-import { RUIPosition } from "../RUIObject";
+import { RUIPosition, RUIOrientation, RUIAuto } from "../RUIObject";
 import { RUITestWidget } from "./RUITestWidget";
+import { RUIButtonGroup } from "./RUIButtonGroup";
 
 
 export class RUIDebug extends RUIContainer{
@@ -22,8 +23,37 @@ export class RUIDebug extends RUIContainer{
         let button = new RUIButton("button1");
         this.addChild(button);
 
-        let canvas = new RUICanvas();
-        this.addChild(canvas);
+        {
+            var btnGroup = new RUIButtonGroup([
+                new RUIButton('AAA'),
+                new RUIButton('BBB'),
+                new RUIButton('CCC'),
+                new RUIButton('DDD'),
+                new RUIButton('EEE'),
+            ],RUIOrientation.Horizontal);
+            btnGroup.width = 450;
+            this.addChild(btnGroup);
+    
+            // let canvas = new RUICanvas();
+            // this.addChild(canvas);
+    
+            let btnGroupSwitch = new RUIButton('Switch BtnGroup',(b)=>{
+                let orit = btnGroup.boxOrientation == RUIOrientation.Horizontal;
+                btnGroup.boxOrientation = orit ? RUIOrientation.Vertical : RUIOrientation.Horizontal;
+                if(orit){
+                    btnGroup.width =120;
+                    btnGroup.height = 70;
+                }
+                else{
+                    btnGroup.width = 450;
+                    btnGroup.height = RUIAuto;
+                }
+                
+            });
+            this.addChild(btnGroupSwitch);
+        }
+
+
 
 
         // {
@@ -64,23 +94,23 @@ export class RUIDebug extends RUIContainer{
         
 
 
-        {
-            let scrollview = new RUIScrollView();
-            scrollview.width = 400;
-            scrollview.height= 200;
-            this.addChild(scrollview);
+        // {
+        //     let scrollview = new RUIScrollView();
+        //     scrollview.width = 400;
+        //     scrollview.height= 200;
+        //     this.addChild(scrollview);
 
-            for(var i=0;i<10;i++){
-                let rect1 = new RUIRectangle();
-                rect1.width = 20 + 600* Math.random();
-                rect1.height = 20 + 50 * Math.random();
+        //     for(var i=0;i<10;i++){
+        //         let rect1 = new RUIRectangle();
+        //         rect1.width = 20 + 600* Math.random();
+        //         rect1.height = 20 + 50 * Math.random();
 
-                scrollview.addChild(rect1);
-            }
+        //         scrollview.addChild(rect1);
+        //     }
 
 
             
-        }
+        // }
 
 
     }
