@@ -303,7 +303,15 @@ export class RUIContainer extends RUIObject {
         let cliprect = this.RectMinusePadding(rect, this.padding);
 
         let boxclip = this.boxClip;
-        if (boxclip != RUIContainerClipType.NoClip) cmd.PushClipRect(cliprect,boxclip == RUIContainerClipType.Clip);
+
+        var debug = this._debugname == "QQQ";
+        if (boxclip != RUIContainerClipType.NoClip) {
+            if(debug) console.log(">>>QQQ" + cliprect);
+            cmd.PushClipRect(cliprect,boxclip == RUIContainerClipType.Clip);
+        }
+        else{
+            if(debug) console.log(">>>QQQ NO CLIP");
+        }
     }
 
     public onDrawPost(cmd: RUICmdList) {

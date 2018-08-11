@@ -11,6 +11,8 @@ import { RUIStyle } from "../RUIStyle";
 import { RUIRenderer } from "../RUIRenderer";
 import { RUIFlexContainer } from "../RUIFlexContainer";
 import { RUIColor } from "../RUIColor";
+import { UIUtil } from "../UIUtil";
+import { RUI } from "../RUI";
 
 
 export class RUIDebug extends RUIContainer {
@@ -422,9 +424,29 @@ export class RUIDebug extends RUIContainer {
 
         this.addChild(new RUIButton('Button1'));
 
+        {
+            var btn1 = new RUIButton('LongText');
+            btn1.width = 70;
+            this.addChild(btn1);
+        }
+
         //Button in container
         {
+            var c = new RUIContainer();
+            c._debugname ="QQQ";
+            c.width = 100;
+            c.padding = [1,1,1,50];
+            c.boxBorder = RUIStyle.Default.primary;
+            this.addChild(c);
+            
+            let btn = new RUIButton('AQD');
+            btn.width = 100;
+            c.addChild(btn);
+
+            console.log(">>>" +RUI.RectClip([0,0,100,100],[50,50,100,100]));
+            console.log(">>>" + RUI.RectClipP([0,0,100,100],[50,50,150,150]));
 
         }
     }
+
 }

@@ -1,7 +1,8 @@
-import { RUIRect, RUICLIP_MAX } from "./RUIObject";
+import { RUIRect, RUICLIP_MAX, RUIRectP } from "./RUIObject";
 import { RUIRoot } from "./RUIRoot";
 import { UIUtil } from "./UIUtil";
 import { RUIColor } from "./RUIColor";
+import { RUI } from "./RUI";
 
 export enum RUIDrawCmdType {
     rect,
@@ -14,7 +15,7 @@ export class RUIDrawCmd{
     public Rect: number[] = [];
     public Color: number[];
     public Text: string;
-    public clip: RUIRect;
+    public clip: RUIRectP;
 
     public Index:number = 0;
 
@@ -68,8 +69,8 @@ export class RUICmdList{
 
     public isDirty:boolean = false;
 
-    private m_clipStack :RUIRect[] = [];
-    private m_clipRect :RUIRect = null;
+    private m_clipStack :RUIRectP[] = [];
+    private m_clipRect :RUIRectP = null;
 
 
     public draw(root: RUIRoot){
@@ -97,12 +98,22 @@ export class RUICmdList{
         this.drawList.push(cmd);
     }
 
-    public DrawText(text: string, clirect: number[], color?: number[]) {
+    public DrawText(text: string, clirect:RUIRect, color?: number[]) {
         let clip = clirect.slice(0);
-        clip = UIUtil.RectClip(clip,this.m_clipRect);
-        let cmd = RUIDrawCmd.CmdText(text, clirect, color);
-        cmd.clip =clip;
-        this.drawList.push(cmd);
+        clip[2] += clip[0];
+        clip[3] += clip[1];
+        clip = RUI.RectClipP(clip,this.m_clipRect);
+
+        if(clip != null){
+            let cmd = RUIDrawCmd.CmdText(text, clirect, color);
+            cmd.clip =clip;
+            if(text === 'A') console.log("A>>" + this.m_clipRect);
+            this.drawList.push(cmd);
+        }
+        else{
+            throw new Error();
+        }
+        
         
         //this.DrawBorder(clirect,RUIColor.Red);
     }
@@ -129,7 +140,7 @@ export class RUICmdList{
         }
 
         if(nested == true && this.m_clipRect != null ){
-            clip = UIUtil.RectClip(clip,this.m_clipRect);
+            clip = RUI.RectClipP(clip,this.m_clipRect);
 
             if(clip == null){
                 throw new Error();
