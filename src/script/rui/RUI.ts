@@ -1,6 +1,15 @@
 import { RUIRect, RUIRectP } from "./RUIObject";
 
 
+if(Array.prototype['includes'] == null){
+    Array.prototype['includes'] = function(o){
+        if(o==null) return false; 
+        let index= this.indexOf(o);
+        if(index < 0) return false;
+        return true;
+    }
+}
+
 export type RUIColor = number[];
 
 export class RUI{

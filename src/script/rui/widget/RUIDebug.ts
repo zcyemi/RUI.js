@@ -1,11 +1,10 @@
 import { RUIContainer, RUIContainerClipType } from "../RUIContainer";
-import { RUILabel } from "./UILabel";
+import { RUILabel } from "./RUILabel";
 import { RUIButton } from "./RUIButton";
 import { RUICanvas } from "./RUICanvas";
 import { RUIScrollView } from "./RUIScrollView";
 import { RUIRectangle } from "../RUIRectangle";
 import { RUIPosition, RUIOrientation, RUIAuto } from "../RUIObject";
-import { RUITestWidget } from "./RUITestWidget";
 import { RUIButtonGroup } from "./RUIButtonGroup";
 import { RUIStyle } from "../RUIStyle";
 import { RUIRenderer } from "../RUIRenderer";
