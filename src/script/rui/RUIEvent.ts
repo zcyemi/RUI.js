@@ -1,7 +1,7 @@
 import { RUIMouseButton, RUIEventType } from "./RUIInput";
 import { RUIObject } from "./RUIObject";
 
-export class REvent<T>{
+export class RUIEvent<T>{
     
     public object:T;
 
@@ -21,14 +21,14 @@ export class REvent<T>{
     }
 }
 
-export type REventFunc<T> = (e:REvent<T>)=>void; 
+export type RUIEventFunc<T> = (e:RUIEvent<T>)=>void; 
 
 
-export class REventEmitter<T>{
+export class RUIEventEmitter<T>{
 
-    private m_listener:REventFunc<T>[] = [];
+    private m_listener:RUIEventFunc<T>[] = [];
 
-    public on(listener: REventFunc<T>){
+    public on(listener: RUIEventFunc<T>){
         let l = this.m_listener;
 
         let index = l.indexOf(listener);
@@ -36,7 +36,7 @@ export class REventEmitter<T>{
         l.push(listener);
     }
 
-    public removeListener(listener: REventFunc<T>){
+    public removeListener(listener: RUIEventFunc<T>){
         let l = this.m_listener;
 
         let index = l.indexOf(listener);
@@ -49,7 +49,7 @@ export class REventEmitter<T>{
         this.m_listener = [];
     }
 
-    public emit(e:REvent<T>){
+    public emit(e:RUIEvent<T>){
         let l = this.m_listener;
         let lc =l.length;
         for(var i=0;i<lc;i++){
@@ -60,18 +60,18 @@ export class REventEmitter<T>{
     }
 
     public emitRaw(e:T){
-        this.emit(new REvent<T>(e));
+        this.emit(new RUIEvent<T>(e));
     }
 }
 
-export abstract class RUIObjEvent extends REvent<RUIObjEvent>{
+export abstract class RUIObjEvent extends RUIEvent<RUIObjEvent>{
 
     public constructor(){
         super(null);
     }
 }
 
-export class RUIResizeEvent extends REvent<RUIResizeEvent>{
+export class RUIResizeEvent extends RUIEvent<RUIResizeEvent>{
 
     public width:number;
     public height:number;

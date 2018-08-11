@@ -1,5 +1,5 @@
 import { RUICanvas } from "./RUICanvas";
-import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIWheelEvent } from "./EventSystem";
+import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIWheelEvent } from "./RUIEvent";
 
 
 export class IInputUI{

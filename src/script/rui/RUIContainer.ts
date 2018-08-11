@@ -3,7 +3,7 @@ import { RUICmdList } from "./RUICmdList";
 import { RUIStyle } from "./RUIStyle";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIRoot } from "./RUIRoot";
-import { RUIWheelEvent } from "./EventSystem";
+import { RUIWheelEvent } from "./RUIEvent";
 import { RUI } from "./RUI";
 
 

@@ -3,7 +3,7 @@ import { RUIPosition, RUIObject, RUIOrientation, RUIAuto, CLAMP, ROUND } from ".
 import { RUISlider } from "./RUISlider";
 import { RUIBind } from "../RUIBinder";
 import { RUIScrollBar } from "./RUIScrollBar";
-import { RUIWheelEvent } from "../EventSystem";
+import { RUIWheelEvent } from "../RUIEvent";
 import { RUIStyle } from "../RUIStyle";
 
 

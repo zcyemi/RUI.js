@@ -1,7 +1,7 @@
 import { RUIObject } from "../RUIObject";
 import { RUICmdList } from "../RUICmdList";
 import { RUIStyle } from "../RUIStyle";
-import { RUIMouseEvent } from "../EventSystem";
+import { RUIMouseEvent } from "../RUIEvent";
 import { RUI } from "../RUI";
 
 export type RUIButtonFunc = (btn:RUIButton)=>void;

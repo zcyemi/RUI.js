@@ -1,6 +1,6 @@
 import { RUIRoot } from "./RUIRoot";
 import { RUICmdList } from "./RUICmdList";
-import { RUIMouseEvent, RUIMouseDragEvent } from "./EventSystem";
+import { RUIMouseEvent, RUIMouseDragEvent } from "./RUIEvent";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIContainer } from "./RUIContainer";
 import { RUI } from "./RUI";

@@ -5,7 +5,7 @@ import { RUICmdList } from "../RUICmdList";
 import { RUIStyle } from "../RUIStyle";
 import { RUIContainer } from "../RUIContainer";
 import { RUIRectangle } from "../RUIRectangle";
-import { RUIMouseDragEvent, RUIMouseDragStage, RUIMouseEvent, REvent, REventEmitter } from "../EventSystem";
+import { RUIMouseDragEvent, RUIMouseDragStage, RUIMouseEvent } from "../RUIEvent";
 import { RUI } from "../RUI";
 
 

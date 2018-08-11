@@ -1,5 +1,5 @@
 import { RUIObject, RUIRect } from "./RUIObject";
-import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIMouseDragEvent, RUIMouseDragStage, RUIWheelEvent } from "./EventSystem";
+import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIMouseDragEvent, RUIMouseDragStage, RUIWheelEvent } from "./RUIEvent";
 import { RUIContainer } from "./RUIContainer";
 import { RUIEventType } from "./RUIInput";
 

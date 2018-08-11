@@ -2,7 +2,7 @@ import { RUIContainer, RUIContainerClipType } from "../RUIContainer";
 import { RUIButton } from "./RUIButton";
 import { RUIObject, RUIOrientation, RUIAuto, CLAMP } from "../RUIObject";
 import { RUIStyle } from "../RUIStyle";
-import { RUIWheelEvent } from "../EventSystem";
+import { RUIWheelEvent } from "../RUIEvent";
 
 
 

@@ -1,7 +1,7 @@
 import { RUIInput, IInputUI } from "./RUIInput";
 import { RUICursor } from "./RUICursor";
 import { RUIRenderer } from "./RUIRenderer";
-import { REventEmitter, RUIResizeEvent, RUIObjEvent } from "./EventSystem";
+import { RUIEventEmitter, RUIResizeEvent, RUIObjEvent } from "./RUIEvent";
 import { RUIContainer } from "./RUIContainer";
 
 
@@ -27,9 +27,9 @@ export class RUICanvas {
 
     private m_isResized: boolean = false;
 
-    public EventOnResize: REventEmitter<RUIResizeEvent> = new REventEmitter();
+    public EventOnResize: RUIEventEmitter<RUIResizeEvent> = new RUIEventEmitter();
 
-    public EventOnUIEvent: REventEmitter<RUIObjEvent> = new REventEmitter();
+    public EventOnUIEvent: RUIEventEmitter<RUIObjEvent> = new RUIEventEmitter();
 
     constructor(canvas: HTMLCanvasElement) {
         this.m_canvas = canvas;

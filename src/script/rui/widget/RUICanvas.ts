@@ -4,7 +4,7 @@ import { RUIContainer } from "../RUIContainer";
 import { RUICmdList } from "../RUICmdList";
 import { RUILayouter } from "../RUILayouter";
 import { RUIRectangle } from "../RUIRectangle";
-import { RUIMouseDragEvent, RUIMouseDragStage } from "../EventSystem";
+import { RUIMouseDragEvent, RUIMouseDragStage } from "../RUIEvent";
 
 
 export class RUICanvas extends RUIObject{

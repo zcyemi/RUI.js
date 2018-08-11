@@ -1,6 +1,6 @@
 import * as opentype from 'opentype.js';
 import { GLContext } from 'wglut';
-import { REventEmitter } from './EventSystem';
+import { RUIEventEmitter } from './RUIEvent';
 
 
 export class RUIGlyph{
@@ -36,7 +36,7 @@ export class RUIFontTexture{
     public m_isDirty:boolean = false;
     public fontSize:number = 16;
 
-    public static EventOnTextureLoaded: REventEmitter<RUIFontTexture> = new REventEmitter();
+    public static EventOnTextureLoaded: RUIEventEmitter<RUIFontTexture> = new RUIEventEmitter();
 
 
     constructor(){

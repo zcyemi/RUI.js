@@ -12,6 +12,7 @@ if(Array.prototype['includes'] == null){
 
 export type RUIColor = number[];
 
+
 export class RUI{
 
     public static readonly RED:RUIColor = [1,0,0,1];
