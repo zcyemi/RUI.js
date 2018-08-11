@@ -16,11 +16,11 @@
         <script>
             require(['rui'],rui=>{
                 let canvas = document.getElementById('ruicanvas');
-                let ruicanvas = new rui.RUICanvas(canvas);
+                let ruitest = new rui.RUITest(canvas);
 
 
                 function onFrame(ts){
-                    ruicanvas.OnFrame(ts);
+                    ruitest.OnFrame(ts);
                     window.requestAnimationFrame(onFrame);
                 }
                 window.requestAnimationFrame(onFrame);

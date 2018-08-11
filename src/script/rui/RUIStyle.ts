@@ -1,4 +1,4 @@
-import { UIUtil } from "./UIUtil";
+import { RUI } from "./RUI";
 
 type RUIColor = number[];
 
@@ -6,13 +6,13 @@ export class RUIStyle{
 
     public static Default: RUIStyle = new RUIStyle();
 
-    public background0:RUIColor =UIUtil.ColorUNorm(30,30,30,255);
-    public background1: RUIColor = UIUtil.ColorUNorm(37,37,38);
-    public background2:RUIColor = UIUtil.ColorUNorm(51,51,51);
-    public primary:RUIColor = UIUtil.ColorUNorm(0,122,204);
-    public primary0:RUIColor = UIUtil.ColorUNorm(9,71,113);
+    public background0:RUIColor =RUI.ColorUNorm(30,30,30,255);
+    public background1: RUIColor = RUI.ColorUNorm(37,37,38);
+    public background2:RUIColor = RUI.ColorUNorm(51,51,51);
+    public primary:RUIColor = RUI.ColorUNorm(0,122,204);
+    public primary0:RUIColor = RUI.ColorUNorm(9,71,113);
 
-    public inactive:RUIColor = UIUtil.ColorUNorm(63,63,70);
-    public border0:RUIColor = UIUtil.ColorUNorm(3,3,3);
+    public inactive:RUIColor = RUI.ColorUNorm(63,63,70);
+    public border0:RUIColor = RUI.ColorUNorm(3,3,3);
 
 }

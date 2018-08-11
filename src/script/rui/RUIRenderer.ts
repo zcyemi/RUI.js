@@ -1,10 +1,10 @@
 import { RUICanvas } from "./RUICanvas";
-import { RUIDrawCall } from "./RUIDrawCall";
 import { GLContext, GLProgram } from "wglut";
 import { RUIDrawCallBuffer } from "./RUIDrawCallBuffer";
 import { RUIFontTexture } from "./RUIFontTexture";
 import { GLSL_VERT_DEF, GLSL_FRAG_COLOR } from "../gl/wglShaderLib";
 import { RUIStyle } from "./RUIStyle";
+import { RUICmdList } from "./RUICmdList";
 
 
 export class RUIRenderer{
@@ -25,15 +25,14 @@ export class RUIRenderer{
     private m_uicanvas:RUICanvas;
 
 
+    private m_needRedraw: boolean = false;
+
+
     public constructor(uicanvas: RUICanvas){
         this.m_uicanvas = uicanvas;
         this.glctx = GLContext.createFromCanvas(uicanvas.canvas);
 
-        window.addEventListener('resize',()=>{
-            this.resizeCanvas(window.innerWidth,window.innerHeight);
-        })
-
-
+        
 
         if(!this.glctx){
             return;
@@ -42,6 +41,10 @@ export class RUIRenderer{
         this.m_isvalid =true;
         this.gl = this.glctx.gl;
 
+        var self = this;
+        RUIFontTexture.EventOnTextureLoaded.on((ft)=>{
+            self.m_needRedraw = true;
+        });
         RUIFontTexture.Init(this.glctx);
         this.SetupGL();
 
@@ -54,7 +57,7 @@ export class RUIRenderer{
         this.gl.canvas.width =w;
         this.gl.canvas.height = h;
 
-        this.m_uicanvas.setSize(w,h);
+        //this.m_uicanvas.setSize(w,h);
 
         this.m_projectParam = [2.0/w,2.0/h,0,0];
         this.gl.viewport(0,0,w,h);
@@ -64,6 +67,10 @@ export class RUIRenderer{
 
     public get isResized():boolean{
         return this.m_isResized;
+    }
+
+    public get needRedraw():boolean{
+        return this.m_needRedraw;
     }
 
     public useResized(){
@@ -92,19 +99,20 @@ export class RUIRenderer{
         gl.clearColor(clearColor[0],clearColor[1],clearColor[2],clearColor[3]);
     }
 
-    public Draw(drawcall:RUIDrawCall){
-        if(drawcall == null) return;
+    public DrawCmdList(cmdlist:RUICmdList){
+
         
+        if(cmdlist == null) return;
         if(this.m_drawcallBuffer == null){
-            this.m_drawcallBuffer = new RUIDrawCallBuffer(this.glctx,drawcall);
+            this.m_drawcallBuffer = new RUIDrawCallBuffer(this.glctx,cmdlist);
         }
 
         let fonttex = RUIFontTexture.ASIICTexture;
-        
 
-        if(drawcall.isDirty ||fonttex.isDirty){
+
+        if(cmdlist.isDirty ||fonttex.isDirty){
             this.m_drawcallBuffer.SyncBuffer(this.gl);
-            drawcall.isDirty = false;
+            cmdlist.isDirty = false;
             fonttex.isDirty= false;
         }
 
@@ -118,7 +126,6 @@ export class RUIRenderer{
 
        
         gl.clear(gl.COLOR_BUFFER_BIT);
-        
 
         //draw drawcall buffer
         let drawRectCount = drawbuffer.drawCountRect;
@@ -132,6 +139,7 @@ export class RUIRenderer{
         }
 
         let drawTextCount = drawbuffer.drawCountText;
+
         if(drawTextCount > 0){
             if(fonttex.isTextureValid){
                 let programText: GLProgram|any = drawbuffer.programText;
@@ -146,11 +154,12 @@ export class RUIRenderer{
                 gl.drawElements(gl.TRIANGLES,drawTextCount *6, gl.UNSIGNED_SHORT,0)
             }
             else{
+                console.log('texture not valid');
                 drawbuffer.isDirty = true;
             }
         }
-
-        
+        this.m_needRedraw = false;
 
     }
+    
 }

@@ -25,7 +25,6 @@ export enum RUICursorType{
 
 export class RUICursor{
 
-
     public Cursor : RUICursorType = RUICursorType.default;
 
     private m_input: RUIInput;
@@ -33,8 +32,8 @@ export class RUICursor{
     public constructor(canvas: RUICanvas){
         this.m_input = canvas.input;
         this.m_canvas = canvas.canvas;
-        this.m_input.EvtMouseEnter.on(this.onMouseEnter.bind(this));
-        this.m_input.EvtMouseLeave.on(this.onMouseLeave.bind(this));
+        //this.m_input.EvtMouseEnter.on(this.onMouseEnter.bind(this));
+        //this.m_input.EvtMouseLeave.on(this.onMouseLeave.bind(this));
     }
 
     private onMouseEnter(e){

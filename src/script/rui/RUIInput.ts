@@ -1,6 +1,5 @@
-import { UIObject } from "./UIObject";
 import { RUICanvas } from "./RUICanvas";
-import { RUIEvent, RUIMouseEvent, RUIEventEmitter, RUIMouseDragEvent } from "./RUIEventSys";
+import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIWheelEvent } from "./RUIEvent";
 
 
 export class IInputUI{
@@ -15,10 +14,22 @@ export class IInputUI{
 }
 
 
-export enum RUIButton{
+export enum RUIMouseButton{
     Left = 0,
     Middle = 1,
     Right = 2
+}
+
+export enum RUIEventType{
+    MouseDown,
+    MouseUp,
+    MouseClick,
+    MouseEnter,
+    MouseLeave,
+    MouseDrag,
+    MouseDrop,
+    MouseMove,
+    MouseWheel,
 }
 
 
@@ -26,117 +37,130 @@ export class RUIInput{
 
     private m_target : RUICanvas;
 
-    private m_activeMouseUI: UIObject = null;
-    private m_activeMouseUIDrag:boolean = false;
-    private m_onMouseDown:boolean = false;
+    // private m_activeMouseUI: UIObject = null;
+    // private m_activeMouseUIDrag:boolean = false;
+    // private m_onMouseDown:boolean = false;
 
-    public EvtMouseEnter: RUIEventEmitter;
-    public EvtMouseLeave: RUIEventEmitter;
+    // public EvtMouseEnter: RUIEventEmitter;
+    // public EvtMouseLeave: RUIEventEmitter;
+
+    public static readonly MOUSE_DOWN:string = "onMouseDown";
+    public static readonly MOUSE_UP:string = "onMouseUp";
+    public static readonly MOUSE_CLICK:string = "onMouseClick";
+    public static readonly MOUSE_ENTER:string = "onMouseEnter";
+    public static readonly MOUSE_LEAVE:string = "onMouseLeave";
+    public static readonly MOUSE_DRAG:string = "onMouseDrag";
+    public static readonly MOUSE_DROP:string = "onMouseDrop";
 
 
     public constructor(uicanvas:RUICanvas){
 
         this.m_target = uicanvas;
-        this.EvtMouseEnter = new RUIEventEmitter();
-        this.EvtMouseLeave = new RUIEventEmitter();
+        // this.EvtMouseEnter = new RUIEventEmitter();
+        // this.EvtMouseLeave = new RUIEventEmitter();
 
         this.RegisterEvent();
     }
 
-    public setActiveUI(ui:UIObject){
-        let curActiveUI = this.m_activeMouseUI;
-        if(ui == curActiveUI) return;
-        if(curActiveUI != null){
-            curActiveUI.onInactive();
-        }
+    // public setActiveUI(ui:UIObject){
+    //     let curActiveUI = this.m_activeMouseUI;
+    //     if(ui == curActiveUI) return;
+    //     if(curActiveUI != null){
+    //         curActiveUI.onInactive();
+    //     }
 
-        ui.onActive();
-        this.m_activeMouseUI = ui;
-    }
+    //     ui.onActive();
+    //     this.m_activeMouseUI = ui;
+    // }
 
     private RegisterEvent(){
-        let c = this.m_target.canvas;
+        let c = this.m_target;
         let tar = this.m_target;
 
-        window.addEventListener('keypress',this.onKeyboardEvent.bind(this));
-        window.addEventListener('keydown',this.onKeyboardDown.bind(this));
+        window.addEventListener('keypress',(e)=>c.EventOnUIEvent.emit(new RUIKeyboardEvent(e)));
+        window.addEventListener('mousedown',(e)=>c.EventOnUIEvent.emit(new RUIMouseEvent(e,RUIEventType.MouseDown)));
+        window.addEventListener('mouseup',(e)=>c.EventOnUIEvent.emit(new RUIMouseEvent(e,RUIEventType.MouseUp)));
+        window.addEventListener('mousemove',(e)=>c.EventOnUIEvent.emit(new RUIMouseEvent(e,RUIEventType.MouseMove)));
+        window.addEventListener('mousewheel',(e)=>c.EventOnUIEvent.emit(new RUIWheelEvent(e)));
+        // window.addEventListener('keypress',this.onKeyboardEvent.bind(this));
+        // window.addEventListener('keydown',this.onKeyboardDown.bind(this));
 
-        c.addEventListener('mousedown',(e)=>{
-            this.m_onMouseDown = true;
-            let tar = this.m_target;
-            let newActiveUI = tar.qtree.DispatchEvtMouseEvent(e,RUIEvent.MOUSE_DOWN);
-            let curActiveUI = this.m_activeMouseUI;
+        // c.addEventListener('mousedown',(e)=>{
+        //     this.m_onMouseDown = true;
+        //     let tar = this.m_target;
+        //     let newActiveUI = tar.qtree.DispatchEvtMouseEvent(e,RUIEvent.MOUSE_DOWN);
+        //     let curActiveUI = this.m_activeMouseUI;
 
-            if(curActiveUI == newActiveUI) return;
-            if(curActiveUI != null) curActiveUI.onInactive();
+        //     if(curActiveUI == newActiveUI) return;
+        //     if(curActiveUI != null) curActiveUI.onInactive();
 
-            if(newActiveUI != null){
-                newActiveUI.onActive();
-                this.m_activeMouseUI = newActiveUI;
-            }
+        //     if(newActiveUI != null){
+        //         newActiveUI.onActive();
+        //         this.m_activeMouseUI = newActiveUI;
+        //     }
 
-            this.m_activeMouseUIDrag =false;
+        //     this.m_activeMouseUIDrag =false;
             
-        });
-        c.addEventListener('mouseup',(e)=>{
-            let tar = this.m_target;
-            let tarui = tar.qtree.DispatchEvtMouseEvent(e,RUIEvent.MOUSE_UP);
+        // });
+        // c.addEventListener('mouseup',(e)=>{
+        //     let tar = this.m_target;
+        //     let tarui = tar.qtree.DispatchEvtMouseEvent(e,RUIEvent.MOUSE_UP);
 
-            let activeUI = this.m_activeMouseUI;
+        //     let activeUI = this.m_activeMouseUI;
             
-            if(tarui && tarui == this.m_activeMouseUI){
-                let eventClick = new RUIMouseEvent(tarui,RUIEvent.MOUSE_CLICK,e.offsetX,e.offsetY,tarui._canvas);
-                eventClick.button = <RUIButton>e.button;
-                tarui.onMouseClick(eventClick);
-            }
+        //     if(tarui && tarui == this.m_activeMouseUI){
+        //         let eventClick = new RUIMouseEvent(tarui,RUIEvent.MOUSE_CLICK,e.offsetX,e.offsetY,tarui._canvas);
+        //         eventClick.button = <RUIButton>e.button;
+        //         tarui.onMouseClick(eventClick);
+        //     }
 
-            if(activeUI != null && this.m_activeMouseUIDrag){
-                activeUI.onMouseDrag(new RUIMouseDragEvent(activeUI,RUIEvent.MOUSE_DRAG,e.offsetX,e.offsetY,true,tar));
-            }
+        //     if(activeUI != null && this.m_activeMouseUIDrag){
+        //         activeUI.onMouseDrag(new RUIMouseDragEvent(activeUI,RUIEvent.MOUSE_DRAG,e.offsetX,e.offsetY,true,tar));
+        //     }
 
-            this.m_onMouseDown = false;
-        });
-        c.addEventListener('mousemove',(e)=>{
-            this.m_target.qtree.DispatchEvtMouseMove(e.offsetX,e.offsetY);
+        //     this.m_onMouseDown = false;
+        // });
+        // c.addEventListener('mousemove',(e)=>{
+        //     this.m_target.qtree.DispatchEvtMouseMove(e.offsetX,e.offsetY);
 
-            let activeUI = this.m_activeMouseUI;
-            if(this.m_onMouseDown && activeUI != null){
+        //     let activeUI = this.m_activeMouseUI;
+        //     if(this.m_onMouseDown && activeUI != null){
                 
-                activeUI.onMouseDrag(new RUIMouseDragEvent(activeUI,RUIEvent.MOUSE_DRAG,e.offsetX,e.offsetY,false,tar));
-                this.m_activeMouseUIDrag = true;
-            }
-        })
+        //         activeUI.onMouseDrag(new RUIMouseDragEvent(activeUI,RUIEvent.MOUSE_DRAG,e.offsetX,e.offsetY,false,tar));
+        //         this.m_activeMouseUIDrag = true;
+        //     }
+        // })
 
-        c.addEventListener('mouseenter',(e)=>{
-            this.EvtMouseEnter.emit(new RUIEvent(this.m_target.rootui,RUIEvent.MOUSE_ENTER,tar));
-        });
+        // c.addEventListener('mouseenter',(e)=>{
+        //     this.EvtMouseEnter.emit(new RUIEvent(this.m_target.rootui,RUIEvent.MOUSE_ENTER,tar));
+        // });
 
-        c.addEventListener('mouseleave',(e)=>{
-            this.EvtMouseLeave.emit(new RUIEvent(this.m_target.rootui,RUIEvent.MOUSE_LEAVE,tar));
-        });
+        // c.addEventListener('mouseleave',(e)=>{
+        //     this.EvtMouseLeave.emit(new RUIEvent(this.m_target.rootui,RUIEvent.MOUSE_LEAVE,tar));
+        // });
     }
 
-    private onKeyboardEvent(e:KeyboardEvent){
-        let activeUI = this.m_target.activeUI;
-        if(activeUI != null) activeUI.onKeyPress(e);
-    }
-    private onKeyboardDown(e:KeyboardEvent){
-        let activeUI = this.m_target.activeUI;
-        if(activeUI != null) activeUI.onKeyDown(e);
-    }
+    // private onKeyboardEvent(e:KeyboardEvent){
+    //     // let activeUI = this.m_target.activeUI;
+    //     // if(activeUI != null) activeUI.onKeyPress(e);
+    // }
+    // private onKeyboardDown(e:KeyboardEvent){
+    //     // let activeUI = this.m_target.activeUI;
+    //     // if(activeUI != null) activeUI.onKeyDown(e);
+    // }
 
-    public static ProcessTextKeyPress(text:string,e:KeyboardEvent):string{
-        return text +e.key;
-    }
+    // public static ProcessTextKeyPress(text:string,e:KeyboardEvent):string{
+    //     return text +e.key;
+    // }
 
-    public static ProcessTextKeyDown(text:string,e:KeyboardEvent): string{
-        if(text == null || text.length == 0) return text;
-        if(e.key == 'Backspace'){
-            if(e.shiftKey){
-                return '';
-            }
-            text = text.slice(0,text.length-1);
-        }
-        return text;
-    }
+    // public static ProcessTextKeyDown(text:string,e:KeyboardEvent): string{
+    //     if(text == null || text.length == 0) return text;
+    //     if(e.key == 'Backspace'){
+    //         if(e.shiftKey){
+    //             return '';
+    //         }
+    //         text = text.slice(0,text.length-1);
+    //     }
+    //     return text;
+    // }
 }

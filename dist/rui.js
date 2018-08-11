@@ -8,6 +8,299 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+define("rui/RUIRoot", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUIRoot = /** @class */ (function () {
+        function RUIRoot(ui) {
+            this.isdirty = true;
+            if (ui.parent != null)
+                throw new Error("root ui must have no parent.");
+            this.root = ui;
+            ui._root = this;
+        }
+        RUIRoot.prototype.resizeRoot = function (width, height) {
+            this.isdirty = true;
+            this.root.width = width;
+            this.root.height = height;
+        };
+        return RUIRoot;
+    }());
+    exports.RUIRoot = RUIRoot;
+});
+define("rui/RUICmdList", ["require", "exports", "rui/RUIObject"], function (require, exports, RUIObject_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUIDrawCmdType;
+    (function (RUIDrawCmdType) {
+        RUIDrawCmdType[RUIDrawCmdType["rect"] = 0] = "rect";
+        RUIDrawCmdType[RUIDrawCmdType["text"] = 1] = "text";
+        RUIDrawCmdType[RUIDrawCmdType["border"] = 2] = "border";
+        RUIDrawCmdType[RUIDrawCmdType["line"] = 3] = "line";
+    })(RUIDrawCmdType = exports.RUIDrawCmdType || (exports.RUIDrawCmdType = {}));
+    var RUIDrawCmd = /** @class */ (function () {
+        function RUIDrawCmd(rect) {
+            this.Rect = [];
+            this.Index = 0;
+            this.type = RUIDrawCmdType.rect;
+            this.Rect = rect;
+        }
+        RUIDrawCmd.CmdRect = function (rect, color) {
+            var cmd = new RUIDrawCmd();
+            cmd.Rect = rect;
+            cmd.Color = color;
+            return cmd;
+        };
+        RUIDrawCmd.CmdText = function (text, cliprect, color) {
+            var cmd = new RUIDrawCmd();
+            cmd.Text = text;
+            cmd.Rect = cliprect;
+            cmd.Color = color;
+            cmd.type = RUIDrawCmdType.text;
+            return cmd;
+        };
+        RUIDrawCmd.CmdBorder = function (rect, color) {
+            var cmd = new RUIDrawCmd();
+            cmd.Rect = rect;
+            cmd.Color = color;
+            cmd.type = RUIDrawCmdType.border;
+            return cmd;
+        };
+        RUIDrawCmd.CmdLine = function (x1, y1, x2, y2, color) {
+            var cmd = new RUIDrawCmd();
+            cmd.Rect = [x1, y1, x2, y2];
+            cmd.Color = color;
+            cmd.type = RUIDrawCmdType.line;
+            return cmd;
+        };
+        return RUIDrawCmd;
+    }());
+    exports.RUIDrawCmd = RUIDrawCmd;
+    var RUICmdList = /** @class */ (function () {
+        function RUICmdList() {
+            this.drawList = [];
+            this.MaxDrawCount = 1000;
+            this.isDirty = false;
+            this.m_clipStack = [];
+            this.m_clipRect = null;
+        }
+        RUICmdList.prototype.draw = function (root) {
+            this.drawList = [];
+            this.m_clipStack = [];
+            root.root.onDraw(this);
+            this.isDirty = true;
+        };
+        RUICmdList.prototype.DrawRect = function (x, y, w, h) {
+            var cmd = new RUIDrawCmd([x, y, w, h]);
+            cmd.clip = this.m_clipRect;
+            this.drawList.push();
+        };
+        RUICmdList.prototype.DrawRectWithColor = function (pos, color) {
+            var cmd = new RUIDrawCmd(pos);
+            cmd.clip = this.m_clipRect;
+            cmd.Color = color;
+            this.drawList.push(cmd);
+        };
+        RUICmdList.prototype.DrawText = function (text, clirect, color) {
+            var cmd = RUIDrawCmd.CmdText(text, clirect, color);
+            cmd.clip = this.m_clipRect;
+            this.drawList.push(cmd);
+        };
+        RUICmdList.prototype.DrawBorder = function (rect, color) {
+            var cmd = RUIDrawCmd.CmdBorder(rect, color);
+            //cmd.clip = this.m_clipRect;
+            this.drawList.push(cmd);
+        };
+        RUICmdList.prototype.DrawLine = function (x1, y1, x2, y2, color) {
+            var cmd = RUIDrawCmd.CmdLine(x1, y1, x2, y2, color);
+            cmd.clip = this.m_clipRect;
+            this.drawList.push(cmd);
+        };
+        RUICmdList.prototype.PushClipRect = function (rect) {
+            var clip = null;
+            if (rect == null) {
+                clip = RUIObject_1.RUICLIP_MAX;
+            }
+            else {
+                clip = [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]];
+            }
+            this.m_clipStack.push(this.m_clipRect);
+            this.m_clipRect = clip;
+        };
+        RUICmdList.prototype.PopClipRect = function () {
+            this.m_clipRect = this.m_clipStack.pop();
+            return this.m_clipRect;
+        };
+        return RUICmdList;
+    }());
+    exports.RUICmdList = RUICmdList;
+});
+define("rui/RUIObject", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.RUIAuto = -1;
+    exports.RUICLIP_MAX = [0, 0, 5000, 5000];
+    function ROUND(x) {
+        return Math.round(x);
+    }
+    exports.ROUND = ROUND;
+    var RUIConst = /** @class */ (function () {
+        function RUIConst() {
+        }
+        RUIConst.TOP = 0;
+        RUIConst.RIGHT = 1;
+        RUIConst.BOTTOM = 2;
+        RUIConst.LEFT = 3;
+        return RUIConst;
+    }());
+    exports.RUIConst = RUIConst;
+    var RUIPosition;
+    (function (RUIPosition) {
+        RUIPosition[RUIPosition["Default"] = 0] = "Default";
+        RUIPosition[RUIPosition["Relative"] = 1] = "Relative";
+        RUIPosition[RUIPosition["Absolute"] = 2] = "Absolute";
+        RUIPosition[RUIPosition["Offset"] = 3] = "Offset";
+    })(RUIPosition = exports.RUIPosition || (exports.RUIPosition = {}));
+    var RUIBoxFlow;
+    (function (RUIBoxFlow) {
+        RUIBoxFlow[RUIBoxFlow["Flow"] = 0] = "Flow";
+        RUIBoxFlow[RUIBoxFlow["Flex"] = 1] = "Flex";
+    })(RUIBoxFlow = exports.RUIBoxFlow || (exports.RUIBoxFlow = {}));
+    var RUIOverflow;
+    (function (RUIOverflow) {
+        RUIOverflow[RUIOverflow["Clip"] = 0] = "Clip";
+        RUIOverflow[RUIOverflow["Scroll"] = 1] = "Scroll";
+    })(RUIOverflow = exports.RUIOverflow || (exports.RUIOverflow = {}));
+    var RUIOrientation;
+    (function (RUIOrientation) {
+        RUIOrientation[RUIOrientation["Vertical"] = 0] = "Vertical";
+        RUIOrientation[RUIOrientation["Horizontal"] = 1] = "Horizontal";
+    })(RUIOrientation = exports.RUIOrientation || (exports.RUIOrientation = {}));
+    var RUIObject = /** @class */ (function () {
+        function RUIObject() {
+            this._width = exports.RUIAuto;
+            this._height = exports.RUIAuto;
+            this.maxwidth = exports.RUIAuto;
+            this.maxheight = exports.RUIAuto;
+            this.minwidth = 70;
+            this.minheight = 23;
+            this.margin = [0, 0, 0, 0];
+            // top right bottom left
+            this.padding = [0, 0, 0, 0];
+            this.position = RUIPosition.Default;
+            this.left = exports.RUIAuto;
+            this.right = exports.RUIAuto;
+            this.top = exports.RUIAuto;
+            this.bottom = exports.RUIAuto;
+            this.visible = false;
+            this.zorder = 0;
+            this.parent = null;
+            this.isdirty = true;
+            this.isClip = true;
+            this._caloffsetx = 0;
+            this._caloffsety = 0;
+            this._resized = true;
+        }
+        RUIObject.prototype.onBuild = function () {
+        };
+        RUIObject.prototype.onDraw = function (cmd) {
+        };
+        Object.defineProperty(RUIObject.prototype, "width", {
+            get: function () {
+                return this._width;
+            },
+            set: function (val) {
+                this._width = val;
+                this._resized = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RUIObject.prototype, "height", {
+            get: function () {
+                return this._height;
+            },
+            set: function (val) {
+                this._height = val;
+                this._resized = true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        RUIObject.prototype.onLayout = function () {
+            var isRoot = this.isRoot;
+            this.isdirty = false;
+            if (!this._resized) {
+                if (this._calwidth == null)
+                    throw new Error();
+                if (this._calheight == null)
+                    throw new Error();
+                return;
+            }
+            this.fillSize();
+            this._resized = false;
+        };
+        Object.defineProperty(RUIObject.prototype, "isRoot", {
+            get: function () {
+                return this._root.root === this;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RUIObject.prototype, "isOnFlow", {
+            get: function () {
+                var pos = this.position;
+                return (pos == RUIPosition.Default || pos == RUIPosition.Offset);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        RUIObject.prototype.setDirty = function () {
+            this.isdirty = true;
+            var root = this._root;
+            if (root == null) {
+                throw new Error("setDirty must be called in hierachied uiobject.");
+            }
+            root.isdirty = true;
+        };
+        RUIObject.prototype.fillSize = function () {
+            this._calwidth = null;
+            this._calheight = null;
+            if (this._flexwidth != null)
+                this._calwidth = this._flexwidth;
+            if (this._flexheight != null)
+                this._calheight = this._flexheight;
+            if (this._calwidth == null) {
+                if (this.width == exports.RUIAuto) {
+                    if (this.parent == null) {
+                        throw new Error();
+                    }
+                }
+                else {
+                    this._calwidth = this.width;
+                }
+            }
+            if (this._calheight == null) {
+                if (this.height == exports.RUIAuto) {
+                    if (this.parent == null) {
+                        throw new Error();
+                    }
+                }
+                else {
+                    this._calheight = this.height;
+                }
+            }
+        };
+        RUIObject.prototype.fillPositionOffset = function () {
+            if (this.position == RUIPosition.Offset) {
+                this._caloffsetx += this.left == exports.RUIAuto ? 0 : this.left;
+                this._caloffsety += this.top == exports.RUIAuto ? 0 : this.top;
+            }
+        };
+        return RUIObject;
+    }());
+    exports.RUIObject = RUIObject;
+});
 define("rui/UIUtil", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -27,6 +320,31 @@ define("rui/UIUtil", ["require", "exports"], function (require, exports) {
             if (x > (rect[0] + rect[2]) || y > (rect[1] + rect[3]))
                 return false;
             return true;
+        };
+        UIUtil.RectClip = function (content, clip) {
+            var x2 = content[0] + content[2];
+            var y2 = confirm[1] + content[3];
+            if (x2 < clip[0])
+                return null;
+            if (y2 < clip[1])
+                return null;
+            var cx2 = clip[0] + clip[2];
+            var cy2 = clip[1] + clip[3];
+            if (cx2 < content[0])
+                return null;
+            if (cy2 < confirm[1])
+                return null;
+            //TODO 
+            throw new Error("not implemented!");
+            return null;
+        };
+        UIUtil.RectMinus = function (recta, offset) {
+            return [
+                recta[0] - offset[0],
+                recta[1] - offset[1],
+                recta[2] - offset[2],
+                recta[3] - offset[3]
+            ];
         };
         return UIUtil;
     }());
@@ -72,64 +390,59 @@ define("rui/RUIInput", ["require", "exports", "rui/RUIEventSys"], function (requ
             this.m_activeMouseUI = ui;
         };
         RUIInput.prototype.RegisterEvent = function () {
-            var _this = this;
             var c = this.m_target.canvas;
             var tar = this.m_target;
-            window.addEventListener('keypress', this.onKeyboardEvent.bind(this));
-            window.addEventListener('keydown', this.onKeyboardDown.bind(this));
-            c.addEventListener('mousedown', function (e) {
-                _this.m_onMouseDown = true;
-                var tar = _this.m_target;
-                var newActiveUI = tar.qtree.DispatchEvtMouseEvent(e, RUIEventSys_1.RUIEvent.MOUSE_DOWN);
-                var curActiveUI = _this.m_activeMouseUI;
-                if (curActiveUI == newActiveUI)
-                    return;
-                if (curActiveUI != null)
-                    curActiveUI.onInactive();
-                if (newActiveUI != null) {
-                    newActiveUI.onActive();
-                    _this.m_activeMouseUI = newActiveUI;
-                }
-                _this.m_activeMouseUIDrag = false;
-            });
-            c.addEventListener('mouseup', function (e) {
-                var tar = _this.m_target;
-                var tarui = tar.qtree.DispatchEvtMouseEvent(e, RUIEventSys_1.RUIEvent.MOUSE_UP);
-                var activeUI = _this.m_activeMouseUI;
-                if (tarui && tarui == _this.m_activeMouseUI) {
-                    var eventClick = new RUIEventSys_1.RUIMouseEvent(tarui, RUIEventSys_1.RUIEvent.MOUSE_CLICK, e.offsetX, e.offsetY, tarui._canvas);
-                    eventClick.button = e.button;
-                    tarui.onMouseClick(eventClick);
-                }
-                if (activeUI != null && _this.m_activeMouseUIDrag) {
-                    activeUI.onMouseDrag(new RUIEventSys_1.RUIMouseDragEvent(activeUI, RUIEventSys_1.RUIEvent.MOUSE_DRAG, e.offsetX, e.offsetY, true, tar));
-                }
-                _this.m_onMouseDown = false;
-            });
-            c.addEventListener('mousemove', function (e) {
-                _this.m_target.qtree.DispatchEvtMouseMove(e.offsetX, e.offsetY);
-                var activeUI = _this.m_activeMouseUI;
-                if (_this.m_onMouseDown && activeUI != null) {
-                    activeUI.onMouseDrag(new RUIEventSys_1.RUIMouseDragEvent(activeUI, RUIEventSys_1.RUIEvent.MOUSE_DRAG, e.offsetX, e.offsetY, false, tar));
-                    _this.m_activeMouseUIDrag = true;
-                }
-            });
-            c.addEventListener('mouseenter', function (e) {
-                _this.EvtMouseEnter.emit(new RUIEventSys_1.RUIEvent(_this.m_target.rootui, RUIEventSys_1.RUIEvent.MOUSE_ENTER, tar));
-            });
-            c.addEventListener('mouseleave', function (e) {
-                _this.EvtMouseLeave.emit(new RUIEventSys_1.RUIEvent(_this.m_target.rootui, RUIEventSys_1.RUIEvent.MOUSE_LEAVE, tar));
-            });
+            // window.addEventListener('keypress',this.onKeyboardEvent.bind(this));
+            // window.addEventListener('keydown',this.onKeyboardDown.bind(this));
+            // c.addEventListener('mousedown',(e)=>{
+            //     this.m_onMouseDown = true;
+            //     let tar = this.m_target;
+            //     let newActiveUI = tar.qtree.DispatchEvtMouseEvent(e,RUIEvent.MOUSE_DOWN);
+            //     let curActiveUI = this.m_activeMouseUI;
+            //     if(curActiveUI == newActiveUI) return;
+            //     if(curActiveUI != null) curActiveUI.onInactive();
+            //     if(newActiveUI != null){
+            //         newActiveUI.onActive();
+            //         this.m_activeMouseUI = newActiveUI;
+            //     }
+            //     this.m_activeMouseUIDrag =false;
+            // });
+            // c.addEventListener('mouseup',(e)=>{
+            //     let tar = this.m_target;
+            //     let tarui = tar.qtree.DispatchEvtMouseEvent(e,RUIEvent.MOUSE_UP);
+            //     let activeUI = this.m_activeMouseUI;
+            //     if(tarui && tarui == this.m_activeMouseUI){
+            //         let eventClick = new RUIMouseEvent(tarui,RUIEvent.MOUSE_CLICK,e.offsetX,e.offsetY,tarui._canvas);
+            //         eventClick.button = <RUIButton>e.button;
+            //         tarui.onMouseClick(eventClick);
+            //     }
+            //     if(activeUI != null && this.m_activeMouseUIDrag){
+            //         activeUI.onMouseDrag(new RUIMouseDragEvent(activeUI,RUIEvent.MOUSE_DRAG,e.offsetX,e.offsetY,true,tar));
+            //     }
+            //     this.m_onMouseDown = false;
+            // });
+            // c.addEventListener('mousemove',(e)=>{
+            //     this.m_target.qtree.DispatchEvtMouseMove(e.offsetX,e.offsetY);
+            //     let activeUI = this.m_activeMouseUI;
+            //     if(this.m_onMouseDown && activeUI != null){
+            //         activeUI.onMouseDrag(new RUIMouseDragEvent(activeUI,RUIEvent.MOUSE_DRAG,e.offsetX,e.offsetY,false,tar));
+            //         this.m_activeMouseUIDrag = true;
+            //     }
+            // })
+            // c.addEventListener('mouseenter',(e)=>{
+            //     this.EvtMouseEnter.emit(new RUIEvent(this.m_target.rootui,RUIEvent.MOUSE_ENTER,tar));
+            // });
+            // c.addEventListener('mouseleave',(e)=>{
+            //     this.EvtMouseLeave.emit(new RUIEvent(this.m_target.rootui,RUIEvent.MOUSE_LEAVE,tar));
+            // });
         };
         RUIInput.prototype.onKeyboardEvent = function (e) {
-            var activeUI = this.m_target.activeUI;
-            if (activeUI != null)
-                activeUI.onKeyPress(e);
+            // let activeUI = this.m_target.activeUI;
+            // if(activeUI != null) activeUI.onKeyPress(e);
         };
         RUIInput.prototype.onKeyboardDown = function (e) {
-            var activeUI = this.m_target.activeUI;
-            if (activeUI != null)
-                activeUI.onKeyDown(e);
+            // let activeUI = this.m_target.activeUI;
+            // if(activeUI != null) activeUI.onKeyDown(e);
         };
         RUIInput.ProcessTextKeyPress = function (text, e) {
             return text + e.key;
@@ -620,13 +933,13 @@ define("rui/widget/UIInput", ["require", "exports", "rui/UIObject", "rui/RUIStyl
             this.m_isFocuesd = true;
             this.setColor();
             this.setDirty(true);
-            this._canvas.setActiveInputUI(this);
+            //this._canvas.setActiveInputUI(this);
         };
         UIInput.prototype.onInactive = function () {
             this.m_isFocuesd = false;
             this.setColor();
             this.setDirty(true);
-            this._canvas.setInActiveInputUI(this);
+            //this._canvas.setInActiveInputUI(this);
         };
         UIInput.prototype.onKeyPress = function (e) {
             this.m_text = RUIInput_1.RUIInput.ProcessTextKeyPress(this.m_text, e);
@@ -1438,7 +1751,7 @@ define("rui/widget/UIContextMenu", ["require", "exports", "rui/UIObject", "rui/R
             this.floatTop = e._calculateY + e._height;
             this.visibleSelf = true;
             this.displayMode = UIObject_9.UIDisplayMode.Default;
-            this._canvas.setActiveUI(this);
+            //this._canvas.setActiveUI(this);
             this.setDirty(true);
         };
         UIContextMenu.prototype.onDraw = function (cmd) {
@@ -1573,88 +1886,6 @@ define("rui/DebugUI", ["require", "exports", "rui/UIObject", "rui/widget/UIButto
     }(UIObject_10.UIObject));
     exports.DebugUI = DebugUI;
 });
-define("rui/RUIQTree", ["require", "exports", "rui/RUIEventSys"], function (require, exports, RUIEventSys_3) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    if (Array.prototype['includes'] == null) {
-        Array.prototype['includes'] = function (o) {
-            if (o == null)
-                return false;
-            var index = this.indexOf(o);
-            if (index < 0)
-                return false;
-            return true;
-        };
-    }
-    var RUIQTree = /** @class */ (function () {
-        function RUIQTree(canvas) {
-            this.m_listHovered = [];
-            this.m_tar = canvas;
-            this.m_ui = canvas.rootui;
-        }
-        RUIQTree.prototype.DispatchEvtMouseEvent = function (e, type) {
-            var x = e.offsetX;
-            var y = e.offsetY;
-            var target = this.TraversalTree(x, y);
-            if (target == null)
-                return null;
-            var re = new RUIEventSys_3.RUIMouseEvent(target, type, x, y);
-            re.button = e.button;
-            target[type].call(target, re);
-            return target;
-        };
-        RUIQTree.prototype.DispatchEvtMouseMove = function (x, y) {
-            var curlist = this.TraversalNormalAll(x, y);
-            var hovlist = this.m_listHovered;
-            for (var i = hovlist.length - 1; i >= 0; i--) {
-                var c = hovlist[i];
-                if (curlist.indexOf(c) == -1) {
-                    c.onMouseLeave(new RUIEventSys_3.RUIEvent(c, RUIEventSys_3.RUIEvent.MOUSE_LEAVE, this.m_tar));
-                    hovlist.splice(i, 1);
-                }
-            }
-            for (var i = 0, len = curlist.length; i < len; i++) {
-                var c = curlist[i];
-                if (hovlist.indexOf(c) >= 0)
-                    continue;
-                c.onMouseEnter(new RUIEventSys_3.RUIEvent(c, RUIEventSys_3.RUIEvent.MOUSE_ENTER, this.m_tar));
-                hovlist.push(c);
-            }
-        };
-        RUIQTree.prototype.TraversalTree = function (x, y) {
-            return this.TraversalNoraml(x, y);
-        };
-        RUIQTree.prototype.TraversalNormalAll = function (x, y) {
-            var list = [];
-            this.m_ui.execRecursive(function (ui) {
-                if (ui.rectContains(x, y)) {
-                    list.push(ui);
-                }
-            });
-            return list;
-        };
-        RUIQTree.prototype.TraversalNoraml = function (x, y) {
-            var tarNode = null;
-            this.m_ui.execRecursive(function (ui) {
-                if (ui.rectContains(x, y)) {
-                    if (tarNode == null) {
-                        tarNode = ui;
-                    }
-                    else {
-                        if (ui._level >= tarNode._level)
-                            tarNode = ui;
-                    }
-                }
-            });
-            return tarNode;
-        };
-        RUIQTree.prototype.TraversalQuadTree = function (x, y) {
-            throw new Error('not implemented.');
-        };
-        return RUIQTree;
-    }());
-    exports.RUIQTree = RUIQTree;
-});
 define("gl/wglShaderLib", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1663,7 +1894,7 @@ define("gl/wglShaderLib", ["require", "exports"], function (require, exports) {
     exports.GLSL_FRAG_TEXT = '#version 300 es\nprecision lowp float;\n\nin vec4 vColor;\nin vec2 vUV;\n\nuniform sampler2D uSampler;\n\nout vec4 fragColor;\n\nvoid main(){\nfragColor = texture(uSampler,vUV);\n}';
     exports.GLSL_VERT_TEXT = '#version 300 es\nprecision mediump float;\nin vec3 aPosition;\nin vec4 aColor;\nin vec2 aUV;\nin vec4 aClip;\n\nuniform vec4 uProj;\nout vec4 vColor;\nout vec2 vUV;\n\nvoid main(){\nvec2 pos = aPosition.xy;\npos = clamp(pos,aClip.xy,aClip.zw);\npos = pos * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,aPosition.z,1);\nvColor = aColor;\nvUV =aUV;\n}';
 });
-define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wglShaderLib", "rui/RUIFontTexture", "rui/RUIColor"], function (require, exports, RUIDrawCall_2, wglShaderLib_1, RUIFontTexture_2, RUIColor_2) {
+define("rui/RUIDrawCallBuffer", ["require", "exports", "gl/wglShaderLib", "rui/RUIFontTexture", "rui/RUIColor", "rui/RUICmdList"], function (require, exports, wglShaderLib_1, RUIFontTexture_2, RUIColor_2, RUICmdList_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var COLOR_ERROR = [1, 0, 1, 1];
@@ -1818,7 +2049,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                 var text_clip = this.m_aryBufferTextClip.resetPos();
                 var rectCount = 0;
                 var textCount = 0;
-                var maxClip = drawcall.canvas.canvasRect;
+                var maxClip = [0, 0, 2000, 1000];
                 maxClip[2] = maxClip[0] + maxClip[2];
                 maxClip[3] = maxClip[1] + maxClip[3];
                 for (var i = 0, cmdlen = drawlist.length; i < cmdlen; i++) {
@@ -1826,8 +2057,9 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                     var rect = cmd.Rect;
                     var color = cmd.Color;
                     var d = 1.0 - cmd.Index * 1.0 / drawDepthMax;
+                    var clip = cmd.clip == null ? maxClip : cmd.clip;
                     switch (cmd.type) {
-                        case RUIDrawCall_2.DrawCmdType.rect:
+                        case RUICmdList_1.RUIDrawCmdType.rect:
                             {
                                 if (color == null)
                                     color = COLOR_ERROR;
@@ -1840,14 +2072,14 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                                 var w = rect[2];
                                 var h = rect[3];
                                 rect_vert.push([x, y, d, x + w, y, d, x + w, y + h, d, x, y + h, d]);
-                                rect_clip.push(maxClip);
-                                rect_clip.push(maxClip);
-                                rect_clip.push(maxClip);
-                                rect_clip.push(maxClip);
+                                rect_clip.push(clip);
+                                rect_clip.push(clip);
+                                rect_clip.push(clip);
+                                rect_clip.push(clip);
                                 rectCount++;
                             }
                             break;
-                        case RUIDrawCall_2.DrawCmdType.line:
+                        case RUICmdList_1.RUIDrawCmdType.line:
                             {
                                 if (color == null)
                                     color = RUIColor_2.RUIColor.Grey;
@@ -1865,20 +2097,20 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                                 dx = dx / len_1;
                                 dy = dy / len_1;
                                 rect_vert.push([x1 + dx, y1 + dy, d, x2 + dx, y2 + dy, d, x2 - dx, y2 - dy, d, x1 - dx, y1 - dy, d]);
-                                rect_clip.push(maxClip);
-                                rect_clip.push(maxClip);
-                                rect_clip.push(maxClip);
-                                rect_clip.push(maxClip);
+                                rect_clip.push(clip);
+                                rect_clip.push(clip);
+                                rect_clip.push(clip);
+                                rect_clip.push(clip);
                                 rectCount++;
                             }
                             break;
-                        case RUIDrawCall_2.DrawCmdType.border:
+                        case RUICmdList_1.RUIDrawCmdType.border:
                             {
                                 if (color == null)
                                     color = COLOR_ERROR;
                                 for (var n = 0; n < 16; n++) {
                                     rect_color.push(color);
-                                    rect_clip.push(maxClip);
+                                    rect_clip.push(clip);
                                 }
                                 var x1 = rect[0];
                                 var y1 = rect[1];
@@ -1891,7 +2123,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                                 rectCount += 4;
                             }
                             break;
-                        case RUIDrawCall_2.DrawCmdType.text:
+                        case RUICmdList_1.RUIDrawCmdType.text:
                             {
                                 var content = cmd.Text;
                                 if (content == null || content === '')
@@ -1900,7 +2132,7 @@ define("rui/RUIDrawCallBuffer", ["require", "exports", "rui/RUIDrawCall", "gl/wg
                                 var y = rect[1];
                                 var w = rect[2];
                                 var h = rect[3];
-                                var clip = cmd.Rect;
+                                clip = cmd.Rect;
                                 clip[2] += clip[0];
                                 clip[3] += clip[1];
                                 var contentW = fonttex.MeasureTextWith(content);
@@ -1963,7 +2195,6 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUIRenderer = /** @class */ (function () {
         function RUIRenderer(uicanvas) {
-            var _this = this;
             this.m_drawcallBuffer = null;
             this.m_indicesBuffer = null;
             this.m_projectParam = [0, 0, 0, 0];
@@ -1971,9 +2202,6 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             this.m_isResized = false;
             this.m_uicanvas = uicanvas;
             this.glctx = wglut_1.GLContext.createFromCanvas(uicanvas.canvas);
-            window.addEventListener('resize', function () {
-                _this.resizeCanvas(window.innerWidth, window.innerHeight);
-            });
             if (!this.glctx) {
                 return;
             }
@@ -1987,7 +2215,7 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
         RUIRenderer.prototype.resizeCanvas = function (w, h) {
             this.gl.canvas.width = w;
             this.gl.canvas.height = h;
-            this.m_uicanvas.setSize(w, h);
+            //this.m_uicanvas.setSize(w,h);
             this.m_projectParam = [2.0 / w, 2.0 / h, 0, 0];
             this.gl.viewport(0, 0, w, h);
             this.m_isResized = true;
@@ -2019,16 +2247,16 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             var clearColor = RUIStyle_8.RUIStyle.Default.background0;
             gl.clearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
         };
-        RUIRenderer.prototype.Draw = function (drawcall) {
-            if (drawcall == null)
+        RUIRenderer.prototype.DrawCmdList = function (cmdlist) {
+            if (cmdlist == null)
                 return;
             if (this.m_drawcallBuffer == null) {
-                this.m_drawcallBuffer = new RUIDrawCallBuffer_1.RUIDrawCallBuffer(this.glctx, drawcall);
+                this.m_drawcallBuffer = new RUIDrawCallBuffer_1.RUIDrawCallBuffer(this.glctx, cmdlist);
             }
             var fonttex = RUIFontTexture_3.RUIFontTexture.ASIICTexture;
-            if (drawcall.isDirty || fonttex.isDirty) {
+            if (cmdlist.isDirty || fonttex.isDirty) {
                 this.m_drawcallBuffer.SyncBuffer(this.gl);
-                drawcall.isDirty = false;
+                cmdlist.isDirty = false;
                 fonttex.isDirty = false;
             }
             //do draw
@@ -2064,34 +2292,156 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
                 }
             }
         };
+        RUIRenderer.prototype.Draw = function (drawcall) {
+            // if(drawcall == null) return;
+            // if(this.m_drawcallBuffer == null){
+            //     this.m_drawcallBuffer = new RUIDrawCallBuffer(this.glctx,drawcall);
+            // }
+            // let fonttex = RUIFontTexture.ASIICTexture;
+            // if(drawcall.isDirty ||fonttex.isDirty){
+            //     this.m_drawcallBuffer.SyncBuffer(this.gl);
+            //     drawcall.isDirty = false;
+            //     fonttex.isDirty= false;
+            // }
+            // //do draw
+            // let drawbuffer:RUIDrawCallBuffer = this.m_drawcallBuffer;
+            // if(!drawbuffer.isDirty) return;
+            // drawbuffer.isDirty = false;
+            // let gl = this.gl;
+            // gl.clear(gl.COLOR_BUFFER_BIT);
+            // //draw drawcall buffer
+            // let drawRectCount = drawbuffer.drawCountRect;
+            // if(drawRectCount>0){
+            //     let programRect : GLProgram |any = drawbuffer.programRect;
+            //     gl.useProgram(programRect.Program);
+            //     gl.uniform4fv(programRect.uProj,this.m_projectParam);
+            //     gl.bindVertexArray(this.m_drawcallBuffer.vaoRect);
+            //     gl.drawElements(gl.TRIANGLES,drawRectCount*6,gl.UNSIGNED_SHORT,0);
+            // }
+            // let drawTextCount = drawbuffer.drawCountText;
+            // if(drawTextCount > 0){
+            //     if(fonttex.isTextureValid){
+            //         let programText: GLProgram|any = drawbuffer.programText;
+            //         gl.useProgram(programText.Program);
+            //         gl.uniform4fv(programText.uProj,this.m_projectParam);
+            //         gl.activeTexture(gl.TEXTURE0);
+            //         gl.bindTexture(gl.TEXTURE_2D,fonttex.m_glTexture);
+            //         gl.uniform1i(programText.uSampler,0);
+            //         gl.bindVertexArray(drawbuffer.vaoText);
+            //         gl.drawElements(gl.TRIANGLES,drawTextCount *6, gl.UNSIGNED_SHORT,0)
+            //     }
+            //     else{
+            //         drawbuffer.isDirty = true;
+            //     }
+            // }
+        };
         return RUIRenderer;
     }());
     exports.RUIRenderer = RUIRenderer;
 });
-define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "rui/DebugUI", "rui/RUIInput", "rui/RUIQTree", "rui/RUICursor", "rui/RUIRenderer"], function (require, exports, RUIDrawCall_3, DebugUI_1, RUIInput_2, RUIQTree_1, RUICursor_3, RUIRenderer_1) {
+define("rui/EventSystem", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var REvent = /** @class */ (function () {
+        function REvent(object) {
+            this.isUsed = false;
+            this.m_isPrevented = false;
+            this.object = object;
+        }
+        REvent.prototype.prevent = function () {
+            this.m_isPrevented = true;
+        };
+        REvent.prototype.Use = function () {
+            this.isUsed = true;
+        };
+        return REvent;
+    }());
+    exports.REvent = REvent;
+    var REventEmitter = /** @class */ (function () {
+        function REventEmitter() {
+            this.m_listener = [];
+        }
+        REventEmitter.prototype.on = function (listener) {
+            var l = this.m_listener;
+            var index = l.indexOf(listener);
+            if (index >= 0)
+                return;
+            l.push(listener);
+        };
+        REventEmitter.prototype.removeListener = function (listener) {
+            var l = this.m_listener;
+            var index = l.indexOf(listener);
+            if (index >= 0) {
+                l.splice(index, 1);
+            }
+        };
+        REventEmitter.prototype.removeAllListener = function () {
+            this.m_listener = [];
+        };
+        REventEmitter.prototype.emit = function (e) {
+            var l = this.m_listener;
+            var lc = l.length;
+            for (var i = 0; i < lc; i++) {
+                var li = l[i];
+                li(e);
+                if (e['_isPrevented'])
+                    return;
+            }
+        };
+        REventEmitter.prototype.emitRaw = function (e) {
+            this.emit(new REvent(e));
+        };
+        return REventEmitter;
+    }());
+    exports.REventEmitter = REventEmitter;
+    var RUIObjEvent = /** @class */ (function (_super) {
+        __extends(RUIObjEvent, _super);
+        function RUIObjEvent() {
+            var _this = _super.call(this, null) || this;
+            _this.object = _this;
+            return _this;
+        }
+        return RUIObjEvent;
+    }(REvent));
+    exports.RUIObjEvent = RUIObjEvent;
+    var RUIResizeEvent = /** @class */ (function (_super) {
+        __extends(RUIResizeEvent, _super);
+        function RUIResizeEvent(w, h) {
+            var _this = _super.call(this, null) || this;
+            _this.object = _this;
+            _this.width = w;
+            _this.height = h;
+            return _this;
+        }
+        return RUIResizeEvent;
+    }(REvent));
+    exports.RUIResizeEvent = RUIResizeEvent;
+});
+define("rui/RUICanvas", ["require", "exports", "rui/RUIInput", "rui/RUICursor", "rui/RUIRenderer", "rui/EventSystem"], function (require, exports, RUIInput_2, RUICursor_3, RUIRenderer_1, EventSystem_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUICanvas = /** @class */ (function () {
-        function RUICanvas(canvas, UIClass) {
-            this.m_valid = false;
-            this.m_activeUI = null;
+        function RUICanvas(canvas) {
             this.m_isResized = false;
+            this.EventOnResize = new EventSystem_1.REventEmitter();
             this.m_canvas = canvas;
             this.m_renderer = new RUIRenderer_1.RUIRenderer(this);
-            this.m_drawcall = new RUIDrawCall_3.RUIDrawCall();
-            this.m_drawcall.canvas = this;
-            this.m_rootUI = new DebugUI_1.DebugUI();
-            this.m_rootUI._canvas = this;
-            this.m_qtree = new RUIQTree_1.RUIQTree(this);
             this.m_input = new RUIInput_2.RUIInput(this);
             this.m_cursor = new RUICursor_3.RUICursor(this);
-            //disable context menu
-            this.m_canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); return false; });
-            if (this.m_renderer.isValid) {
-                this.m_valid = true;
-            }
-            this.OnBuild();
+            this.registerEvent();
         }
+        RUICanvas.prototype.registerEvent = function () {
+            //disable context menu
+            var ruicanvas = this;
+            this.m_canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); return false; });
+            window.addEventListener('resize', function () {
+                ruicanvas.onResizeCanvas(window.innerWidth, window.innerHeight);
+            });
+        };
+        RUICanvas.prototype.onResizeCanvas = function (width, height) {
+            this.m_renderer.resizeCanvas(width, height);
+            this.EventOnResize.emit(new EventSystem_1.RUIResizeEvent(width, height));
+        };
         Object.defineProperty(RUICanvas.prototype, "canvas", {
             get: function () {
                 return this.m_canvas;
@@ -2099,16 +2449,9 @@ define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "rui/DebugUI",
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(RUICanvas.prototype, "rootui", {
+        Object.defineProperty(RUICanvas.prototype, "renderer", {
             get: function () {
-                return this.m_rootUI;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(RUICanvas.prototype, "qtree", {
-            get: function () {
-                return this.m_qtree;
+                return this.m_renderer;
             },
             enumerable: true,
             configurable: true
@@ -2127,13 +2470,6 @@ define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "rui/DebugUI",
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(RUICanvas.prototype, "activeUI", {
-            get: function () {
-                return this.m_activeUI;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(RUICanvas.prototype, "canvasRect", {
             get: function () {
                 return [0, 0, this.m_width, this.m_height];
@@ -2141,59 +2477,692 @@ define("rui/RUICanvas", ["require", "exports", "rui/RUIDrawCall", "rui/DebugUI",
             enumerable: true,
             configurable: true
         });
-        RUICanvas.prototype.setSize = function (w, h) {
-            if (this.m_width != w || this.m_height != h) {
-                this.m_width = w;
-                this.m_height = h;
-                this.m_isResized = true;
-                if (this.m_rootUI != null)
-                    this.m_rootUI.isDirty = true;
-            }
-        };
-        RUICanvas.prototype.setActiveInputUI = function (ui) {
-            this.m_activeUI = ui;
-        };
-        RUICanvas.prototype.setInActiveInputUI = function (ui) {
-            if (this.m_activeUI == ui) {
-                this.m_activeUI = null;
-            }
-        };
-        RUICanvas.prototype.setActiveUI = function (ui) {
-            this.m_input.setActiveUI(ui);
-        };
-        RUICanvas.prototype.OnBuild = function () {
-            this.m_rootUI._dispatchOnBuild();
-            this.m_drawcall.Rebuild(this.m_rootUI);
-            console.log(this.m_rootUI);
-        };
-        RUICanvas.prototype.OnFrame = function (ts) {
-            var rootUI = this.m_rootUI;
-            var renderer = this.m_renderer;
-            if (rootUI.isDirty) {
-                var startTime = Date.now();
-                this.m_drawcall.Rebuild(rootUI, this.m_isResized);
-                //console.log('rebuildui: '+(Date.now() -startTime) +'ms');
-                this.m_isResized = false;
-            }
-            this.OnRender();
-        };
-        RUICanvas.prototype.OnRender = function () {
-            var render = this.m_renderer;
-            if (render)
-                render.Draw(this.m_drawcall);
-        };
         return RUICanvas;
     }());
     exports.RUICanvas = RUICanvas;
 });
-define("rui", ["require", "exports", "rui/RUICanvas"], function (require, exports, RUICanvas_1) {
+define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUIStyle"], function (require, exports, RUIObject_2, RUIStyle_9) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUIContainerUpdateMode;
+    (function (RUIContainerUpdateMode) {
+        RUIContainerUpdateMode[RUIContainerUpdateMode["None"] = 0] = "None";
+        RUIContainerUpdateMode[RUIContainerUpdateMode["LayoutUpdate"] = 1] = "LayoutUpdate";
+        RUIContainerUpdateMode[RUIContainerUpdateMode["LayoutFull"] = 2] = "LayoutFull";
+    })(RUIContainerUpdateMode = exports.RUIContainerUpdateMode || (exports.RUIContainerUpdateMode = {}));
+    var RUIContainer = /** @class */ (function (_super) {
+        __extends(RUIContainer, _super);
+        function RUIContainer() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.boxClip = true;
+            _this.boxOverflow = RUIObject_2.RUIOverflow.Clip;
+            _this.boxOrientation = RUIObject_2.RUIOrientation.Vertical;
+            _this.children = [];
+            return _this;
+        }
+        RUIContainer.prototype.addChild = function (ui) {
+            if (ui == null)
+                return;
+            var c = this.children;
+            if (c.indexOf(ui) >= 0)
+                return;
+            ui.parent = this;
+            ui._root = this._root;
+            c.push(ui);
+            ui.setDirty();
+        };
+        RUIContainer.prototype.removeChild = function (ui) {
+            if (ui == null)
+                return;
+            var c = this.children;
+            var index = c.indexOf(ui);
+            if (index < 0)
+                return;
+            this.children = c.splice(index, 1);
+            this.isdirty = true;
+            ui.parent = null;
+            ui._root = null;
+        };
+        RUIContainer.prototype.containerUpdateCheck = function () {
+            if (!this.isdirty) {
+                var children = this.children;
+                var cisdirty = false;
+                var cisresize = false;
+                for (var i = 0, clen = children.length; i < clen; i++) {
+                    var c = children[i];
+                    if (c.isdirty) {
+                        cisdirty = true;
+                    }
+                    if (c._resized) {
+                        cisresize = true;
+                    }
+                }
+                if (!cisdirty && !cisresize) {
+                    return RUIContainerUpdateMode.None;
+                }
+                if (!cisresize && cisdirty && !this._resized) {
+                    return RUIContainerUpdateMode.LayoutUpdate;
+                }
+            }
+            return RUIContainerUpdateMode.LayoutFull;
+        };
+        RUIContainer.prototype.onLayout = function () {
+            var isVertical = this.boxOrientation == RUIObject_2.RUIOrientation.Vertical;
+            var children = this.children;
+            //check for dirty
+            var updateMode = this.containerUpdateCheck();
+            if (updateMode == RUIContainerUpdateMode.None)
+                return;
+            if (updateMode == RUIContainerUpdateMode.LayoutUpdate) {
+                for (var i = 0, clen = children.length; i < clen; i++) {
+                    children[i].onLayout();
+                }
+                return;
+            }
+            var offset = 0;
+            var maxsize = 0;
+            var offsetside = 0;
+            //padding
+            var padding = this.padding;
+            offset += padding[isVertical ? RUIObject_2.RUIConst.TOP : RUIObject_2.RUIConst.LEFT];
+            offsetside = padding[isVertical ? RUIObject_2.RUIConst.LEFT : RUIObject_2.RUIConst.TOP];
+            //margin
+            var marginLast = 0;
+            var relativeChildren = [];
+            if (children.length != 0) {
+                for (var i = 0, len = children.length; i < len; i++) {
+                    var c = children[i];
+                    if (!c.isOnFlow) {
+                        relativeChildren.push(c);
+                        continue;
+                    }
+                    c.onLayout();
+                    var cw = c._calwidth;
+                    var ch = c._calheight;
+                    if (cw == null)
+                        throw new Error("children width is null");
+                    if (ch == null)
+                        throw new Error("children height is null");
+                    var cmargin = c.margin;
+                    if (isVertical) {
+                        marginLast = Math.max(marginLast, cmargin[RUIObject_2.RUIConst.TOP]);
+                        c._caloffsety = offset + marginLast;
+                        c._caloffsetx = offsetside + cmargin[RUIObject_2.RUIConst.LEFT];
+                        offset += ch + marginLast;
+                        marginLast = cmargin[RUIObject_2.RUIConst.BOTTOM];
+                        maxsize = Math.max(maxsize, cw + cmargin[RUIObject_2.RUIConst.LEFT] + cmargin[RUIObject_2.RUIConst.RIGHT]);
+                    }
+                    else {
+                        marginLast = Math.max(marginLast, cmargin[RUIObject_2.RUIConst.LEFT]);
+                        c._caloffsetx = offset + marginLast;
+                        c._caloffsety = offsetside + cmargin[RUIObject_2.RUIConst.TOP];
+                        offset += cw + marginLast;
+                        marginLast = cmargin[RUIObject_2.RUIConst.RIGHT];
+                        maxsize = Math.max(maxsize, ch + cmargin[RUIObject_2.RUIConst.TOP] + cmargin[RUIObject_2.RUIConst.BOTTOM]);
+                    }
+                    c.fillPositionOffset();
+                }
+                offset += marginLast;
+            }
+            else {
+            }
+            if (isVertical) {
+                this._calwidth = maxsize + padding[RUIObject_2.RUIConst.RIGHT] + padding[RUIObject_2.RUIConst.LEFT];
+                this._calheight = offset + padding[RUIObject_2.RUIConst.BOTTOM];
+            }
+            else {
+                this._calheight = maxsize + padding[RUIObject_2.RUIConst.BOTTOM] + padding[RUIObject_2.RUIConst.TOP];
+                this._calwidth = offset + padding[RUIObject_2.RUIConst.RIGHT];
+            }
+            if (this.width != RUIObject_2.RUIAuto)
+                this._calwidth = this.width;
+            if (this.height != RUIObject_2.RUIAuto)
+                this._calheight = this.height;
+            //process relative children
+            this.onLayoutRelativeUI(relativeChildren);
+            this.isdirty = false;
+        };
+        RUIContainer.prototype.onLayoutRelativeUI = function (ui) {
+            if (ui.length == 0)
+                return;
+            var pWdith = this._calwidth;
+            var pHeight = this._calheight;
+            var root = this._root.root;
+            var rWidth = root._calwidth;
+            var rHeight = root._calheight;
+            for (var i = 0, clen = ui.length; i < clen; i++) {
+                var c = ui[i];
+                var isrelative = c.position == RUIObject_2.RUIPosition.Relative;
+                var cpw = isrelative ? pWdith : rWidth;
+                var cph = isrelative ? pHeight : rHeight;
+                var cleft = c.left;
+                var cright = c.right;
+                var ctop = c.top;
+                var cbottom = c.bottom;
+                var cwidth = c.width;
+                var cheight = c.height;
+                var constraintHori = cleft != RUIObject_2.RUIAuto && c.right != RUIObject_2.RUIAuto;
+                var constraintVert = ctop != RUIObject_2.RUIAuto && c.bottom != RUIObject_2.RUIAuto;
+                if (constraintHori) {
+                    c._caloffsetx = cleft;
+                    c._calwidth = cpw - cleft - cright;
+                }
+                else {
+                    if (cwidth != RUIObject_2.RUIAuto) {
+                        c._calwidth = cwidth;
+                        if (cleft != RUIObject_2.RUIAuto) {
+                            c._caloffsetx = cleft;
+                        }
+                        else if (cright != RUIObject_2.RUIAuto) {
+                            c._caloffsetx = cpw - cright - cwidth;
+                        }
+                        else {
+                            c._caloffsetx = RUIObject_2.ROUND((cpw - c._calwidth) / 2);
+                        }
+                    }
+                    else {
+                        throw new Error("relative ui have invalid horizontal constraint.");
+                    }
+                }
+                if (constraintVert) {
+                    c._caloffsety = ctop;
+                    c._calheight = cph - ctop - cbottom;
+                }
+                else {
+                    if (c.height != RUIObject_2.RUIAuto) {
+                        c._calheight = cheight;
+                        if (ctop != RUIObject_2.RUIAuto) {
+                            c._caloffsety = ctop;
+                        }
+                        else if (cbottom != RUIObject_2.RUIAuto) {
+                            c._caloffsety = cph - cbottom - cheight;
+                        }
+                        else {
+                            c._caloffsety = RUIObject_2.ROUND((cph - c._calheight) / 2);
+                        }
+                    }
+                    else {
+                        throw new Error("relative ui have invalid vertical constraint.");
+                    }
+                }
+            }
+        };
+        RUIContainer.prototype.onDraw = function (cmd) {
+            this.onDrawPre(cmd);
+            var children = this.children;
+            for (var i = 0, clen = children.length; i < clen; i++) {
+                var c = children[i];
+                c.onDraw(cmd);
+            }
+            this.onDrawPost(cmd);
+        };
+        RUIContainer.prototype.onDrawPre = function (cmd) {
+            var rect = [this._calx, this._caly, this._calwidth, this._calheight];
+            this._rect = rect;
+            cmd.DrawBorder(rect, RUIStyle_9.RUIStyle.Default.primary);
+            if (this.boxClip)
+                cmd.PushClipRect(this.RectMinusePadding(rect, this.padding));
+        };
+        RUIContainer.prototype.onDrawPost = function (cmd) {
+            if (this.boxClip)
+                cmd.PopClipRect();
+        };
+        RUIContainer.prototype.RectMinusePadding = function (recta, offset) {
+            var pleft = offset[3];
+            var ptop = offset[0];
+            return [
+                recta[0] + pleft,
+                recta[1] + ptop,
+                recta[2] - offset[2] - pleft,
+                recta[3] - offset[3] - ptop
+            ];
+        };
+        return RUIContainer;
+    }(RUIObject_2.RUIObject));
+    exports.RUIContainer = RUIContainer;
+});
+define("rui/RUIFlexContainer", ["require", "exports", "rui/RUIObject", "rui/RUIContainer"], function (require, exports, RUIObject_3, RUIContainer_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUIFlexContainer = /** @class */ (function (_super) {
+        __extends(RUIFlexContainer, _super);
+        function RUIFlexContainer() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        RUIFlexContainer.prototype.onLayout = function () {
+            var isVertical = this.boxOrientation == RUIObject_3.RUIOrientation.Vertical;
+            var children = this.children;
+            var clen = children.length;
+            //check for dirty
+            var updateMode = this.containerUpdateCheck();
+            if (updateMode == RUIContainer_1.RUIContainerUpdateMode.None)
+                return;
+            if (updateMode == RUIContainer_1.RUIContainerUpdateMode.LayoutUpdate) {
+                for (var i = 0; i < clen; i++) {
+                    children[i].onLayout();
+                }
+                return;
+            }
+            this.fillSize();
+            if (null == (isVertical ? this._calheight : this._calwidth))
+                throw new Error();
+            if (clen != 0) {
+                //accumulate flex
+                var flexaccu = 0;
+                var fixedaccu = 0;
+                var contentTotal = 0;
+                var contentSide = 0;
+                var contentwidth = contentTotal = this._calwidth - this.padding[RUIObject_3.RUIConst.LEFT] - this.padding[RUIObject_3.RUIConst.RIGHT];
+                var contentheight = this._calheight - this.padding[RUIObject_3.RUIConst.TOP] - this.padding[RUIObject_3.RUIConst.BOTTOM];
+                var sideIsAuto = false;
+                if (isVertical) {
+                    contentTotal = contentheight;
+                    contentSide = contentwidth;
+                    sideIsAuto = this._calwidth == null;
+                }
+                else {
+                    contentTotal = contentwidth;
+                    contentSide = contentheight;
+                    sideIsAuto = this._calheight == null;
+                }
+                var childMaxSide = RUIObject_3.RUIAuto;
+                var marginAry = [];
+                var marginValue = 0;
+                var marginPos = isVertical ? RUIObject_3.RUIConst.TOP : RUIObject_3.RUIConst.LEFT;
+                var marginPosSide = isVertical ? RUIObject_3.RUIConst.BOTTOM : RUIObject_3.RUIConst.RIGHT;
+                var marginTotal = 0;
+                var relativeChildren = [];
+                for (var i = 0; i < clen; i++) {
+                    var c = children[i];
+                    if (!c.isOnFlow) {
+                        relativeChildren.push(c);
+                        continue;
+                    }
+                    if (c.flex == null) {
+                        var cfixed = isVertical ? c.height : c.width;
+                        if (cfixed == RUIObject_3.RUIAuto) {
+                            throw new Error("flex object must have fixed size");
+                        }
+                        else {
+                            fixedaccu += cfixed;
+                        }
+                    }
+                    else {
+                        flexaccu += c.flex;
+                    }
+                    var cmargin = c.margin;
+                    var cmarginValue = cmargin[marginPos];
+                    marginValue = Math.max(marginValue, cmarginValue);
+                    marginAry.push(marginValue);
+                    marginTotal += marginValue;
+                    marginValue = cmargin[marginPosSide];
+                    var cmaxside = 0;
+                    if (isVertical) {
+                        cmaxside = c.width + cmargin[RUIObject_3.RUIConst.LEFT] + cmargin[RUIObject_3.RUIConst.RIGHT];
+                    }
+                    else {
+                        cmaxside = c.height + cmargin[RUIObject_3.RUIConst.TOP] + cmargin[RUIObject_3.RUIConst.BOTTOM];
+                    }
+                    childMaxSide = Math.max(childMaxSide, cmaxside);
+                }
+                marginAry.push(marginValue);
+                marginTotal += marginValue;
+                var sizePerFlex = (contentTotal - fixedaccu - marginTotal) / flexaccu;
+                var offset = this.padding[isVertical ? RUIObject_3.RUIConst.TOP : RUIObject_3.RUIConst.LEFT];
+                var offsetside = this.padding[isVertical ? RUIObject_3.RUIConst.LEFT : RUIObject_3.RUIConst.TOP];
+                if (childMaxSide != RUIObject_3.RUIAuto && sideIsAuto) {
+                    contentSide = childMaxSide;
+                    if (isVertical) {
+                        this._calwidth = childMaxSide + this.padding[RUIObject_3.RUIConst.LEFT] + this.padding[RUIObject_3.RUIConst.RIGHT];
+                    }
+                    else {
+                        this._calheight = childMaxSide + this.padding[RUIObject_3.RUIConst.TOP] + this.padding[RUIObject_3.RUIConst.BOTTOM];
+                    }
+                }
+                for (var i = 0; i < clen; i++) {
+                    var c = children[i];
+                    if (!c.isOnFlow)
+                        continue;
+                    var flowsize = c.flex == null ? (isVertical ? c.height : c.width) : RUIObject_3.ROUND(c.flex * sizePerFlex);
+                    if (isVertical) {
+                        c._flexheight = flowsize;
+                        c._flexwidth = (c.width == RUIObject_3.RUIAuto) ? contentSide : c.width;
+                    }
+                    else {
+                        c._flexheight = (c.height == RUIObject_3.RUIAuto) ? contentSide : c.height;
+                        c._flexwidth = flowsize;
+                    }
+                    c.onLayout();
+                    offset += marginAry[i];
+                    if (isVertical) {
+                        c._caloffsety = offset;
+                        c._caloffsetx = offsetside + c.margin[RUIObject_3.RUIConst.LEFT];
+                        offset += c._calheight;
+                    }
+                    else {
+                        c._caloffsety = offsetside + c.margin[RUIObject_3.RUIConst.TOP];
+                        c._caloffsetx = offset;
+                        offset += c._calwidth;
+                    }
+                    //offset
+                    c.fillPositionOffset();
+                }
+                this.onLayoutRelativeUI(relativeChildren);
+            }
+            this.isdirty = false;
+        };
+        return RUIFlexContainer;
+    }(RUIContainer_1.RUIContainer));
+    exports.RUIFlexContainer = RUIFlexContainer;
+});
+define("rui/RUILayouter", ["require", "exports", "rui/RUIContainer", "rui/RUIObject"], function (require, exports, RUIContainer_2, RUIObject_4) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUILayouter = /** @class */ (function () {
+        function RUILayouter() {
+        }
+        RUILayouter.prototype.build = function (uiroot) {
+            var isdirty = uiroot.isdirty;
+            if (!isdirty)
+                return;
+            //Layout
+            var ui = uiroot.root;
+            ui.onLayout();
+            uiroot.isdirty = false;
+            ui._calx = 0;
+            ui._caly = 0;
+            //Calculate All offset
+            if (ui instanceof RUIContainer_2.RUIContainer) {
+                this.calculateOffset(ui);
+            }
+            console.log(ui);
+        };
+        RUILayouter.prototype.calculateOffset = function (cui) {
+            var children = cui.children;
+            var clen = children.length;
+            var isVertical = cui.boxOrientation == RUIObject_4.RUIOrientation.Vertical;
+            if (clen > 0) {
+                var offx = cui._calx;
+                var offy = cui._caly;
+                for (var i = 0; i < clen; i++) {
+                    var c = children[i];
+                    c._calx = offx + c._caloffsetx;
+                    c._caly = offy + c._caloffsety;
+                    if (c instanceof RUIContainer_2.RUIContainer) {
+                        this.calculateOffset(c);
+                    }
+                }
+            }
+        };
+        return RUILayouter;
+    }());
+    exports.RUILayouter = RUILayouter;
+});
+define("rui/RUIRectangle", ["require", "exports", "rui/RUIObject", "rui/UIUtil"], function (require, exports, RUIObject_5, UIUtil_4) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUIRectangle = /** @class */ (function (_super) {
+        __extends(RUIRectangle, _super);
+        function RUIRectangle() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.m_debugColor = UIUtil_4.UIUtil.RandomColor();
+            return _this;
+        }
+        RUIRectangle.prototype.onLayout = function () {
+            this.m_debugColor = UIUtil_4.UIUtil.RandomColor();
+            _super.prototype.onLayout.call(this);
+        };
+        RUIRectangle.prototype.onDraw = function (cmd) {
+            var noclip = !this.isClip;
+            if (noclip)
+                cmd.PushClipRect();
+            var rect = [this._calx, this._caly, this._calwidth, this._calheight];
+            cmd.DrawRectWithColor(rect, this.m_debugColor);
+            if (noclip)
+                cmd.PopClipRect();
+        };
+        return RUIRectangle;
+    }(RUIObject_5.RUIObject));
+    exports.RUIRectangle = RUIRectangle;
+});
+define("rui/RUITest", ["require", "exports", "rui/RUICanvas", "rui/RUICmdList", "rui/RUIFlexContainer", "rui/RUIRoot", "rui/RUIObject", "rui/RUIContainer", "rui/RUILayouter", "rui/RUIRectangle"], function (require, exports, RUICanvas_1, RUICmdList_2, RUIFlexContainer_1, RUIRoot_1, RUIObject_6, RUIContainer_3, RUILayouter_1, RUIRectangle_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUITest = /** @class */ (function () {
+        function RUITest(canvas) {
+            this.m_ruicanvas = new RUICanvas_1.RUICanvas(canvas);
+            this.buildUI();
+        }
+        RUITest.prototype.buildUI = function () {
+            this.m_ruicmdlist = new RUICmdList_2.RUICmdList();
+            this.m_ruilayouter = new RUILayouter_1.RUILayouter();
+            var ui = new RUIContainer_3.RUIContainer();
+            ui.padding = [5, 5, 5, 5];
+            var root = new RUIRoot_1.RUIRoot(ui);
+            root.root = ui;
+            this.m_ruicanvas.EventOnResize.on(function (e) {
+                root.resizeRoot(e.object.width, e.object.height);
+            });
+            {
+                var rect1 = new RUIRectangle_1.RUIRectangle();
+                rect1.width = 100;
+                rect1.height = 100;
+                ui.addChild(rect1);
+                var container1 = new RUIContainer_3.RUIContainer();
+                container1.boxOrientation = RUIObject_6.RUIOrientation.Horizontal;
+                //container1.padding = [10,10,10,5];
+                container1.margin = [10, 0, 5, 0];
+                container1.width = 150;
+                ui.addChild(container1);
+                {
+                    var rectc1 = new RUIRectangle_1.RUIRectangle();
+                    rectc1.width = 70;
+                    rectc1.height = 30;
+                    rectc1.margin[3] = 20;
+                    rectc1.margin[1] = 20;
+                    container1.addChild(rectc1);
+                    var rectc2 = new RUIRectangle_1.RUIRectangle();
+                    rectc2.width = 130;
+                    rectc2.height = 50;
+                    rectc2.position = RUIObject_6.RUIPosition.Offset;
+                    rectc2.left = 20;
+                    rectc2.top = -20;
+                    rectc2.margin[3] = 25;
+                    rectc2.isClip = false;
+                    container1.addChild(rectc2);
+                }
+                {
+                    var container2 = new RUIFlexContainer_1.RUIFlexContainer();
+                    container2.width = 200;
+                    container2.padding = [5, 5, 5, 5];
+                    container2.height = 100;
+                    container2.boxOrientation = RUIObject_6.RUIOrientation.Horizontal;
+                    ui.addChild(container2);
+                    var rectfc1 = new RUIRectangle_1.RUIRectangle();
+                    rectfc1.flex = 1;
+                    rectfc1.margin = [10, 2, 5, 3];
+                    container2.addChild(rectfc1);
+                    rectfc1.height = 30;
+                    var rectfc2 = new RUIRectangle_1.RUIRectangle();
+                    rectfc2.width = 50;
+                    container2.addChild(rectfc2);
+                    rectfc2.margin[1] = 7;
+                    var rectfc3 = new RUIRectangle_1.RUIRectangle();
+                    rectfc3.height = 100;
+                    rectfc3.flex = 2;
+                    rectfc3.margin[0] = 70;
+                    rectfc3.margin[1] = 5;
+                    container2.addChild(rectfc3);
+                    {
+                        var container3 = new RUIFlexContainer_1.RUIFlexContainer();
+                        container3.boxOrientation = RUIObject_6.RUIOrientation.Vertical;
+                        container3.flex = 1;
+                        container3.position = RUIObject_6.RUIPosition.Offset;
+                        container3.left = 20;
+                        container2.addChild(container3);
+                        console.log(container3);
+                        var rfc1 = new RUIRectangle_1.RUIRectangle();
+                        rfc1.flex = 1;
+                        container3.addChild(rfc1);
+                        var rfc2 = new RUIRectangle_1.RUIRectangle();
+                        rfc2.flex = 2;
+                        container3.addChild(rfc2);
+                    }
+                    var rfcf1 = new RUIRectangle_1.RUIRectangle();
+                    rfcf1.position = RUIObject_6.RUIPosition.Relative;
+                    rfcf1.left = 20;
+                    rfcf1.right = 20;
+                    rfcf1.height = 100;
+                    rfcf1.isClip = false;
+                    container2.addChild(rfcf1);
+                }
+                var rect2 = new RUIRectangle_1.RUIRectangle();
+                rect2.width = 50;
+                rect2.height = 30;
+                ui.addChild(rect2);
+            }
+            this.m_ruiroot = root;
+        };
+        RUITest.prototype.OnFrame = function (ts) {
+            var uiroot = this.m_ruiroot;
+            if (uiroot.isdirty) {
+                this.m_ruilayouter.build(uiroot);
+                this.m_ruicmdlist.draw(uiroot);
+                console.log(this.m_ruicmdlist);
+                this.m_ruicanvas.renderer.DrawCmdList(this.m_ruicmdlist);
+            }
+        };
+        return RUITest;
+    }());
+    exports.RUITest = RUITest;
+});
+define("rui", ["require", "exports", "rui/RUICanvas", "rui/RUITest"], function (require, exports, RUICanvas_2, RUITest_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
     }
     Object.defineProperty(exports, "__esModule", { value: true });
-    __export(RUICanvas_1);
+    __export(RUICanvas_2);
+    __export(RUITest_1);
 });
+define("rui/RUIBinder", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function RUIBind(tar, property, f) {
+        if (f == null)
+            return;
+        var descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(tar), property);
+        if (descriptor != null) {
+            var getter = descriptor.get;
+            var setter = descriptor.set;
+            if (getter == null || setter == null)
+                return;
+            Object.defineProperty(tar, property, {
+                enumerable: descriptor.enumerable,
+                get: function () {
+                    return getter.call(tar);
+                },
+                set: function (newval) {
+                    setter.call(tar, newval);
+                    f(tar[property]);
+                }
+            });
+        }
+        else {
+            var value = tar[property];
+            Object.defineProperty(tar, property, {
+                enumerable: true,
+                get: function () {
+                    return value;
+                },
+                set: function (newval) {
+                    value = newval;
+                    f(value);
+                }
+            });
+        }
+    }
+    exports.RUIBind = RUIBind;
+});
+define("rui/RUIQTree", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    if (Array.prototype['includes'] == null) {
+        Array.prototype['includes'] = function (o) {
+            if (o == null)
+                return false;
+            var index = this.indexOf(o);
+            if (index < 0)
+                return false;
+            return true;
+        };
+    }
+});
+// export class RUIQTree{
+//     private m_ui :UIObject;
+//     private m_tar:RUICanvas;
+//     constructor(canvas:RUICanvas){
+//         this.m_tar = canvas;
+//         this.m_ui = canvas.rootui;
+//     }
+//     public DispatchEvtMouseEvent(e:MouseEvent,type:string): UIObject{
+//         let x = e.offsetX;
+//         let y = e.offsetY;
+//         let target = this.TraversalTree(x,y);
+//         if(target == null) return null;
+//         let re = new RUIMouseEvent(target,type,x,y);
+//         re.button = <RUIButton>e.button;
+//         target[type].call(target,re);
+//         return target;
+//     }
+//     private m_listHovered: UIObject[] = [];
+//     public DispatchEvtMouseMove(x:number,y:number){
+//         let curlist = this.TraversalNormalAll(x,y);
+//         let hovlist= this.m_listHovered;
+//         for(var i=hovlist.length-1;i>=0;i--){
+//             let c= hovlist[i];
+//             if(curlist.indexOf(c) == -1){
+//                 c.onMouseLeave(new RUIEvent(c,RUIEvent.MOUSE_LEAVE,this.m_tar));
+//                 hovlist.splice(i,1);
+//             }
+//         }
+//         for(var i=0,len = curlist.length;i<len;i++){
+//             let c = curlist[i];
+//             if(hovlist.indexOf(c)>=0) continue;
+//             c.onMouseEnter(new RUIEvent(c,RUIEvent.MOUSE_ENTER,this.m_tar));
+//             hovlist.push(c);
+//         }
+//     }
+//     public TraversalTree(x:number,y:number) : UIObject{
+//         return this.TraversalNoraml(x,y);
+//     }
+//     private TraversalNormalAll(x:number,y:number):UIObject[]{
+//         var list:UIObject[] = [];
+//         this.m_ui.execRecursive((ui)=>{
+//             if(ui.rectContains(x,y)){
+//                 list.push(ui);
+//             }
+//         })
+//         return list;
+//     }
+//     private TraversalNoraml(x:number,y:number):UIObject{
+//         var tarNode: UIObject = null;
+//         this.m_ui.execRecursive((ui)=>{
+//             if(ui.rectContains(x,y)){
+//                 if(tarNode == null){
+//                     tarNode = ui;
+//                 }
+//                 else{
+//                     if(ui._level >= tarNode._level) tarNode = ui;
+//                 }
+//             }
+//         });
+//         return tarNode;
+//     }
+//     private TraversalQuadTree(x:number,y:number):UIObject{
+//         throw new Error('not implemented.');
+//     }
+// }
 define("rui/widget/UICanvas", ["require", "exports", "rui/UIObject"], function (require, exports, UIObject_11) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });

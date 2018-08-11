@@ -1,5 +1,6 @@
 import * as opentype from 'opentype.js';
 import { GLContext } from 'wglut';
+import { RUIEventEmitter } from './RUIEvent';
 
 
 export class RUIGlyph{
@@ -34,6 +35,8 @@ export class RUIFontTexture{
 
     public m_isDirty:boolean = false;
     public fontSize:number = 16;
+
+    public static EventOnTextureLoaded: RUIEventEmitter<RUIFontTexture> = new RUIEventEmitter();
 
 
     constructor(){
@@ -145,6 +148,7 @@ export class RUIFontTexture{
         let gltex = this.createTextureImage(glctx,gl.RGBA,gl.RGBA,url,true,true,()=>{
             this.m_textureValid = true;
             this.m_isDirty = true;
+            RUIFontTexture.EventOnTextureLoaded.emitRaw(this);
         });
 
         this.m_glTexture = gltex;
