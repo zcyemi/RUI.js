@@ -9,6 +9,8 @@ import { RUITestWidget } from "./RUITestWidget";
 import { RUIButtonGroup } from "./RUIButtonGroup";
 import { RUIStyle } from "../RUIStyle";
 import { RUIRenderer } from "../RUIRenderer";
+import { RUIFlexContainer } from "../RUIFlexContainer";
+import { RUIColor } from "../RUIColor";
 
 
 export class RUIDebug extends RUIContainer {
@@ -17,8 +19,11 @@ export class RUIDebug extends RUIContainer {
         super();
         this.width = 800;
         this.padding = [10, 10, 10, 10];
+        this.boxBorder = RUIColor.Red;
+        this.boxClip = RUIContainerClipType.NoClip;
 
         this.LayoutContainer();
+        this.LayoutFlexContainer();
         this.LayoutClip();
 
         // let button = new RUIButton("button1");
@@ -127,7 +132,6 @@ export class RUIDebug extends RUIContainer {
         container.boxBorder = RUIStyle.Default.primary;
         container.padding = [3,3,3,3];
         container.margin = [0,0,10,0];
-        this.addChild(container);
 
         //vertical
         {
@@ -173,6 +177,18 @@ export class RUIDebug extends RUIContainer {
             }
             c.addChild(new RUIRectangle(70,30));
         }
+    }
+
+    private LayoutFlexContainer(){
+        var label = new RUILabel('1.1-FlexContainer');
+        this.addChild(label);
+
+        var container = new RUIFlexContainer();
+        this.addChild(container);
+        container.boxOrientation = RUIOrientation.Horizontal;
+        container.boxBorder = RUIStyle.Default.primary;
+        container.padding = [3,3,3,3];
+        container.margin = [0,0,10,0];
     }
 
     private LayoutClip() {

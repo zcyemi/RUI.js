@@ -190,14 +190,23 @@ export class RUIObject{
         if(this._flexwidth != null) this._calwidth = this._flexwidth;
         if(this._flexheight != null) this._calheight = this._flexheight;
 
+        let parent = this.parent;
+        let parentWidth = parent.width;
         if(this._calwidth == null){
             if(this.width== RUIAuto){
-                if(this.parent == null){
+                if(parent == null){
                     throw new Error();
                 }
                 else{
-                    if(this.parent.width != RUIAuto){
-                        this._calwidth = this.parent.width;
+                    if(parentWidth != RUIAuto){
+                        if(parent.padding == null){
+                            this._calwidth = parentWidth;
+                        }
+                        else{
+                            let parentPadding = parent.padding;
+                            this._calwidth = parentWidth - parentPadding[1] - parentPadding[3];
+                        }
+                        
                     }
                 }
             }
@@ -208,7 +217,7 @@ export class RUIObject{
         
         if(this._calheight == null){
             if(this.height == RUIAuto){
-                if(this.parent == null){
+                if(parent == null){
                     throw new Error();
                 }
                 else{

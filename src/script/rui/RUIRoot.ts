@@ -1,4 +1,4 @@
-import { RUIObject } from "./RUIObject";
+import { RUIObject, RUIRect } from "./RUIObject";
 import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIMouseDragEvent, RUIMouseDragStage, RUIWheelEvent } from "./EventSystem";
 import { RUIContainer } from "./RUIContainer";
 import { RUIEventType } from "./RUIInput";
@@ -19,6 +19,8 @@ export class RUIRoot {
     private m_rootSizeWidth:number;
     private m_rootSizeHeight:number;
 
+    private m_rootRect:RUIRect;
+
     public constructor(ui: RUIObject, expandSize: boolean = false) {
         if (ui.parent != null) throw new Error("root ui must have no parent.");
 
@@ -30,6 +32,10 @@ export class RUIRoot {
         else{
             ui._root = this;
         }
+    }
+
+    public get rootRect():RUIRect{
+        return this.m_rootRect;
     }
 
     public resizeRoot(width: number, height: number) {
@@ -48,6 +54,8 @@ export class RUIRoot {
 
         this.m_rootSizeWidth = width;
         this.m_rootSizeHeight = height;
+
+        this.m_rootRect = [0,0,width,height];
 
     }
 

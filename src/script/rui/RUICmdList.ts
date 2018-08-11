@@ -75,8 +75,9 @@ export class RUICmdList{
     public draw(root: RUIRoot){
 
         this.drawList = [];
-
         this.m_clipStack = [];
+        let rootrect=  root.rootRect;
+        this.m_clipRect = rootrect == null ? RUICLIP_MAX : rootrect;
         root.root.onDraw(this);
         
         this.isDirty = true;
@@ -97,7 +98,6 @@ export class RUICmdList{
     }
 
     public DrawText(text: string, clirect: number[], color?: number[]) {
-
         let clip = clirect.slice(0);
         clip = UIUtil.RectClip(clip,this.m_clipRect);
         let cmd = RUIDrawCmd.CmdText(text, clirect, color);
@@ -130,6 +130,10 @@ export class RUICmdList{
 
         if(nested == true && this.m_clipRect != null ){
             clip = UIUtil.RectClip(clip,this.m_clipRect);
+
+            if(clip == null){
+                throw new Error();
+            }
         }
         
         this.m_clipStack.push(this.m_clipRect);
