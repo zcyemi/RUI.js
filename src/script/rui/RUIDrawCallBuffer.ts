@@ -1,8 +1,8 @@
 import { GLProgram, GLContext } from "wglut";
 import { GLSL_VERT_DEF, GLSL_FRAG_COLOR, GLSL_VERT_TEXT, GLSL_FRAG_TEXT } from "../gl/wglShaderLib";
 import { RUIFontTexture } from "./RUIFontTexture";
-import { RUIColor } from "./RUIColor";
 import { RUICmdList, RUIDrawCmdType } from "./RUICmdList";
+import { RUI } from "./RUI";
 
 
 const COLOR_ERROR: number[] = [1, 0, 1, 1];
@@ -260,7 +260,7 @@ export class RUIDrawCallBuffer {
                         break;
                     case RUIDrawCmdType.line:
                         {
-                            if (color == null) color = RUIColor.Grey;
+                            if (color == null) color = RUI.GREY;
 
                             rect_color.push(color);
                             rect_color.push(color);

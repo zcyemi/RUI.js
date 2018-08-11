@@ -1,7 +1,14 @@
 import { RUIRect, RUIRectP } from "./RUIObject";
 
 
+export type RUIColor = number[];
+
 export class RUI{
+
+    public static readonly RED:RUIColor = [1,0,0,1];
+    public static readonly BLACK:RUIColor =[0,0,0,1];
+    public static readonly WHITE:RUIColor = [1,1,1,1];
+    public static readonly GREY:RUIColor = RUI.ColorUNorm(200,200,200,255);
 
     public static RectClip(content:RUIRect,clip:RUIRect) : RUIRect | null{
         let x2 = content[0]+ content[2];
@@ -42,6 +49,10 @@ export class RUI{
 
     public static Vector(v:number):number[]{
         return [v,v,v,v];
+    }
+
+    public static ColorUNorm(r:number,g:number,b:number,a:number = 255):RUIColor{
+        return [r/255.0,g/255.0,b/255.0,a/255.0];
     }
 
 }

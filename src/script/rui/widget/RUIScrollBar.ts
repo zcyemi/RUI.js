@@ -7,6 +7,7 @@ import { RUIContainer } from "../RUIContainer";
 import { RUIRectangle } from "../RUIRectangle";
 import { RUIMouseDragEvent, RUIMouseDragStage, RUIMouseEvent, REvent, REventEmitter } from "../EventSystem";
 import { RUIColor } from "../RUIColor";
+import { RUI } from "../RUI";
 
 
 
@@ -263,7 +264,7 @@ export class RUIScrollBar extends RUIContainer{
         let scrolltype = this.scrollType;
         if(scrolltype == RUIScrollType.Disabled) return;
         if(scrolltype == RUIScrollType.Always || this.m_show){
-            cmd.DrawRectWithColor(this._rect,RUIColor.Black);
+            cmd.DrawRectWithColor(this._rect,RUI.BLACK);
             //draw thumb
         }
     }

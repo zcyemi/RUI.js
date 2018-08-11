@@ -10,7 +10,6 @@ import { RUIButtonGroup } from "./RUIButtonGroup";
 import { RUIStyle } from "../RUIStyle";
 import { RUIRenderer } from "../RUIRenderer";
 import { RUIFlexContainer } from "../RUIFlexContainer";
-import { RUIColor } from "../RUIColor";
 import { UIUtil } from "../UIUtil";
 import { RUI } from "../RUI";
 
@@ -21,14 +20,15 @@ export class RUIDebug extends RUIContainer {
         super();
         this.width = 800;
         this.padding = [10, 10, 10, 10];
-        this.boxBorder = RUIColor.Red;
+        this.boxBorder = RUI.RED;
         this.boxClip = RUIContainerClipType.NoClip;
 
         this.LayoutContainer();
         this.LayoutFlexContainer();
         this.LayoutClip();
 
-        this.Buttons();
+        this.WidgetButtons();
+        this.WidgetLabel();
 
         // let button = new RUIButton("button1");
         // this.addChild(button);
@@ -456,7 +456,7 @@ export class RUIDebug extends RUIContainer {
 
     }
 
-    private Buttons(){
+    private WidgetButtons(){
         var label =new RUILabel('2.0-Buttons');
         this.addChild(label);
 
@@ -476,15 +476,14 @@ export class RUIDebug extends RUIContainer {
             c.boxBorder = RUIStyle.Default.primary;
             this.addChild(c);
             
-            let btn = new RUIButton('AQD');
-            btn._debugname = "test";
+            let btn = new RUIButton('Hello');
             btn.width = 100;
             c.addChild(btn);
-
-            console.log(">>>" +RUI.RectClip([0,0,100,100],[50,50,100,100]));
-            console.log(">>>" + RUI.RectClipP([0,0,100,100],[50,50,150,150]));
-
         }
+    }
+
+    private WidgetLabel(){
+        this.addChild(new RUILabel("2.1-Label"));
     }
 
 }
