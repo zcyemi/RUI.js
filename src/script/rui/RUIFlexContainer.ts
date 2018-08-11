@@ -54,9 +54,8 @@ export class RUIFlexContainer extends RUIContainer{
                 contentTotal = contentwidth;
                 contentSide = contentheight;
 
-                sideIsAuto = this._calheight == null;
+                sideIsAuto = this._calheight == null || this._calheight == RUIAuto;
             }
-
 
             let childMaxSide = RUIAuto;
 
@@ -106,6 +105,8 @@ export class RUIFlexContainer extends RUIContainer{
                     cmaxside = c.height + cmargin[RUIConst.TOP] + cmargin[RUIConst.BOTTOM];
                 }
                 childMaxSide = Math.max(childMaxSide,cmaxside);
+
+                
             }
 
             marginAry.push(marginValue);

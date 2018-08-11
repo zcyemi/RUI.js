@@ -141,6 +141,8 @@ export class RUIObject{
 
         this.fillSize();
 
+        if(this._calheight == RUIAuto) this._calheight = this.minheight;
+
         this._resized = false;
     }
 
@@ -221,7 +223,7 @@ export class RUIObject{
                     throw new Error();
                 }
                 else{
-                    this._calheight = this.minheight;
+                    this._calheight = RUIAuto;
                 }
             }
             else{
