@@ -112,14 +112,12 @@ export class RUICmdList{
         if(clip != null){
             let cmd = RUIDrawCmd.CmdText(text, clirect, color);
             cmd.clip =clip;
-            if(text === 'A') console.log("A>>" + this.m_clipRectP);
             this.drawList.push(cmd);
         }
         else{
-            throw new Error();
+            //skip draw
+            return;
         }
-        
-        
         //this.DrawBorder(clirect,RUIColor.Red);
     }
 

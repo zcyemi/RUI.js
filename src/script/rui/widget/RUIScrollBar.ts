@@ -5,7 +5,7 @@ import { RUICmdList } from "../RUICmdList";
 import { RUIStyle } from "../RUIStyle";
 import { RUIContainer } from "../RUIContainer";
 import { RUIRectangle } from "../RUIRectangle";
-import { RUIMouseDragEvent, RUIMouseDragStage, RUIMouseEvent } from "../RUIEvent";
+import { RUIMouseDragEvent, RUIMouseDragStage, RUIMouseEvent, RUIEventEmitter } from "../RUIEvent";
 import { RUI } from "../RUI";
 
 
@@ -62,7 +62,7 @@ class RUIScrollBarThumb extends RUIRectangle{
 
 export class RUIScrollBar extends RUIContainer{
 
-    public EventOnScroll: REventEmitter<number> = new REventEmitter();
+    public EventOnScroll: RUIEventEmitter<number> = new RUIEventEmitter();
 
 
     public scrollType: RUIScrollType;

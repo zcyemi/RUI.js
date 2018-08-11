@@ -297,6 +297,7 @@ export class RUIContainer extends RUIObject {
 
     public onDrawPre(cmd: RUICmdList) {
 
+
         let rect = this.calculateRect()
         this._rect = rect;
         if(this.boxBorder != null) cmd.DrawBorder(rect, this.boxBorder);
@@ -318,14 +319,14 @@ export class RUIContainer extends RUIObject {
 
     protected RectMinusePadding(recta: RUIRect, offset: number[]): RUIRect {
 
-        let pleft = offset[3];
-        let ptop = offset[0];
+        let pleft = Math.max(offset[3],0);
+        let ptop = Math.max(offset[0],0);
 
         return [
             recta[0] + pleft,
             recta[1] + ptop,
-            recta[2] - offset[1] - pleft,
-            recta[3] - offset[2] - ptop
+            recta[2] - Math.max(offset[1],0) - pleft,
+            recta[3] - Math.max(offset[2],0) - ptop
         ];
     }
 
