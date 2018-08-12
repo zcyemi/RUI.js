@@ -657,7 +657,8 @@ export class RUIDebug extends RUIContainer {
             let c1 = new RUIContainer();
             c1.addChild(new RUIRectangle(100,20));
             c1.addChild(new RUIRectangle(40,50));
-            c1.addChild(new RUIRectangle(500,200));
+            c1.addChild(new RUIRectangle(500,100));
+            c1.addChild(new RUIRectangle(20,200));
 
             let tabview1 =new RUITabView([
                 {label: 'Tab1',ui:new RUIRectangle(30,40)},
@@ -721,11 +722,11 @@ export class RUIDebug extends RUIContainer {
             {
                 var sv = new RUIScrollView(RUIScrollType.Always,RUIScrollType.Always);
                 sv.margin = [0,0,0,10];
-                sv.width = 200;
-                sv.height = 200;
+                sv.width = 150;
+                sv.height = 150;
                 c2.addChild(sv);
 
-                var rect1 = new RUIRectangle(250,150);
+                var rect1 = new RUIRectangle(250,50);
                 let btn = new RUIButton('Click',(b)=>{
                     if(sv.hasChild(rect1)){
                         sv.removeChild(rect1);
@@ -734,7 +735,8 @@ export class RUIDebug extends RUIContainer {
                         sv.addChild(rect1);
                     }
                 })
-                btn.width = 50;
+                btn.width = 100;
+                btn.height = 50;
 
                 sv.addChild(new RUIRectangle(50,50));
                 sv.addChild(btn);

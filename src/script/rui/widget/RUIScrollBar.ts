@@ -345,7 +345,7 @@ class RUIScrollBarThumb extends RUIRectangle{
             this.m_debugColor = RUIStyle.Default.primary;
         }
         else{
-            this.m_debugColor = RUIStyle.Default.background2;
+            this.m_debugColor = RUIStyle.Default.background3;
         }
         
     }
@@ -359,6 +359,7 @@ export class RUIScrollBar extends RUIContainer{
 
     private m_size: number;
     private m_position:number;
+    private m_show:boolean = true;
 
     private m_thumb :RUIScrollBarThumb;
 
@@ -397,18 +398,17 @@ export class RUIScrollBar extends RUIContainer{
         let v = CLAMP(val,0,1.0);
         
         if(this.m_size != v){
-            if(!this.isAlwayShow){
-                if(v == 0 || v== 1.0){
-                    this.enabled = false;
-                    this.scrollPos = 0;
-                    this.EventOnScroll.emitRaw(0);
-                }
-                else{
-                    this.enabled= true;
+            this.m_show = true;
+            if(v == 0 || v == 1.0){
+                this.scrollPos = 0;
+                this.EventOnScroll.emitRaw(0);
+
+                if(!this.isAlwayShow){
+                    this.m_show = false;
                 }
             }
             this.m_size = v;
-            this.setDirty();
+            this.setDirty(true);
         }
     }
 
@@ -466,6 +466,7 @@ export class RUIScrollBar extends RUIContainer{
     }
 
     public onMouseDown(e:RUIMouseEvent){
+        if(this.scrollSize == 0) return;
         let isvertical = this.isVertical;
         if(isvertical){
             let pos = (e.mousey - this._caly) / this._calheight;
@@ -504,7 +505,9 @@ export class RUIScrollBar extends RUIContainer{
 
     public onDrawPre(cmd:RUICmdList){
         super.onDrawPre(cmd);
-
-        cmd.DrawRectWithColor(this._rect,RUIStyle.Default.background0);
+        if(this.m_show)
+        {
+            cmd.DrawRectWithColor(this._rect,RUIStyle.Default.background0);
+        }
     }
 }
