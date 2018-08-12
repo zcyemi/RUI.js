@@ -4,6 +4,7 @@ import { RUIButtonGroup } from "./RUIButtonGroup";
 import { RUIButton } from "./RUIButton";
 import { RUIStyle } from "../RUIStyle";
 import { RUIBind } from "../RUIBinder";
+import { RUIScrollView } from "./RUIScrollView";
 
 
 export interface RUITabPage{
@@ -15,7 +16,7 @@ export class RUITabView extends RUIContainer{
 
     private m_pages : RUITabPage[];
     private m_menu :RUIButtonGroup;
-    private m_pageWrap: RUIContainer;
+    private m_pageWrap: RUIScrollView;
     private m_pageIndex?: number;
     public constructor(pages?:RUITabPage[],tabpos:number = RUIConst.TOP){
         super();
@@ -32,7 +33,8 @@ export class RUITabView extends RUIContainer{
             });
         }
 
-        let pagewrap = new RUIContainer();
+        let pagewrap = new RUIScrollView();
+        pagewrap.boxBorder= null;
         var menu:RUIButtonGroup;
         if(tabpos == RUIConst.TOP || tabpos == RUIConst.BOTTOM){
             
@@ -64,6 +66,10 @@ export class RUITabView extends RUIContainer{
 
         this.m_menu = menu;
         this.m_pageWrap = pagewrap;
+
+        //Bind
+        RUIBind(this,"_calheight",(v)=>pagewrap.height = v);
+        RUIBind(this,"_calwidth",(v)=>pagewrap.width=v - 100);
 
         this.setPageIndex(0);
 

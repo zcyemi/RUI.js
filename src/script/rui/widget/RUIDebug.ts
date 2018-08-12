@@ -657,6 +657,7 @@ export class RUIDebug extends RUIContainer {
             let c1 = new RUIContainer();
             c1.addChild(new RUIRectangle(100,20));
             c1.addChild(new RUIRectangle(40,50));
+            c1.addChild(new RUIRectangle(500,200));
 
             let tabview1 =new RUITabView([
                 {label: 'Tab1',ui:new RUIRectangle(30,40)},

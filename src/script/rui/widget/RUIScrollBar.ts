@@ -292,17 +292,23 @@ class RUIScrollBarThumb extends RUIRectangle{
     private m_scrollbar:RUIScrollBar = null;
 
     private m_dragStartOffset:number;
+
+    private m_onHover:boolean = false;
+    private m_onDrag:boolean = false;
+
     public constructor(scrollbar:RUIScrollBar){
         super();
         this.m_scrollbar = scrollbar;
         this.m_debugColor = RUIStyle.Default.background2;
     }
 
+
     public onMouseDrag(e:RUIMouseDragEvent){
 
         let isvertical = this.m_scrollbar.isVertical;
         if(e.stage == RUIMouseDragStage.Begin){
             this.m_dragStartOffset = (isvertical ? e.mousey - this.top: e.mousex - this.left);
+            this.m_onDrag = true;
         }
         else if(e.stage == RUIMouseDragStage.Update){
             let pos = (isvertical ? e.mousey : e.mousex) - this.m_dragStartOffset;
@@ -313,7 +319,35 @@ class RUIScrollBarThumb extends RUIRectangle{
             if(off == pos) return;
             pos = pos / barsize;
             bar.onThumbDrag(pos);
+            this.m_onDrag = true;
         }
+        else{
+            this.m_onDrag = false;
+        }
+        this.setDirty();
+    }
+
+    public onMouseEnter(){
+        this.m_onHover= true;
+        this.setDirty();
+    }
+
+    public onMouseLeave(){
+        this.m_onHover = false;
+        this.setDirty();
+    }
+
+    public onLayoutPost(){
+        if(this.m_onDrag){
+            this.m_debugColor = RUIStyle.Default.primary0;
+        }
+        else if(this.m_onHover){
+            this.m_debugColor = RUIStyle.Default.primary;
+        }
+        else{
+            this.m_debugColor = RUIStyle.Default.background2;
+        }
+        
     }
 }
 
@@ -471,6 +505,6 @@ export class RUIScrollBar extends RUIContainer{
     public onDrawPre(cmd:RUICmdList){
         super.onDrawPre(cmd);
 
-        cmd.DrawRectWithColor(this._rect,RUIStyle.Default.border0);
+        cmd.DrawRectWithColor(this._rect,RUIStyle.Default.background0);
     }
 }

@@ -95,7 +95,7 @@ export class RUIRenderer{
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
 
-        let clearColor = RUIStyle.Default.background0;
+        let clearColor = RUIStyle.Default.background1;
         gl.clearColor(clearColor[0],clearColor[1],clearColor[2],clearColor[3]);
     }
 
