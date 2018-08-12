@@ -1,3 +1,10 @@
+import { RUIContainer } from "../RUIContainer";
+import { RUIScrollType, RUIScrollBar } from "./RUIScrollBar";
+import { RUIOrientation, RUIPosition, RUIObject, ROUND } from "../RUIObject";
+import { RUIStyle } from "../RUIStyle";
+import { RUI } from "../RUI";
+import { RUIEvent } from "../RUIEvent";
+
 // import { RUIContainer, RUIContainerClipType } from "../RUIContainer";
 // import { RUIPosition, RUIObject, RUIOrientation, RUIAuto, CLAMP, ROUND } from "../RUIObject";
 // import { RUISlider } from "./RUISlider";
@@ -89,7 +96,7 @@
 //                 self.setContentScrollPosVal(val.object,null);
 //             })
 //         }
-        
+
 //     }
 
 //     private setContentScrollPosVal(xval?:number,yval?:number){
@@ -108,7 +115,7 @@
 //                 this.m_offsetValH = -xpx / content._calwidth;
 //                 this.m_scrollBarH.setBarPosVal(this.m_offsetValH);
 //             }
-            
+
 //         }
 //         if(y != null){
 //             let ypx = CLAMP(y,this.m_maxscrollV,0)
@@ -204,3 +211,134 @@
 //         this.m_content.removeChild(ui);
 //     }
 // }
+
+
+export class RUIScrollView extends RUIContainer {
+
+
+    private m_scrolltypeH: RUIScrollType;
+    private m_scrolltypeV: RUIScrollType;
+
+    private m_scrollbarH: RUIScrollBar;
+    private m_scrollbarV: RUIScrollBar;
+
+    private m_content: RUIContainer;
+    private m_contentValH?: number;
+    private m_contentValV?: number;
+
+
+    public constructor(scrollH: RUIScrollType = RUIScrollType.Enabled, scrollV: RUIScrollType = RUIScrollType.Enabled) {
+        super();
+
+        this.boxBorder = RUIStyle.Default.primary;
+        this.padding = RUI.Vector(1);
+
+        let content = new RUIContainer();
+        content.position = RUIPosition.Offset;
+        content.padding = RUI.Vector(3);
+        super.addChild(content);
+        this.m_content = content;
+
+
+        this.scrollVertical = scrollV;
+        this.scrollHorizontal = scrollH;
+    }
+
+    public set scrollVertical(type: RUIScrollType) {
+
+        let bar = this.m_scrollbarV;
+        if (bar == null) {
+            bar = new RUIScrollBar(RUIOrientation.Vertical, type);
+            bar.EventOnScroll.on(this.onBarScrollVertical.bind(this));
+            bar.position = RUIPosition.Relative;
+            bar.top = 0;
+            bar.bottom = 0;
+            bar.right = 0;
+            super.addChild(bar);
+            this.m_scrollbarV = bar;
+        }
+        this.m_scrolltypeV = type;
+    }
+    public get scrollVertical(): RUIScrollType {
+        return this.m_scrolltypeV;
+    }
+
+    public set scrollHorizontal(type: RUIScrollType) {
+        let bar = this.m_scrollbarH;
+        if (bar == null) {
+            bar = new RUIScrollBar(RUIOrientation.Horizontal, type);
+            bar.EventOnScroll.on(this.onBarScrollHorizontal.bind(this));
+            bar.position = RUIPosition.Relative;
+            bar.left = 0;
+            bar.right = this.m_scrolltypeV == RUIScrollType.Disabled ? 0 : RUIScrollBar.BAR_SIZE;
+            bar.bottom = 0;
+            super.addChild(bar);
+            this.m_scrollbarH = bar;
+        }
+        this.m_scrolltypeH = type;
+    }
+
+    public get scrollHorizontal(): RUIScrollType {
+        return this.m_scrolltypeH;
+    }
+
+    private onBarScrollVertical(e: RUIEvent<number>) {
+        this.m_content.top = -ROUND(e.object * this._calheight);
+    }
+
+    private onBarScrollHorizontal(e: RUIEvent<number>) {
+        this.m_content.left = -ROUND(e.object * this._calheight);
+    }
+
+    //can be optimized by check isdirty
+    public onLayoutPost() {
+        let content = this.m_content;
+
+        //Vertical
+        let cscrollvalV = content._calheight / this._calheight;
+
+        if (cscrollvalV != this.m_contentValV) {
+            this.m_contentValV = cscrollvalV;
+            if (this.m_scrolltypeV != RUIScrollType.Disabled) {
+                this.m_scrollbarV.scrollSize = (cscrollvalV == 0 ? 0 : 1.0 / cscrollvalV);
+            }
+            this.FixHorizontalBarSize();
+        }
+
+        //Horizontal
+        let cscrollvalH = content._calwidth / this._calwidth;
+
+        if (cscrollvalH != this.m_contentValH) {
+            this.m_contentValH = cscrollvalH;
+            if (this.m_scrolltypeH != RUIScrollType.Disabled) {
+                this.m_scrollbarH.scrollSize = (cscrollvalH == 0 ? 0 : 1.0 / cscrollvalH);
+            }
+        }
+    }
+
+    private FixHorizontalBarSize(){
+        if(this.m_scrollbarV.enabled){
+            this.m_scrollbarH.right = RUIScrollBar.BAR_SIZE;
+        }
+        else{
+            this.m_scrollbarH.right = 0;
+        }
+    }
+
+    public addChild(ui: RUIObject) {
+        this.m_content.addChild(ui);
+    }
+
+    public removeChild(ui: RUIObject) {
+        this.m_content.removeChild(ui);
+    }
+
+    public removeChildByIndex(index: number): RUIObject {
+        return this.m_content.removeChildByIndex(index);
+    }
+
+    public hasChild(ui: RUIObject): boolean {
+        return this.m_content.hasChild(ui);
+    }
+
+}

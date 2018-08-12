@@ -11,6 +11,7 @@ import { RUIFlexContainer } from "../RUIFlexContainer";
 import { RUI } from "../RUI";
 import { RUITabView } from "./RUITabView";
 import { RUIScrollBar, RUIScrollType } from "./RUIScrollBar";
+import { RUIScrollView } from "./RUIScrollView";
 
 
 export class RUIDebug extends RUIContainer {
@@ -714,6 +715,29 @@ export class RUIDebug extends RUIContainer {
             let sbarVertical = new RUIScrollBar(RUIOrientation.Vertical,RUIScrollType.Enabled);
             sbarVertical.height = 120;
             c2.addChild(sbarVertical);
+
+
+            {
+                var sv = new RUIScrollView();
+                sv.width = 200;
+                sv.height = 200;
+                c2.addChild(sv);
+
+                var rect1 = new RUIRectangle(250,150);
+                let btn = new RUIButton('Click',(b)=>{
+                    if(sv.hasChild(rect1)){
+                        sv.removeChild(rect1);
+                    }
+                    else{
+                        sv.addChild(rect1);
+                    }
+                })
+                btn.width = 50;
+
+                sv.addChild(new RUIRectangle(50,50));
+                sv.addChild(btn);
+                sv.addChild(new RUIRectangle(20,50));
+            }
         }
 
 

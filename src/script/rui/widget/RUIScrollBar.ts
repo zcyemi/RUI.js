@@ -339,9 +339,12 @@ export class RUIScrollBar extends RUIContainer{
         this.m_position = 0.0;
 
 
-        this.m_thumb = new RUIScrollBarThumb(this);
-        this.m_thumb.position = RUIPosition.Offset;
-        this.addChild(this.m_thumb);
+        let thumb = new RUIScrollBarThumb(this);
+        thumb.width =10;
+        thumb.height = 10;
+        thumb.position = RUIPosition.Offset;
+        this.m_thumb = thumb;
+        this.addChild(thumb);
 
         this.setOrientation(this.boxOrientation);
 
@@ -358,10 +361,25 @@ export class RUIScrollBar extends RUIContainer{
 
     public set scrollSize(val:number){
         let v = CLAMP(val,0,1.0);
+        
         if(this.m_size != v){
+            if(!this.isAlwayShow){
+                if(v == 0 || v== 1.0){
+                    this.enabled = false;
+                    this.scrollPos = 0;
+                    this.EventOnScroll.emitRaw(0);
+                }
+                else{
+                    this.enabled= true;
+                }
+            }
             this.m_size = v;
             this.setDirty();
         }
+    }
+
+    private get isAlwayShow():boolean{
+        return this.m_scrolltype == RUIScrollType.Always;
     }
 
     public set scrollPos(val:number){

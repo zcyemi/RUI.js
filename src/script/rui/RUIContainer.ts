@@ -58,6 +58,10 @@ export class RUIContainer extends RUIObject {
         ui.setDirty();
     }
 
+    public hasChild(ui:RUIObject):boolean{
+        return this.children.indexOf(ui) >=0;
+    }
+
     public removeChild(ui: RUIObject) {
         if (ui == null) return;
         let c = this.children;
