@@ -35,6 +35,10 @@ export class RUIContainer extends RUIObject {
 
     }
 
+    public get isVertical(){
+        return this.boxOrientation == RUIOrientation.Vertical;
+    }
+
 
     public addChild(ui: RUIObject) {
         if (ui == null){

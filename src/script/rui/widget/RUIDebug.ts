@@ -2,7 +2,6 @@ import { RUIContainer, RUIContainerClipType } from "../RUIContainer";
 import { RUILabel } from "./RUILabel";
 import { RUIButton } from "./RUIButton";
 import { RUICanvas } from "./RUICanvas";
-import { RUIScrollView } from "./RUIScrollView";
 import { RUIRectangle } from "../RUIRectangle";
 import { RUIPosition, RUIOrientation, RUIAuto, RUIConst } from "../RUIObject";
 import { RUIButtonGroup } from "./RUIButtonGroup";
@@ -11,6 +10,7 @@ import { RUIRenderer } from "../RUIRenderer";
 import { RUIFlexContainer } from "../RUIFlexContainer";
 import { RUI } from "../RUI";
 import { RUITabView } from "./RUITabView";
+import { RUIScrollBar, RUIScrollType } from "./RUIScrollBar";
 
 
 export class RUIDebug extends RUIContainer {
@@ -33,48 +33,7 @@ export class RUIDebug extends RUIContainer {
         this.WidgetButtons();
         this.WidgetLabel();
         this.WidgetTabView();
-
-        // let button = new RUIButton("button1");
-        // this.addChild(button);
-
-
-
-
-        // {
-        //     let rect1 = new RUIRectangle();
-        //     rect1.height= 400;
-        //     rect1.width =10;
-        //     this.addChild(rect1);
-
-        // }
-
-        // {
-        //     //relative container test
-
-
-        //     var rcontainer = new RUIContainer();
-        //     rcontainer.position = RUIPosition.Relative;
-        //     rcontainer.left = 20;
-        //     rcontainer.right = 400;
-        //     rcontainer.top = 410;
-        //     rcontainer.bottom = 10;
-        //     this.addChild(rcontainer);
-        //     var rect1 =new RUIRectangle();
-        //     rect1.width = 20;
-        //     rect1.height = 20;
-
-        //     var t = ()=>{
-
-        //         rect1.height= Math.random() *100;
-        //         rect1.setDirty(true);
-        //         setTimeout(t, 1000);
-        //     }
-
-        //     setTimeout(t, 1000);
-
-        //     rcontainer.addChild(rect1);
-        // }
-
+        this.WidgetScrollView();
 
 
 
@@ -708,6 +667,43 @@ export class RUIDebug extends RUIContainer {
 
             this.addChild(tabview1);
         }
+    }
+
+    private WidgetScrollView(){
+        this.addChild(new RUILabel("2.2-scrollView"));
+
+        let c = new RUIContainer();
+        c.boxOrientation = RUIOrientation.Horizontal;
+        this.addChild(c);
+
+        var sbarHorizontal = new RUIScrollBar(RUIOrientation.Horizontal,RUIScrollType.Always);
+        sbarHorizontal.width = 500;
+        this.addChild(sbarHorizontal);
+
+        let btnszInc = new RUIButton('szInc',(b)=>{
+            sbarHorizontal.scrollSize+=0.1;
+        });
+        btnszInc.width = 50;
+        c.addChild(btnszInc);
+        let btnszDec = new RUIButton('szDec',(b)=>{
+            sbarHorizontal.scrollSize -=0.1;
+        });
+        btnszDec.width = 50;
+        c.addChild(btnszDec);
+
+        let btnposInc = new RUIButton('posInc',(b)=>{
+            sbarHorizontal.scrollPos+=0.1;
+        });
+        btnposInc.width = 50;
+        c.addChild(btnposInc);
+        let btnposDec = new RUIButton('posDec',(b)=>{
+            sbarHorizontal.scrollPos -=0.1;
+        });
+        btnposDec.width = 50;
+        c.addChild(btnposDec);
+
+
+
     }
 
 }
