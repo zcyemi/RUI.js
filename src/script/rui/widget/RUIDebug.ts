@@ -21,6 +21,8 @@ export class RUIDebug extends RUIContainer {
         this.boxBorder = RUI.RED;
         this.boxClip = RUIContainerClipType.NoClip;
 
+        this.BasisEnable();
+
         this.LayoutContainer();
         this.LayoutFlexContainer();
         this.LayoutClip();
@@ -31,9 +33,6 @@ export class RUIDebug extends RUIContainer {
 
         // let button = new RUIButton("button1");
         // this.addChild(button);
-
-
-
 
 
 
@@ -95,6 +94,61 @@ export class RUIDebug extends RUIContainer {
         // }
 
 
+    }
+
+    private BasisEnable(){
+        this.addChild(new RUILabel('0.0-Enabled'));
+
+        var container = new RUIContainer();
+        container.boxBorder = RUIStyle.Default.primary;
+        container.boxOrientation = RUIOrientation.Horizontal;
+        container.padding = RUI.Vector(2);
+        this.addChild(container); 
+
+        {
+            var s ={
+                enable: true
+            };
+            var c = new RUIContainer();
+            c._debugname = "c1";
+            c.padding = RUI.Vector(3);
+            c.boxBorder = RUIStyle.Default.primary;
+            container.addChild(c);
+
+            var r1 = new RUIRectangle(120,20);
+            var btn = new RUIButton('enable/disable',(b)=>{
+                s.enable = !s.enable;
+                r1.enabled = s.enable;
+                r1.setDirty(true);
+            });
+            r1._debugname = "r1";
+            btn.width = 100;
+            c.addChild(btn);
+            c.addChild(r1);
+        }
+
+        {
+            var state = {
+                enable: true
+            };
+            var c = new RUIFlexContainer();
+            c.padding = RUI.Vector(3);
+            c.boxBorder = RUIStyle.Default.primary;
+            c.height = 70;
+            var r = new RUIRectangle(120);
+            r.flex =1;
+            var btn = new RUIButton('enable/disable',(b)=>{
+                state.enable = !state.enable;
+                r.enabled = state.enable;
+                r.setDirty(true);
+            })
+            btn.width = 100;
+            btn.flex = 2;
+            c.addChild(btn);
+            c.addChild(r);
+
+            container.addChild(c);
+        }
     }
 
     private LayoutContainer() {

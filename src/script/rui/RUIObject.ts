@@ -81,6 +81,8 @@ export class RUIObject{
     public id:string;
     public isdirty: boolean = true;
     public isClip: boolean = true;
+    public enabled:boolean = true;
+    public _enabled:boolean = true;
 
 
     public _calwidth?: number;
@@ -130,15 +132,27 @@ export class RUIObject{
         return this._height;
     }
 
+    public onLayoutPre(){
+        if(this.enabled != this._enabled){
+            this._enabled = this.enabled;
+            this.setDirty(true);
+        }
+    }
+
     public onLayout(){
-        if(this._debugOnLayout != null) this._debugOnLayout();
         let isRoot = this.isRoot;
         this.isdirty = false;
 
         if(!this._resized){
-            if(this._calwidth == null) throw new Error();
-            if(this._calheight == null) throw new Error();
-            return;
+
+            let calw = this._calwidth;
+            let calh = this._calheight;
+            if(calw == null) throw new Error();
+            if(calh == null) throw new Error();
+
+            if(this._flexheight == calh && this._flexwidth == calw){
+                return;
+            }
         }
 
         this.fillSize();
@@ -169,10 +183,15 @@ export class RUIObject{
         }
 
         if(this.parent != null){
-            this.parent.isdirty = true;
+            this.parent.popupDirty();
         }
 
         if(resize) this._resized = true;
+    }
+
+    private popupDirty(){
+        this.isdirty = true;
+        if(this.parent != null) this.parent.popupDirty();
     }
 
 

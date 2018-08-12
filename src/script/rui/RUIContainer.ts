@@ -97,14 +97,29 @@ export class RUIContainer extends RUIObject {
         let isVertical = this.boxOrientation == RUIOrientation.Vertical;
 
         let children = this.children;
+        let clen = children.length;
 
 
         //check for dirty
         let updateMode = this.containerUpdateCheck();
+
+        if(this._debugname == 'c1'){
+            console.log("container:" +updateMode);
+        }
+
         if(updateMode == RUIContainerUpdateMode.None) return;
+
+
+        //onLayoutPre
+        for(var i=0;i<clen;i++){
+            children[i].onLayoutPre();
+        }
+
         if(updateMode == RUIContainerUpdateMode.LayoutUpdate){
-            for(var i=0,clen = children.length;i<clen;i++){
-                children[i].onLayout();
+            for(var i=0;i<clen;i++){
+                let c = children[i];
+                if(!c._enabled) continue;
+                c.onLayout();
             }
             return;
         }
@@ -129,11 +144,15 @@ export class RUIContainer extends RUIObject {
             for (var i = 0, len = children.length; i < len; i++) {
                 let c = children[i];
 
+                if(!c._enabled) continue;
+
                 if (c.isOnFlow == false) {
                     relativeChildren.push(c);
                     continue;
                 }
 
+                c._flexwidth = null;
+                c._flexheight = null;
                 c.onLayout();
 
                 let cw = c._calwidth;
@@ -289,6 +308,7 @@ export class RUIContainer extends RUIObject {
         let children = this.children;
         for (var i = 0, clen = children.length; i < clen; i++) {
             let c = children[i];
+            if(!c._enabled) continue;
             if(c.visible) c.onDraw(cmd);
         }
 
