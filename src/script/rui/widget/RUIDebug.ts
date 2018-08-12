@@ -105,6 +105,7 @@ export class RUIDebug extends RUIContainer {
 
         var c = new RUIContainer();
         c.padding = RUI.Vector(3);
+        c.boxOrientation = RUIOrientation.Horizontal;
         c.boxBorder = RUIStyle.Default.primary;
         this.addChild(c);
 
@@ -116,7 +117,7 @@ export class RUIDebug extends RUIContainer {
         this.addChild(btnAdd);
     
         let btnDel = new RUIButton('Delete',(b)=>{
-            c.removeChildIndex(0);
+            c.removeChildByIndex(0);
         });
         btnDel.width = 50;
         this.addChild(btnDel);
@@ -692,9 +693,14 @@ export class RUIDebug extends RUIContainer {
 
     private WidgetTabView(){
         {
+
+            let c1 = new RUIContainer();
+            c1.addChild(new RUIRectangle(100,20));
+            c1.addChild(new RUIRectangle(40,50));
+
             let tabview1 =new RUITabView([
                 {label: 'Tab1',ui:new RUIRectangle(30,40)},
-                {label: 'Tab2',ui:new RUIRectangle(80,90)}
+                {label: 'Tab2',ui:c1}
             ],RUIConst.LEFT);
 
             tabview1.width = 400;

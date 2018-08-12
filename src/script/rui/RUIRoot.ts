@@ -26,12 +26,7 @@ export class RUIRoot {
 
         this.expandSize = expandSize;
         this.root = ui;
-        if(ui instanceof RUIContainer){
-            ui.setRoot(this);
-        }
-        else{
-            ui._root = this;
-        }
+        ui.setRoot(this);
     }
 
     public get rootRect():RUIRect{

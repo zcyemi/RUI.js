@@ -71,7 +71,6 @@ export class RUITabView extends RUIContainer{
 
     private onMenuClick(b:RUIButton){
         let index = this.m_menu.getButtonIndex(b);
-        console.log('click :' + index);
         if(index >=0) this.setPageIndex(index);
     }
 
@@ -80,7 +79,7 @@ export class RUITabView extends RUIContainer{
         let ui = this.m_pages[index].ui;
         if(ui != null){
             let wrap = this.m_pageWrap;
-            wrap.removeChildIndex(0);
+            wrap.removeChildByIndex(0);
             wrap.addChild(ui);
             this.m_pageIndex = index;
         }

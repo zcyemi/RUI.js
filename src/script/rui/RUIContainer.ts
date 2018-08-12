@@ -48,7 +48,7 @@ export class RUIContainer extends RUIObject {
         }
 
         ui.parent = this;
-        ui._root = this._root;
+        ui.setRoot(this._root);
         c.push(ui);
 
         ui.setDirty();
@@ -62,20 +62,17 @@ export class RUIContainer extends RUIObject {
         c.splice(index, 1);
         this.setDirty();
         ui.parent = null;
-        ui._root = null;
+        ui.setRoot(null);
     }
 
-    public removeChildIndex(index:number):RUIObject{
+    public removeChildByIndex(index:number):RUIObject{
         let c =this.children;
         if(index <0 || index >= c.length) return null;
         let ui = c[index];
         c.splice(index,1);
         this.setDirty();
         ui.parent = null;
-        ui._root = null;
-
-        
-        
+        ui.setRoot(null);
     }
 
     protected containerUpdateCheck(): RUIContainerUpdateMode{
@@ -364,12 +361,7 @@ export class RUIContainer extends RUIObject {
         let children =this.children;
         for(var i=0,clen=children.length;i<clen;i++){
             let c = children[i];
-            if(c instanceof RUIContainer){
-                c.setRoot(root);
-            }
-            else{
-                c._root = root;
-            }
+            c.setRoot(root);
         }
     }
 

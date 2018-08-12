@@ -177,6 +177,10 @@ export class RUIObject{
         return (pos == RUIPosition.Default || pos == RUIPosition.Offset);
     }
 
+    public setRoot(root:RUIRoot){
+        this._root = root;
+    }
+
     public setDirty(resize:boolean = false){
         this.isdirty =true;
         let root = this._root;
