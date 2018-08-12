@@ -105,12 +105,12 @@ export class RUIDebug extends RUIContainer {
         container.padding = RUI.Vector(2);
         this.addChild(container); 
 
+        //container
         {
             var s ={
                 enable: true
             };
             var c = new RUIContainer();
-            c._debugname = "c1";
             c.padding = RUI.Vector(3);
             c.boxBorder = RUIStyle.Default.primary;
             container.addChild(c);
@@ -121,12 +121,12 @@ export class RUIDebug extends RUIContainer {
                 r1.enabled = s.enable;
                 r1.setDirty(true);
             });
-            r1._debugname = "r1";
             btn.width = 100;
             c.addChild(btn);
             c.addChild(r1);
         }
 
+        //flex
         {
             var state = {
                 enable: true
@@ -148,6 +148,29 @@ export class RUIDebug extends RUIContainer {
             c.addChild(r);
 
             container.addChild(c);
+        }
+
+        //container has no children
+        {
+            var state = {
+                enable: true
+            };
+            var rect = new RUIRectangle(50,50);
+            rect.enabled =true;
+            let btn = new RUIButton("ClickMe",(b)=>{
+                state.enable = !state.enable;
+                rect.enabled =state.enable;
+                rect.setDirty(true);
+            });
+            btn.width = 50;
+            
+            var c = new RUIContainer();
+            c._debugname = "xx";
+            c.padding = RUI.Vector(3);
+            c.addChild(rect);
+
+            container.addChild(c);
+            container.addChild(btn);
         }
     }
 

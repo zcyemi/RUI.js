@@ -99,16 +99,10 @@ export class RUIContainer extends RUIObject {
         let children = this.children;
         let clen = children.length;
 
-
         //check for dirty
         let updateMode = this.containerUpdateCheck();
 
-        if(this._debugname == 'c1'){
-            console.log("container:" +updateMode);
-        }
-
         if(updateMode == RUIContainerUpdateMode.None) return;
-
 
         //onLayoutPre
         for(var i=0;i<clen;i++){

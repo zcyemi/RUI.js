@@ -103,8 +103,6 @@ export class RUIObject{
     public _resized:boolean = true;
 
     public _debugname:string;
-    public _debuglog:boolean = false;
-    public _debugOnLayout:()=>void;
 
 
     public onDraw(cmd:RUICmdList){
@@ -269,7 +267,6 @@ export class RUIObject{
     }
 
     public rectContains(x:number,y:number):boolean{
-
         let rect = this._rectclip == null ? this._rect:this._rectclip;
 
         if(rect == null) return false;
