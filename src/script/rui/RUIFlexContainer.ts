@@ -188,6 +188,10 @@ export class RUIFlexContainer extends RUIContainer{
 
             this.onLayoutRelativeUI(relativeChildren);
         }
+        else{
+            if(this._calwidth == null) this._calwidth = 0;
+            if(this._calheight == null) this._calheight= 0;
+        }
 
         if(this._calwidth == null || this._calheight == null){
             console.error(this);

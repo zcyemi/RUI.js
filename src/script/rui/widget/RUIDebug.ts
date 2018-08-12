@@ -99,7 +99,7 @@ export class RUIDebug extends RUIContainer {
     private BasisEnable() {
         this.addChild(new RUILabel('0.0-Enabled'));
 
-        var container = new RUIContainer();
+        let container = new RUIContainer();
         container.boxBorder = RUIStyle.Default.primary;
         container.boxOrientation = RUIOrientation.Horizontal;
         container.padding = RUI.Vector(2);
@@ -107,13 +107,13 @@ export class RUIDebug extends RUIContainer {
 
         //container
         {
-            var c = new RUIContainer();
+            let c = new RUIContainer();
             c.padding = RUI.Vector(3);
             c.boxBorder = RUIStyle.Default.primary;
             container.addChild(c);
 
             var r1 = new RUIRectangle(120, 20);
-            var btn = new RUIButton('enable/disable', (b) => {
+            let btn = new RUIButton('enable/disable', (b) => {
                 r1.enabled = !r1.enabled;
                 r1.setDirty(true);
             });
@@ -132,7 +132,7 @@ export class RUIDebug extends RUIContainer {
             });
             btn.width = 50;
 
-            var c = new RUIContainer();
+            let c = new RUIContainer();
             c.padding = RUI.Vector(3);
             c.boxBorder = RUIStyle.Default.primary;
             c.addChild(rect);
@@ -143,13 +143,13 @@ export class RUIDebug extends RUIContainer {
 
         //flex
         {
-            var c = new RUIFlexContainer();
+            let c = new RUIFlexContainer();
             c.padding = RUI.Vector(3);
             c.boxBorder = RUIStyle.Default.primary;
             c.height = 70;
             var r = new RUIRectangle(120);
             r.flex = 1;
-            var btn = new RUIButton('enable/disable', (b) => {
+            let btn = new RUIButton('enable/disable', (b) => {
                 r.enabled = !r.enabled;
                 r.setDirty(true);
             })
@@ -173,7 +173,7 @@ export class RUIDebug extends RUIContainer {
             });
             btn.width = 50;
 
-            var c2 = new RUIFlexContainer();
+            let c2 = new RUIFlexContainer();
             c2.padding = RUI.Vector(3);
             c2.height = 56;
             c2.boxBorder = RUIStyle.Default.primary;
@@ -185,10 +185,10 @@ export class RUIDebug extends RUIContainer {
     }
 
     private LayoutContainer() {
-        var label = new RUILabel('1.0-Container');
+        let label = new RUILabel('1.0-Container');
         this.addChild(label);
 
-        var container = new RUIContainer();
+        let container = new RUIContainer();
         this.addChild(container);
         container.boxOrientation = RUIOrientation.Horizontal;
         container.boxBorder = RUIStyle.Default.primary;
@@ -197,7 +197,7 @@ export class RUIDebug extends RUIContainer {
 
         //vertical
         {
-            var c = new RUIContainer();
+            let c = new RUIContainer();
             c.boxOrientation = RUIOrientation.Vertical;
             c.boxBorder = RUIStyle.Default.primary;
             container.addChild(c);
@@ -208,7 +208,7 @@ export class RUIDebug extends RUIContainer {
 
         //horizontal
         {
-            var c = new RUIContainer();
+            let c = new RUIContainer();
             c.boxBorder = RUIStyle.Default.primary;
             c.margin = [0, 0, 0, 10];
             c.boxOrientation = RUIOrientation.Horizontal;
@@ -221,7 +221,7 @@ export class RUIDebug extends RUIContainer {
 
         //nested 
         {
-            var c = new RUIContainer();
+            let c = new RUIContainer();
             c.boxBorder = RUIStyle.Default.primary;
             c.margin = [0, 0, 0, 10];
             c.boxOrientation = RUIOrientation.Vertical;
@@ -229,7 +229,7 @@ export class RUIDebug extends RUIContainer {
 
             c.addChild(new RUIRectangle(50, 30));
             {
-                var c1 = new RUIContainer();
+                let c1 = new RUIContainer();
                 c1.boxOrientation = RUIOrientation.Horizontal;
                 c1.addChild(new RUIRectangle(30, 30));
                 c1.addChild(new RUIRectangle(30, 50));
@@ -245,13 +245,13 @@ export class RUIDebug extends RUIContainer {
         this.addChild(new RUILabel('1.3-Margin/Padding'));
 
 
-        var c = new RUIContainer();
+        let c = new RUIContainer();
         c.boxOrientation = RUIOrientation.Horizontal;
         this.addChild(c);
 
         //padding < 0
         {
-            var container = new RUIContainer();
+            let container = new RUIContainer();
             container.margin = [0, 20, 0, 20];
             container.boxBorder = RUI.RED;
             container.width = 50;
@@ -261,7 +261,7 @@ export class RUIDebug extends RUIContainer {
         }
 
         {
-            var container = new RUIContainer();
+            let container = new RUIContainer();
             container.margin = [0, 20, 0, 20];
             container.boxBorder = RUI.RED;
             container.width = 50;
@@ -272,7 +272,7 @@ export class RUIDebug extends RUIContainer {
         }
 
         {
-            var container = new RUIContainer();
+            let container = new RUIContainer();
             container.margin = [0, 20, 0, 20];
             container.boxBorder = RUI.RED;
             container.width = 50;
@@ -282,13 +282,13 @@ export class RUIDebug extends RUIContainer {
         }
 
         {
-            var container = new RUIContainer();
+            let container = new RUIContainer();
             container.margin = [0, 20, 0, 20];
             container.boxBorder = RUI.RED;
             container.width = 50;
             container.padding = [1, 1, 1, 20];
             c.addChild(container);
-            var r = new RUIRectangle(50, 30);
+            let r = new RUIRectangle(50, 30);
             r.isClip = false;
             container.addChild(r);
         }
@@ -299,10 +299,10 @@ export class RUIDebug extends RUIContainer {
     }
 
     private LayoutFlexContainer() {
-        var label = new RUILabel('1.1-FlexContainer');
+        let label = new RUILabel('1.1-FlexContainer');
         this.addChild(label);
 
-        var container = new RUIContainer();
+        let container = new RUIContainer();
         this.addChild(container);
         container.boxOrientation = RUIOrientation.Horizontal;
         container.boxBorder = RUIStyle.Default.primary;
@@ -311,7 +311,7 @@ export class RUIDebug extends RUIContainer {
 
         //Flex vertical
         {
-            var c = new RUIFlexContainer();
+            let c = new RUIFlexContainer();
             container.addChild(c);
             c.boxOrientation = RUIOrientation.Horizontal;
             c.boxBorder = RUIStyle.Default.primary;
@@ -320,13 +320,13 @@ export class RUIDebug extends RUIContainer {
             c.width = 100;
             c.height = 70;
 
-            var r1 = new RUIRectangle();
+            let r1 = new RUIRectangle();
             r1.flex = 1;
-            var r2 = new RUIRectangle();
+            let r2 = new RUIRectangle();
             r2.flex = 1;
             r2.height = 40;
 
-            var r3 = new RUIRectangle();
+            let r3 = new RUIRectangle();
             r3.flex = 2;
             r3.height = 30;
 
@@ -337,7 +337,7 @@ export class RUIDebug extends RUIContainer {
 
         //Flex horizontal
         {
-            var c = new RUIFlexContainer();
+            let c = new RUIFlexContainer();
             container.addChild(c);
             c.boxOrientation = RUIOrientation.Vertical;
             c.boxBorder = RUIStyle.Default.primary;
@@ -346,13 +346,13 @@ export class RUIDebug extends RUIContainer {
             c.width = 100;
             c.height = 70;
 
-            var r1 = new RUIRectangle();
+            let r1 = new RUIRectangle();
             r1.flex = 1;
             r1.width = 50;
-            var r2 = new RUIRectangle();
+            let r2 = new RUIRectangle();
             r2.flex = 1;
             r2.width = 70;
-            var r3 = new RUIRectangle();
+            let r3 = new RUIRectangle();
             r3.flex = 2;
             r3.width = 60;
 
@@ -363,7 +363,7 @@ export class RUIDebug extends RUIContainer {
 
         //Flex vertical exten
         {
-            var c = new RUIFlexContainer();
+            let c = new RUIFlexContainer();
             c._debugname = "hhhh";
             container.addChild(c);
             c.boxOrientation = RUIOrientation.Horizontal;
@@ -373,14 +373,14 @@ export class RUIDebug extends RUIContainer {
             c.width = 100;
 
             //auto expands to container's height
-            var r1 = new RUIRectangle();
-            r1.flex = 1;
+            let r1 = new RUIRectangle();
+            r1.width = 10;
 
-            var r2 = new RUIRectangle();
+            let r2 = new RUIRectangle();
             r2.flex = 1;
             r2.height = 60;
 
-            var r3 = new RUIRectangle();
+            let r3 = new RUIRectangle();
             r3.flex = 2;
             r3.height = 30;
 
@@ -391,7 +391,7 @@ export class RUIDebug extends RUIContainer {
 
         //Flex horizontal exten
         {
-            var c = new RUIFlexContainer();
+            let c = new RUIFlexContainer();
             container.addChild(c);
             c.boxOrientation = RUIOrientation.Vertical;
             c.boxBorder = RUIStyle.Default.primary;
@@ -399,18 +399,49 @@ export class RUIDebug extends RUIContainer {
             c.margin = [0, 10, 0, 0];
             c.height = 70;
 
-            var r1 = new RUIRectangle();
+            let r1 = new RUIRectangle();
             r1.flex = 1;
             r1.width = 50;
-            var r2 = new RUIRectangle();
+            let r2 = new RUIRectangle();
             r2.flex = 1;
             r2.width = 100;
-            var r3 = new RUIRectangle();
+            let r3 = new RUIRectangle();
             r3.flex = 2;
 
             c.addChild(r1);
             c.addChild(r2);
             c.addChild(r3);
+        }
+
+        let container2 = new RUIContainer();
+        this.addChild(container2);
+        container2.boxOrientation = RUIOrientation.Horizontal;
+        container2.boxBorder = RUIStyle.Default.primary;
+        container2.padding = [3, 3, 3, 3];
+        container2.margin = [20, 0, 10, 0];
+
+        //Mixed
+        {
+            let c1 = new RUIFlexContainer();
+            c1.padding = RUI.Vector(3);
+            c1.height = 100;
+            container2.addChild(c1);
+            
+            let r1 = new RUIRectangle();
+            r1.flex =1;
+            r1.width = 100;
+            let r2 = new RUIButton('flexbtn');
+            r2.height = 50;
+            r2.width = 120;
+
+            let r3 = new RUIRectangle();
+            r3.flex =2;
+            r3.width =30;
+
+            c1.addChild(r1);
+            c1.addChild(r2);
+            c1.addChild(r3);
+
         }
     }
 
