@@ -23,6 +23,7 @@ export class RUIDebug extends RUIContainer {
         this.boxClip = RUIContainerClipType.NoClip;
 
         // this.BasisEnable();
+        this.BasisChildren();
 
         // this.LayoutContainer();
         // this.LayoutFlexContainer();
@@ -95,6 +96,30 @@ export class RUIDebug extends RUIContainer {
 
         // }
 
+
+    }
+
+
+    private BasisChildren(){
+        this.addChild(new RUILabel('0.1-Children'));
+
+        var c = new RUIContainer();
+        c.padding = RUI.Vector(3);
+        c.boxBorder = RUIStyle.Default.primary;
+        this.addChild(c);
+
+        let btnAdd = new RUIButton('Add',(b)=>{
+            c.addChild(new RUIRectangle(20,20));
+            c.setDirty();
+        });
+        btnAdd.width = 50;
+        this.addChild(btnAdd);
+    
+        let btnDel = new RUIButton('Delete',(b)=>{
+            c.removeChildIndex(0);
+        });
+        btnDel.width = 50;
+        this.addChild(btnDel);
 
     }
 

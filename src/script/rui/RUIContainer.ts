@@ -59,9 +59,8 @@ export class RUIContainer extends RUIObject {
         let c = this.children;
         let index = c.indexOf(ui);
         if (index < 0) return;
-        this.children = c.splice(index, 1);
-
-        this.isdirty = true;
+        c.splice(index, 1);
+        this.setDirty();
         ui.parent = null;
         ui._root = null;
     }
@@ -70,10 +69,12 @@ export class RUIContainer extends RUIObject {
         let c =this.children;
         if(index <0 || index >= c.length) return null;
         let ui = c[index];
-        this.children = c.splice(index,1);
-        this.isdirty = true;
+        c.splice(index,1);
+        this.setDirty();
         ui.parent = null;
         ui._root = null;
+
+        
         
     }
 
