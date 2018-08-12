@@ -17,6 +17,7 @@ export class RUIFlexContainer extends RUIContainer{
         if(updateMode == RUIContainerUpdateMode.None) return;
 
         //onLayoutPre
+
         for(var i=0;i<clen;i++){
             children[i].onLayoutPre();
         }
@@ -117,22 +118,15 @@ export class RUIFlexContainer extends RUIContainer{
                     cmaxside = c.height + cmargin[RUIConst.TOP] + cmargin[RUIConst.BOTTOM];
                 }
                 childMaxSide = Math.max(childMaxSide,cmaxside);
-
-                
             }
 
             marginAry.push(marginValue);
             marginTotal += marginValue;
-
             
-
             let sizePerFlex = (contentTotal - fixedaccu - marginTotal) / flexaccu;
 
             let offset = this.padding[isVertical? RUIConst.TOP : RUIConst.LEFT];
             let offsetside = this.padding[isVertical? RUIConst.LEFT: RUIConst.TOP];
-
-            
-
 
             if(childMaxSide != RUIAuto && sideIsAuto){
                 contentSide = childMaxSide;
@@ -143,6 +137,13 @@ export class RUIFlexContainer extends RUIContainer{
                 else{
                     this._calheight = childMaxSide + this.padding[RUIConst.TOP] + this.padding[RUIConst.BOTTOM];
                 }
+            }
+
+            if(this._calwidth == null){
+                this._calwidth = 0;
+            }
+            if(this._calheight == null){
+                this._calheight = 0;
             }
 
             for(var i=0;i<clen;i++){
@@ -186,6 +187,11 @@ export class RUIFlexContainer extends RUIContainer{
 
 
             this.onLayoutRelativeUI(relativeChildren);
+        }
+
+        if(this._calwidth == null || this._calheight == null){
+            console.error(this);
+            throw new Error();
         }
 
         this.isdirty = false;

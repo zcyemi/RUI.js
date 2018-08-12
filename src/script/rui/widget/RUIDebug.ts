@@ -96,29 +96,25 @@ export class RUIDebug extends RUIContainer {
 
     }
 
-    private BasisEnable(){
+    private BasisEnable() {
         this.addChild(new RUILabel('0.0-Enabled'));
 
         var container = new RUIContainer();
         container.boxBorder = RUIStyle.Default.primary;
         container.boxOrientation = RUIOrientation.Horizontal;
         container.padding = RUI.Vector(2);
-        this.addChild(container); 
+        this.addChild(container);
 
         //container
         {
-            var s ={
-                enable: true
-            };
             var c = new RUIContainer();
             c.padding = RUI.Vector(3);
             c.boxBorder = RUIStyle.Default.primary;
             container.addChild(c);
 
-            var r1 = new RUIRectangle(120,20);
-            var btn = new RUIButton('enable/disable',(b)=>{
-                s.enable = !s.enable;
-                r1.enabled = s.enable;
+            var r1 = new RUIRectangle(120, 20);
+            var btn = new RUIButton('enable/disable', (b) => {
+                r1.enabled = !r1.enabled;
                 r1.setDirty(true);
             });
             btn.width = 100;
@@ -126,20 +122,35 @@ export class RUIDebug extends RUIContainer {
             c.addChild(r1);
         }
 
+        //container has  single child
+        {
+            var rect = new RUIRectangle(50, 50);
+            rect.enabled = true;
+            let btn = new RUIButton("ClickMe", (b) => {
+                rect.enabled = !rect.enabled;
+                rect.setDirty(true);
+            });
+            btn.width = 50;
+
+            var c = new RUIContainer();
+            c.padding = RUI.Vector(3);
+            c.boxBorder = RUIStyle.Default.primary;
+            c.addChild(rect);
+
+            container.addChild(c);
+            container.addChild(btn);
+        }
+
         //flex
         {
-            var state = {
-                enable: true
-            };
             var c = new RUIFlexContainer();
             c.padding = RUI.Vector(3);
             c.boxBorder = RUIStyle.Default.primary;
             c.height = 70;
             var r = new RUIRectangle(120);
-            r.flex =1;
-            var btn = new RUIButton('enable/disable',(b)=>{
-                state.enable = !state.enable;
-                r.enabled = state.enable;
+            r.flex = 1;
+            var btn = new RUIButton('enable/disable', (b) => {
+                r.enabled = !r.enabled;
                 r.setDirty(true);
             })
             btn.width = 100;
@@ -150,26 +161,25 @@ export class RUIDebug extends RUIContainer {
             container.addChild(c);
         }
 
-        //container has no children
+
+        //flex has single child
         {
-            var state = {
-                enable: true
-            };
-            var rect = new RUIRectangle(50,50);
-            rect.enabled =true;
-            let btn = new RUIButton("ClickMe",(b)=>{
-                state.enable = !state.enable;
-                rect.enabled =state.enable;
-                rect.setDirty(true);
+            var r2 = new RUIRectangle(50, 50);
+            r2.flex = 1;
+            r2.enabled = true;
+            let btn = new RUIButton("ClickMe", (b) => {
+                r2.enabled = !r2.enabled;
+                r2.setDirty(true);
             });
             btn.width = 50;
-            
-            var c = new RUIContainer();
-            c._debugname = "xx";
-            c.padding = RUI.Vector(3);
-            c.addChild(rect);
 
-            container.addChild(c);
+            var c2 = new RUIFlexContainer();
+            c2.padding = RUI.Vector(3);
+            c2.height = 56;
+            c2.boxBorder = RUIStyle.Default.primary;
+            c2.addChild(r2);
+
+            container.addChild(c2);
             container.addChild(btn);
         }
     }
@@ -231,8 +241,8 @@ export class RUIDebug extends RUIContainer {
         }
     }
 
-    private LayoutMarginPadding(){
-        this.addChild (new RUILabel('1.3-Margin/Padding'));
+    private LayoutMarginPadding() {
+        this.addChild(new RUILabel('1.3-Margin/Padding'));
 
 
         var c = new RUIContainer();
@@ -242,47 +252,47 @@ export class RUIDebug extends RUIContainer {
         //padding < 0
         {
             var container = new RUIContainer();
-            container.margin = [0,20,0,20];
+            container.margin = [0, 20, 0, 20];
             container.boxBorder = RUI.RED;
             container.width = 50;
-            container.padding = [1,1,1,-20];
+            container.padding = [1, 1, 1, -20];
             c.addChild(container);
-            container.addChild(new RUIRectangle(50,30));
+            container.addChild(new RUIRectangle(50, 30));
         }
 
         {
             var container = new RUIContainer();
-            container.margin = [0,20,0,20];
+            container.margin = [0, 20, 0, 20];
             container.boxBorder = RUI.RED;
             container.width = 50;
-            container.padding = [1,1,1,-20];
+            container.padding = [1, 1, 1, -20];
             container.boxClip = RUIContainerClipType.NoClip;
             c.addChild(container);
-            container.addChild(new RUIRectangle(50,30));
+            container.addChild(new RUIRectangle(50, 30));
         }
 
         {
             var container = new RUIContainer();
-            container.margin = [0,20,0,20];
+            container.margin = [0, 20, 0, 20];
             container.boxBorder = RUI.RED;
             container.width = 50;
-            container.padding = [1,1,1,20];
+            container.padding = [1, 1, 1, 20];
             c.addChild(container);
-            container.addChild(new RUIRectangle(50,30));
+            container.addChild(new RUIRectangle(50, 30));
         }
 
         {
             var container = new RUIContainer();
-            container.margin = [0,20,0,20];
+            container.margin = [0, 20, 0, 20];
             container.boxBorder = RUI.RED;
             container.width = 50;
-            container.padding = [1,1,1,20];
+            container.padding = [1, 1, 1, 20];
             c.addChild(container);
-            var r = new RUIRectangle(50,30);
-            r.isClip =false;
+            var r = new RUIRectangle(50, 30);
+            r.isClip = false;
             container.addChild(r);
         }
-        
+
 
 
 
