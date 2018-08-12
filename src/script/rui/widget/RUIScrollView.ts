@@ -289,8 +289,12 @@ export class RUIScrollView extends RUIContainer {
         this.m_content.left = -ROUND(e.object * (this.m_content._calwidth));
     }
 
-    //can be optimized by check isdirty
-    public onLayoutPost() {
+    public setScrollPosition(h?:number,v?:number){
+        if(h != null) this.m_scrollbarH.scrollPos = 0;
+        if(v != null) this.m_scrollbarV.scrollPos = 0;
+    }
+
+    private updateScrollBarVertical(){
         let content = this.m_content;
         //Vertical
         let contenth = content._calheight;
@@ -305,12 +309,15 @@ export class RUIScrollView extends RUIContainer {
             }
             this.FixHorizontalBarSize();
         }
+    }
 
+    private updateScrollBarHorizontal(){
+        let content = this.m_content;
         //Horizontal
         let contentw = content._calwidth;
         let contentvalH = 0;
         if(contentw > this._calwidth){
-            contentvalH =(this._calheight - 12) / contenth;
+            contentvalH =(this._calheight - 12) / contentw;
         }
 
         if (contentvalH != this.m_contentvalH) {
@@ -319,6 +326,11 @@ export class RUIScrollView extends RUIContainer {
                 this.m_scrollbarH.scrollSize = contentvalH;
             }
         }
+    }
+
+    public onLayoutPost(){
+        this.updateScrollBarVertical();
+        this.updateScrollBarHorizontal();
     }
 
     private FixHorizontalBarSize(){

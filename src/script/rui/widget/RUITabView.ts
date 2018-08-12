@@ -85,6 +85,7 @@ export class RUITabView extends RUIContainer{
         let ui = this.m_pages[index].ui;
         if(ui != null){
             let wrap = this.m_pageWrap;
+            wrap.setScrollPosition(0,0);
             wrap.removeChildByIndex(0);
             wrap.addChild(ui);
             this.m_pageIndex = index;
