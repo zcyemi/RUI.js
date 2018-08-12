@@ -672,36 +672,49 @@ export class RUIDebug extends RUIContainer {
     private WidgetScrollView(){
         this.addChild(new RUILabel("2.2-scrollView"));
 
-        let c = new RUIContainer();
-        c.boxOrientation = RUIOrientation.Horizontal;
-        this.addChild(c);
+        {
+            let c = new RUIContainer();
+            c.boxOrientation = RUIOrientation.Horizontal;
+            this.addChild(c);
+    
+            var sbarHorizontal = new RUIScrollBar(RUIOrientation.Horizontal,RUIScrollType.Always);
+            sbarHorizontal.width = 500;
+            this.addChild(sbarHorizontal);
+    
+            let btnszInc = new RUIButton('szInc',(b)=>{
+                sbarHorizontal.scrollSize+=0.1;
+            });
+            btnszInc.width = 50;
+            c.addChild(btnszInc);
+            let btnszDec = new RUIButton('szDec',(b)=>{
+                sbarHorizontal.scrollSize -=0.1;
+            });
+            btnszDec.width = 50;
+            c.addChild(btnszDec);
+    
+            let btnposInc = new RUIButton('posInc',(b)=>{
+                sbarHorizontal.scrollPos+=0.1;
+            });
+            btnposInc.width = 50;
+            c.addChild(btnposInc);
+            let btnposDec = new RUIButton('posDec',(b)=>{
+                sbarHorizontal.scrollPos -=0.1;
+            });
+            btnposDec.width = 50;
+            c.addChild(btnposDec);
+        }
 
-        var sbarHorizontal = new RUIScrollBar(RUIOrientation.Horizontal,RUIScrollType.Always);
-        sbarHorizontal.width = 500;
-        this.addChild(sbarHorizontal);
 
-        let btnszInc = new RUIButton('szInc',(b)=>{
-            sbarHorizontal.scrollSize+=0.1;
-        });
-        btnszInc.width = 50;
-        c.addChild(btnszInc);
-        let btnszDec = new RUIButton('szDec',(b)=>{
-            sbarHorizontal.scrollSize -=0.1;
-        });
-        btnszDec.width = 50;
-        c.addChild(btnszDec);
+        {
+            let c2 = new RUIContainer();
+            c2.boxOrientation = RUIOrientation.Horizontal;
+            c2.margin = [10,0,0,0];
+            this.addChild(c2);
 
-        let btnposInc = new RUIButton('posInc',(b)=>{
-            sbarHorizontal.scrollPos+=0.1;
-        });
-        btnposInc.width = 50;
-        c.addChild(btnposInc);
-        let btnposDec = new RUIButton('posDec',(b)=>{
-            sbarHorizontal.scrollPos -=0.1;
-        });
-        btnposDec.width = 50;
-        c.addChild(btnposDec);
-
+            let sbarVertical = new RUIScrollBar(RUIOrientation.Vertical,RUIScrollType.Enabled);
+            sbarVertical.height = 120;
+            c2.addChild(sbarVertical);
+        }
 
 
     }

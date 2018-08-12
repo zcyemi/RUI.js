@@ -3,7 +3,7 @@ import { RUIContainer } from "../RUIContainer";
 import { RUICmdList } from "../RUICmdList";
 import { RUIStyle } from "../RUIStyle";
 import { RUIRectangle } from "../RUIRectangle";
-import { RUIMouseEvent, RUIMouseDragEvent, RUIMouseDragStage } from "../RUIEvent";
+import { RUIMouseEvent, RUIMouseDragEvent, RUIMouseDragStage, RUIEventEmitter } from "../RUIEvent";
 
 // import { RUISlider } from "./RUISlider";
 // import { RUIOrientation, RUIPosition, RUIObject, ROUND, CLAMP } from "../RUIObject";
@@ -312,7 +312,7 @@ class RUIScrollBarThumb extends RUIRectangle{
             pos = CLAMP(pos,0,barsize - (isvertical? this._calheight :this._calwidth));
             if(off == pos) return;
             pos = pos / barsize;
-            bar.scrollPos = pos;
+            bar.onThumbDrag(pos);
         }
     }
 }
@@ -327,6 +327,8 @@ export class RUIScrollBar extends RUIContainer{
     private m_position:number;
 
     private m_thumb :RUIScrollBarThumb;
+
+    public EventOnScroll: RUIEventEmitter<number> = new RUIEventEmitter();
 
     public constructor(orit:RUIOrientation = RUIOrientation.Horizontal,type:RUIScrollType = RUIScrollType.Enabled){
         super();
@@ -370,6 +372,16 @@ export class RUIScrollBar extends RUIContainer{
         }
     }
 
+    public onThumbDrag(val:number){
+        this.scrollPos = val;
+        this.EventOnScroll.emitRaw(val);
+    }
+
+    public onScrollBarClick(val:number){
+        this.scrollPos = val;
+        this.EventOnScroll.emitRaw(val);
+    }
+
     public onLayoutPost(){
         let isvertical = this.isVertical;
         let barsize = (isvertical? this._calheight : this._calwidth) ;
@@ -406,24 +418,24 @@ export class RUIScrollBar extends RUIContainer{
         if(isvertical){
             let pos = (e.mousey - this._caly) / this._calheight;
             if(pos < this.m_position){
-                this.scrollPos = pos;
+                this.onScrollBarClick(pos);
             }
             else{
                 let posend = this.scrollPos + this.scrollSize;
                 if(pos > posend){
-                    this.scrollPos = pos - this.scrollSize;
+                    this.onScrollBarClick( pos - this.scrollSize);
                 }
             }
         }
         else{
             let pos = (e.mousex - this._calx) / this._calwidth;
             if(pos < this.m_position){
-                this.scrollPos = pos;
+                this.onScrollBarClick(pos);
             }
             else{
                 let posend = this.scrollPos + this.scrollSize;
                 if(pos> posend){
-                    this.scrollPos = pos - this.scrollSize;
+                    this.onScrollBarClick(pos - this.scrollSize);
                 }
             }
         }
