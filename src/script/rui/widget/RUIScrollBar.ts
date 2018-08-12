@@ -295,7 +295,7 @@ class RUIScrollBarThumb extends RUIRectangle{
     public constructor(scrollbar:RUIScrollBar){
         super();
         this.m_scrollbar = scrollbar;
-        this.m_debugColor = RUIStyle.Default.primary0;
+        this.m_debugColor = RUIStyle.Default.background2;
     }
 
     public onMouseDrag(e:RUIMouseDragEvent){
@@ -471,6 +471,6 @@ export class RUIScrollBar extends RUIContainer{
     public onDrawPre(cmd:RUICmdList){
         super.onDrawPre(cmd);
 
-        cmd.DrawRectWithColor(this._rect,RUIStyle.Default.background2);
+        cmd.DrawRectWithColor(this._rect,RUIStyle.Default.border0);
     }
 }

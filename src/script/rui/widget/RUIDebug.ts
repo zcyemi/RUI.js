@@ -718,7 +718,8 @@ export class RUIDebug extends RUIContainer {
 
 
             {
-                var sv = new RUIScrollView();
+                var sv = new RUIScrollView(RUIScrollType.Always,RUIScrollType.Always);
+                sv.margin = [0,0,0,10];
                 sv.width = 200;
                 sv.height = 200;
                 c2.addChild(sv);
