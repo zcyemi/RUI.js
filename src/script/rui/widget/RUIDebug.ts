@@ -4,12 +4,13 @@ import { RUIButton } from "./RUIButton";
 import { RUICanvas } from "./RUICanvas";
 import { RUIScrollView } from "./RUIScrollView";
 import { RUIRectangle } from "../RUIRectangle";
-import { RUIPosition, RUIOrientation, RUIAuto } from "../RUIObject";
+import { RUIPosition, RUIOrientation, RUIAuto, RUIConst } from "../RUIObject";
 import { RUIButtonGroup } from "./RUIButtonGroup";
 import { RUIStyle } from "../RUIStyle";
 import { RUIRenderer } from "../RUIRenderer";
 import { RUIFlexContainer } from "../RUIFlexContainer";
 import { RUI } from "../RUI";
+import { RUITabView } from "./RUITabView";
 
 
 export class RUIDebug extends RUIContainer {
@@ -21,15 +22,16 @@ export class RUIDebug extends RUIContainer {
         this.boxBorder = RUI.RED;
         this.boxClip = RUIContainerClipType.NoClip;
 
-        this.BasisEnable();
+        // this.BasisEnable();
 
-        this.LayoutContainer();
-        this.LayoutFlexContainer();
-        this.LayoutClip();
-        this.LayoutMarginPadding();
+        // this.LayoutContainer();
+        // this.LayoutFlexContainer();
+        // this.LayoutClip();
+        // this.LayoutMarginPadding();
 
         this.WidgetButtons();
         this.WidgetLabel();
+        this.WidgetTabView();
 
         // let button = new RUIButton("button1");
         // this.addChild(button);
@@ -661,6 +663,20 @@ export class RUIDebug extends RUIContainer {
 
     private WidgetLabel() {
         this.addChild(new RUILabel("2.1-Label"));
+    }
+
+    private WidgetTabView(){
+        {
+            let tabview1 =new RUITabView([
+                {label: 'Tab1',ui:new RUIRectangle(30,40)},
+                {label: 'Tab2',ui:new RUIRectangle(80,90)}
+            ],RUIConst.LEFT);
+
+            tabview1.width = 400;
+            tabview1.height = 300;
+
+            this.addChild(tabview1);
+        }
     }
 
 }

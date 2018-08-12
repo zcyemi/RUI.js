@@ -138,6 +138,10 @@ export class RUIObject{
     }
 
     public onLayout(){
+        if(this._root == null){
+            console.error(this);
+            throw new Error('ui root is null');
+        }
         let isRoot = this.isRoot;
         this.isdirty = false;
 

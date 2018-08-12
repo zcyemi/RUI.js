@@ -56,6 +56,10 @@ export class RUIButtonGroup extends RUIContainer{
         super.removeChild(btn);
     }
 
+    public getButtonIndex(btn:RUIButton){
+        return this.m_buttons.indexOf(btn);
+    }
+
     public onLayoutPost(){
         super.onLayoutPost();
 

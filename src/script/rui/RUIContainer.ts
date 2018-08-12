@@ -66,6 +66,17 @@ export class RUIContainer extends RUIObject {
         ui._root = null;
     }
 
+    public removeChildIndex(index:number):RUIObject{
+        let c =this.children;
+        if(index <0 || index >= c.length) return null;
+        let ui = c[index];
+        this.children = c.splice(index,1);
+        this.isdirty = true;
+        ui.parent = null;
+        ui._root = null;
+        
+    }
+
     protected containerUpdateCheck(): RUIContainerUpdateMode{
         if(!this.isdirty && !this._resized){
 
