@@ -25,6 +25,11 @@ export class RUILayouter{
         // ui._level = 0;
 
         //Calculate All offset
+
+        let rootrect = uiroot.rootRect;
+
+        ui._calx = rootrect[0] + ui._caloffsetx;
+        ui._caly = rootrect[1]+ ui._caloffsety;
         if(ui instanceof RUIContainer){
             this.calculateOffset(ui);
         }

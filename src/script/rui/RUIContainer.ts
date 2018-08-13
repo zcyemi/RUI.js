@@ -220,6 +220,72 @@ export class RUIContainer extends RUIObject {
             if (this.width != RUIAuto) this._calwidth = this.width;
             if (this.height != RUIAuto) this._calheight = this.height;
         }
+        else{
+
+            if(this._root.root == this){
+                let cleft = this.left;
+                let cright = this.right;
+                let ctop = this.top;
+                let cbottom = this.bottom;
+                
+                let constraintH = cleft != RUIAuto && cright != RUIAuto;
+                let constraintV = ctop != RUIAuto && cbottom != RUIAuto;
+
+                let cwidth = this.width;
+                let cheight = this.height;
+
+                let rrect = this._root.rootRect;
+                if(rrect == null){
+                    console.error(this._root);
+                    throw new Error();
+                }
+                let rwidth = rrect[2];
+                let rheight = rrect[3];
+                if(constraintH){
+                    this._calwidth = rwidth - cleft - cright;
+                    this._caloffsetx = cleft;
+                }
+                else{
+                    if(cwidth != RUIAuto){
+                        this._calwidth = cwidth;
+                        if(cleft != RUIAuto){
+                            this._caloffsetx = cleft;
+                        }
+                        else if(cright != RUIAuto){
+                            this._caloffsetx = rwidth - cwidth - cright;
+                        }
+                        else{
+                            this._caloffsetx = ROUND((rwidth - cwidth)/2.0);
+                        }
+                    }
+                    else{
+                        throw new Error();
+                    }
+                }
+
+                if(constraintV){
+                    this._calheight = rheight - ctop - cbottom;
+                    this._caloffsety = ctop;
+                }
+                else{
+                    if(cheight != RUIAuto){
+                        this._calwidth = cwidth;
+                        if(ctop != RUIAuto){
+                            this._caloffsety = ctop;
+                        }
+                        else if(cbottom != RUIAuto){
+                            this._caloffsety = rheight - cheight - cbottom;
+                        }
+                        else{
+                            this._caloffsety = ROUND((rheight - cheight) / 2.0);
+                        }
+                    }
+                    else{
+                        throw new Error();
+                    }
+                }
+            }
+        }
 
         //process relative children
         this.onLayoutRelativeUI(relativeChildren);

@@ -35,9 +35,11 @@ export class RUIRoot {
 
     public resizeRoot(width: number, height: number) {
 
-        if(this.m_rootSizeWidth == width && this.m_rootSizeHeight == height) return; 
+        if(this.m_rootSizeWidth == width && this.m_rootSizeHeight == height) {
+            return; 
+        }
 
-        this.isdirty = true;
+        this.root.setDirty(true);
 
         if (this.expandSize) {
             let rootui =this.root;

@@ -18,23 +18,30 @@ export class RUIDebug extends RUIContainer {
 
     public constructor() {
         super();
-        this.width = 800;
-        this.padding = [10, 10, 10, 10];
         this.boxBorder = RUI.RED;
-        this.boxClip = RUIContainerClipType.NoClip;
+
+        this.position = RUIPosition.Absolute;
+        this.padding = RUI.Vector(5);
+        this.left = 100;
+        this.right = 100;
+        this.top = 100;
+        this.bottom = 100;
+
+        this.addChild(new RUIRectangle(100,100));
+
 
         // this.BasisEnable();
-        this.BasisChildren();
+        // this.BasisChildren();
 
         // this.LayoutContainer();
         // this.LayoutFlexContainer();
         // this.LayoutClip();
         // this.LayoutMarginPadding();
 
-        this.WidgetButtons();
-        this.WidgetLabel();
-        this.WidgetTabView();
-        this.WidgetScrollView();
+        // this.WidgetButtons();
+        // this.WidgetLabel();
+        // this.WidgetTabView();
+        // this.WidgetScrollView();
 
 
 
