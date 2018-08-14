@@ -30,8 +30,10 @@ export class RUIDebug extends RUIContainer {
         let pages: RUITabPage[] = [];
 
         pages.push({ label: 'basis', ui: this.PageBasis() });
+        pages.push({ label: 'layout', ui: this.PageLayout() });
         pages.push({ label: 'container', ui: this.PageContainer() });
-
+        pages.push({ label: 'widget', ui: this.PageWidget() });
+        pages.push({ label: 'compoundwidget', ui: this.PageCompoundWidget() });
 
         let tabview = new RUITabView(pages, RUIConst.LEFT);
         tabview.position = RUIPosition.Relative;
@@ -41,41 +43,6 @@ export class RUIDebug extends RUIContainer {
         tabview.bottom = 0;
         this.addChild(tabview);
 
-
-        // this.BasisEnable();
-        // this.BasisChildren();
-
-        // this.LayoutContainer();
-        // this.LayoutFlexContainer();
-        // this.LayoutClip();
-        // this.LayoutMarginPadding();
-
-        // this.WidgetButtons();
-        // this.WidgetLabel();
-        // this.WidgetTabView();
-        // this.WidgetScrollView();
-
-
-
-        // {
-        //     let scrollview = new RUIScrollView();
-        //     scrollview.width = 400;
-        //     scrollview.height= 200;
-        //     this.addChild(scrollview);
-
-        //     for(var i=0;i<10;i++){
-        //         let rect1 = new RUIRectangle();
-        //         rect1.width = 20 + 600* Math.random();
-        //         rect1.height = 20 + 50 * Math.random();
-
-        //         scrollview.addChild(rect1);
-        //     }
-
-
-
-        // }
-
-
     }
 
 
@@ -83,6 +50,7 @@ export class RUIDebug extends RUIContainer {
         let container = new RUIContainer();
 
         this.PageBasisAddRemove(container);
+        this.PageBasisToggleEnable(container);
 
         return container;
     }
@@ -97,7 +65,7 @@ export class RUIDebug extends RUIContainer {
         return container;
     }
 
-    private PageContainerRUIContainer(parent:RUIContainer){
+    private PageContainerRUIContainer(parent: RUIContainer) {
         let collapse = new RUICollapsibleContainer('RUIContainer', true);
         collapse.width = 400;
         parent.addChild(collapse);
@@ -151,7 +119,7 @@ export class RUIDebug extends RUIContainer {
         }
     }
 
-    private PageContainerMarginPadding(parent:RUIContainer){
+    private PageContainerMarginPadding(parent: RUIContainer) {
         let collapse = new RUICollapsibleContainer('Margin/Padding', true);
         collapse.width = 400;
         parent.addChild(collapse);
@@ -204,7 +172,7 @@ export class RUIDebug extends RUIContainer {
         }
     }
 
-    private PageContainerFlexContainer(parent:RUIContainer){
+    private PageContainerFlexContainer(parent: RUIContainer) {
         let collapse = new RUICollapsibleContainer('FlexContainer', true);
         collapse.width = 400;
         parent.addChild(collapse);
@@ -320,11 +288,9 @@ export class RUIDebug extends RUIContainer {
         }
     }
 
-    private PageBasisAddRemove(parent:RUIContainer) {
-        var collapse = new RUICollapsibleContainer('remove/add children',true);
-        collapse.width= 400;
-        collapse.padding = RUI.Vector(3);
-        collapse.boxBorder = RUIStyle.Default.primary;
+    private PageBasisAddRemove(parent: RUIContainer) {
+        var collapse = new RUICollapsibleContainer('remove/add children', true);
+        collapse.width = 400;
         parent.addChild(collapse);
 
         var c = new RUIContainer();
@@ -346,21 +312,17 @@ export class RUIDebug extends RUIContainer {
 
     }
 
-    private BasisEnable() {
-        this.addChild(new RUILabel('0.0-Enabled'));
+    private PageBasisToggleEnable(parent: RUIContainer) {
+        let collapse = new RUICollapsibleContainer('Enable/Disable', true);
+        collapse.width = 400;
+        parent.addChild(collapse);
 
-        let container = new RUIContainer();
-        container.boxBorder = RUIStyle.Default.primary;
-        container.boxOrientation = RUIOrientation.Horizontal;
-        container.padding = RUI.Vector(2);
-        this.addChild(container);
-
-        //container
         {
+            collapse.addChild(new RUILabel('container'));
             let c = new RUIContainer();
             c.padding = RUI.Vector(3);
             c.boxBorder = RUIStyle.Default.primary;
-            container.addChild(c);
+            collapse.addChild(c);
 
             var r1 = new RUIRectangle(120, 20);
             let btn = new RUIButton('enable/disable', (b) => {
@@ -372,8 +334,9 @@ export class RUIDebug extends RUIContainer {
             c.addChild(r1);
         }
 
-        //container has  single child
         {
+            collapse.addChild(new RUILabel('container has single child'));
+
             var rect = new RUIRectangle(50, 50);
             rect.enabled = true;
             let btn = new RUIButton("ClickMe", (b) => {
@@ -387,12 +350,13 @@ export class RUIDebug extends RUIContainer {
             c.boxBorder = RUIStyle.Default.primary;
             c.addChild(rect);
 
-            container.addChild(c);
-            container.addChild(btn);
+            collapse.addChild(c);
+            collapse.addChild(btn);
         }
 
-        //flex
         {
+            collapse.addChild(new RUILabel('flex'));
+
             let c = new RUIFlexContainer();
             c.padding = RUI.Vector(3);
             c.boxBorder = RUIStyle.Default.primary;
@@ -407,13 +371,11 @@ export class RUIDebug extends RUIContainer {
             btn.flex = 2;
             c.addChild(btn);
             c.addChild(r);
-
-            container.addChild(c);
+            collapse.addChild(c);
         }
 
-
-        //flex has single child
         {
+            collapse.addChild(new RUILabel('flex has single child'));
             var r2 = new RUIRectangle(50, 50);
             r2.flex = 1;
             r2.enabled = true;
@@ -429,42 +391,49 @@ export class RUIDebug extends RUIContainer {
             c2.boxBorder = RUIStyle.Default.primary;
             c2.addChild(r2);
 
-            container.addChild(c2);
-            container.addChild(btn);
+            collapse.addChild(c2);
+            collapse.addChild(btn);
         }
     }
 
+    private PageLayout() {
+        let container = new RUIContainer();
+        this.PageLayoutClip(container);
 
-    private LayoutClip() {
+        return container;
+    }
 
-        var label = new RUILabel('1.1-LayoutClip');
-        this.addChild(label);
+    private PageLayoutClip(parent: RUIContainer) {
+        let collapse = new RUICollapsibleContainer('Clip', true);
+        parent.addChild(collapse);
+        collapse.width = 400;
 
-        var container = new RUIContainer();
-        this.addChild(container);
-        container.boxOrientation = RUIOrientation.Horizontal;
-        container.boxBorder = RUIStyle.Default.primary;
-        container.padding = [3, 3, 3, 3];
+
+        collapse.addChild(new RUILabel('different types of clip'));
+
+        let wrap = new RUIContainer();
+        wrap.boxOrientation = RUIOrientation.Horizontal;
+        collapse.addChild(wrap);
 
         {
-            var container2 = new RUIContainer();
+            let container2 = new RUIContainer();
             container2.padding = [2, 2, 2, 2];
             container2.margin = [0, 50, 0, 0];
             container2.height = 94;
             container2.width = 40;
             container2.boxBorder = RUIStyle.Default.primary;
             container2.boxClip = RUIContainerClipType.NoClip;
-            container.addChild(container2);
+            wrap.addChild(container2);
 
 
             //clip default
-            var r1 = new RUIRectangle();
+            let r1 = new RUIRectangle();
             r1.width = 50;
             r1.height = 30;
             container2.addChild(r1);
 
             //clip offset
-            var r2 = new RUIRectangle();
+            let r2 = new RUIRectangle();
             r2.width = 50;
             r2.height = 30;
             r2.position = RUIPosition.Offset;
@@ -472,7 +441,7 @@ export class RUIDebug extends RUIContainer {
             container2.addChild(r2);
 
             //clip relative clip
-            var r3 = new RUIRectangle();
+            let r3 = new RUIRectangle();
             r3.width = 50;
             r3.height = 30;
             r3.position = RUIPosition.Relative;
@@ -481,24 +450,23 @@ export class RUIDebug extends RUIContainer {
             container2.addChild(r3);
         }
 
-
         {
-            var container1 = new RUIContainer();
+            let container1 = new RUIContainer();
             container1.padding = [2, 2, 2, 2];
             container1.margin = [0, 50, 0, 0];
             container1.height = 94;
             container1.width = 40;
             container1.boxBorder = RUIStyle.Default.primary;
-            container.addChild(container1);
+            wrap.addChild(container1);
 
             //clip default
-            var r1 = new RUIRectangle();
+            let r1 = new RUIRectangle();
             r1.width = 50;
             r1.height = 30;
             container1.addChild(r1);
 
             //clip offset
-            var r2 = new RUIRectangle();
+            let r2 = new RUIRectangle();
             r2.width = 50;
             r2.height = 30;
             r2.position = RUIPosition.Offset;
@@ -506,7 +474,7 @@ export class RUIDebug extends RUIContainer {
             container1.addChild(r2);
 
             //clip relative clip
-            var r3 = new RUIRectangle();
+            let r3 = new RUIRectangle();
             r3.width = 50;
             r3.height = 30;
             r3.position = RUIPosition.Relative;
@@ -516,22 +484,22 @@ export class RUIDebug extends RUIContainer {
         }
 
         {
-            var container1 = new RUIContainer();
+            let container1 = new RUIContainer();
             container1.padding = [2, 2, 2, 2];
             container1.height = 94;
             container1.width = 40;
             container1.boxBorder = RUIStyle.Default.primary;
-            container.addChild(container1);
+            wrap.addChild(container1);
 
             //clip default
-            var r1 = new RUIRectangle();
+            let r1 = new RUIRectangle();
             r1.width = 50;
             r1.height = 30;
             r1.isClip = false;
             container1.addChild(r1);
 
             //clip offset
-            var r2 = new RUIRectangle();
+            let r2 = new RUIRectangle();
             r2.width = 50;
             r2.height = 30;
             r2.position = RUIPosition.Offset;
@@ -540,7 +508,7 @@ export class RUIDebug extends RUIContainer {
             container1.addChild(r2);
 
             //clip relative clip
-            var r3 = new RUIRectangle();
+            let r3 = new RUIRectangle();
             r3.width = 50;
             r3.height = 30;
             r3.position = RUIPosition.Relative;
@@ -551,15 +519,15 @@ export class RUIDebug extends RUIContainer {
         }
 
         {
-            var c = new RUIContainer();
+            let c = new RUIContainer();
             c.padding = [2, 2, 2, 2];
             c.margin = [0, 0, 0, 50];
             c.height = 100;
             c.width = 100;
             c.boxBorder = RUIStyle.Default.primary;
-            container.addChild(c);
+            wrap.addChild(c);
 
-            var c1 = new RUIContainer();
+            let c1 = new RUIContainer();
             c1.padding = RUI.Vector(10);
             c1.width = 70;
             c1.height = 70;
@@ -570,7 +538,7 @@ export class RUIDebug extends RUIContainer {
             c1.addChild(new RUIRectangle(60, 60));
             c.addChild(c1);
 
-            var c2 = new RUIContainer();
+            let c2 = new RUIContainer();
             c2.boxBorder = RUIStyle.Default.primary;
             c2.boxClip = RUIContainerClipType.ClipSelf;
             c2.position = RUIPosition.Relative;
@@ -580,37 +548,46 @@ export class RUIDebug extends RUIContainer {
             c2.top = 0;
             c2.right = -30;
 
-            var r2 = new RUIRectangle(70, 60);
+            let r2 = new RUIRectangle(70, 60);
             r2.position = RUIPosition.Offset;
             r2.left = -50;
             r2.top = -20;
             c2.addChild(r2);
             c.addChild(c2);
-
         }
-
-
     }
 
-    private WidgetButtons() {
-        var label = new RUILabel('2.0-Buttons');
-        this.addChild(label);
 
-        this.addChild(new RUIButton('Button1'));
+    private PageWidget() {
+        let container = new RUIContainer();
+        this.WidgetButtons(container);
+
+        return container;
+    }
+
+
+
+    private WidgetButtons(parent: RUIContainer) {
+
+        let collapse = new RUICollapsibleContainer('Button', true);
+        collapse.width = 500;
+        parent.addChild(collapse);
+
+
 
         {
-            var btn1 = new RUIButton('LongText');
+            let btn1 = new RUIButton('LongText');
             btn1.width = 70;
-            this.addChild(btn1);
+            collapse.addChild(btn1);
         }
 
         //Button in container
         {
-            var c = new RUIContainer();
+            let c = new RUIContainer();
             c.width = 100;
             c.padding = [1, 1, 1, -50];
             c.boxBorder = RUIStyle.Default.primary;
-            this.addChild(c);
+            collapse.addChild(c);
 
             let btn = new RUIButton('Hello');
             btn.width = 100;
@@ -619,7 +596,7 @@ export class RUIDebug extends RUIContainer {
 
         //ButtonGroup
         {
-            var btnGroup = new RUIButtonGroup([
+            let btnGroup = new RUIButtonGroup([
                 new RUIButton('AAA'),
                 new RUIButton('BBB'),
                 new RUIButton('CCC'),
@@ -627,10 +604,7 @@ export class RUIDebug extends RUIContainer {
                 new RUIButton('EEE'),
             ], RUIOrientation.Horizontal);
             btnGroup.width = 450;
-            this.addChild(btnGroup);
-
-            // let canvas = new RUICanvas();
-            // this.addChild(canvas);
+            collapse.addChild(btnGroup);
 
             let btnGroupSwitch = new RUIButton('Switch BtnGroup', (b) => {
                 let orit = btnGroup.boxOrientation == RUIOrientation.Horizontal;
@@ -645,15 +619,28 @@ export class RUIDebug extends RUIContainer {
                 }
 
             });
-            this.addChild(btnGroupSwitch);
+            btnGroupSwitch.width= 200;
+            collapse.addChild(btnGroupSwitch);
         }
     }
 
-    private WidgetLabel() {
-        this.addChild(new RUILabel("2.1-Label"));
+
+    private PageCompoundWidget() {
+        let container = new RUIContainer();
+
+        this.WidgetTabView(container);
+        this.WidgetScrollView(container);
+
+        return container;
     }
 
-    private WidgetTabView() {
+
+
+    private WidgetTabView(parent: RUIContainer) {
+        let collapse = new RUICollapsibleContainer('tabview', true);
+        collapse.width = 400;
+        parent.addChild(collapse);
+
         {
 
             let c1 = new RUIContainer();
@@ -670,21 +657,23 @@ export class RUIDebug extends RUIContainer {
             tabview1.width = 400;
             tabview1.height = 300;
 
-            this.addChild(tabview1);
+            collapse.addChild(tabview1);
         }
     }
 
-    private WidgetScrollView() {
-        this.addChild(new RUILabel("2.2-scrollView"));
+    private WidgetScrollView(parent: RUIContainer) {
+        let collapse = new RUICollapsibleContainer('scrollview', true);
+        collapse.width = 400;
+        parent.addChild(collapse);
 
         {
             let c = new RUIContainer();
             c.boxOrientation = RUIOrientation.Horizontal;
-            this.addChild(c);
+            collapse.addChild(c);
 
             var sbarHorizontal = new RUIScrollBar(RUIOrientation.Horizontal, RUIScrollType.Always);
             sbarHorizontal.width = 500;
-            this.addChild(sbarHorizontal);
+            collapse.addChild(sbarHorizontal);
 
             let btnszInc = new RUIButton('szInc', (b) => {
                 sbarHorizontal.scrollSize += 0.1;
@@ -714,7 +703,7 @@ export class RUIDebug extends RUIContainer {
             let c2 = new RUIContainer();
             c2.boxOrientation = RUIOrientation.Horizontal;
             c2.margin = [10, 0, 0, 0];
-            this.addChild(c2);
+            collapse.addChild(c2);
 
             let sbarVertical = new RUIScrollBar(RUIOrientation.Vertical, RUIScrollType.Enabled);
             sbarVertical.height = 120;
