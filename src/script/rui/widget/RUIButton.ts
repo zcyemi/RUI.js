@@ -10,7 +10,7 @@ export class RUIButton extends RUIObject{
 
     public label:string;
 
-    private m_color:number[] = RUIStyle.Default.background1;
+    private m_color:number[] = RUIStyle.Default.background3;
     private m_onhover:boolean = false;
 
     public clickFunction?: RUIButtonFunc;
@@ -37,7 +37,7 @@ export class RUIButton extends RUIObject{
     }
 
     public onMouseLeave(){
-        this.m_color = RUIStyle.Default.background1;
+        this.m_color = RUIStyle.Default.background3;
         this.setDirty();
         this.m_onhover = false;
     }
@@ -57,7 +57,7 @@ export class RUIButton extends RUIObject{
             this.m_color = RUIStyle.Default.primary;
         }
         else{
-            this.m_color = RUIStyle.Default.background2;
+            this.m_color = RUIStyle.Default.background3;
         }
         this.setDirty();
     }

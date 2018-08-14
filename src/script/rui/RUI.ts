@@ -13,6 +13,22 @@ if(Array.prototype['includes'] == null){
 export type RUIColor = number[];
 
 
+export function ROUND(x:number){
+    return Math.round(x);
+}
+
+export function CLAMP(val:number,min:number,max:number){
+    return Math.min(Math.max(min, val), max);
+}
+
+export function SATURATE(val:number){
+    return Math.max(0,Math.min(1,val));
+}
+
+export function SIZE(val:number){
+    return Math.max(0,val);
+}
+
 export class RUI{
 
     public static readonly RED:RUIColor = [1,0,0,1];
@@ -74,6 +90,14 @@ export class RUI{
         if(x< rect[0] || y < rect[1]) return false;
         if(x > (rect[0]+ rect[2]) || y > (rect[1]+rect[3])) return false;
         return true;
+    }
+
+    public static IntersectNull(a:RUIRect,b:RUIRect):boolean{
+        if(a[0] > b[0] + b[2]) return true;
+        if(a[1] > b[1] +b[3]) return true;
+        if(b[0] > a[0]+ a[2]) return true;
+        if(b[1] > a[1]+ a[3]) return true;
+        return false;
     }
 
     

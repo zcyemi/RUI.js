@@ -35,7 +35,8 @@ export class RUIRectangle extends RUIObject{
         if(noclip) cmd.PushClipRect();
         
         let rect = this.calculateRect();
-        this._rect = rect;
+        this._rectclip = RUI.RectClip(rect,cmd.clipRect);
+        this._rect = this._rectclip;
         cmd.DrawRectWithColor(rect,this.m_debugColor);
 
         if(noclip) cmd.PopClipRect();

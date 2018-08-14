@@ -177,12 +177,11 @@ define("rui/RUICmdList", ["require", "exports", "rui/RUIObject", "rui/RUI"], fun
             if (clip != null) {
                 var cmd = RUIDrawCmd.CmdText(text, clirect, color);
                 cmd.clip = clip;
-                if (text === 'A')
-                    console.log("A>>" + this.m_clipRectP);
                 this.drawList.push(cmd);
             }
             else {
-                throw new Error();
+                //skip draw
+                return;
             }
             //this.DrawBorder(clirect,RUIColor.Red);
         };
@@ -228,9 +227,10 @@ define("rui/RUIStyle", ["require", "exports", "rui/RUI"], function (require, exp
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUIStyle = /** @class */ (function () {
         function RUIStyle() {
-            this.background0 = RUI_2.RUI.ColorUNorm(30, 30, 30, 255);
-            this.background1 = RUI_2.RUI.ColorUNorm(37, 37, 38);
-            this.background2 = RUI_2.RUI.ColorUNorm(51, 51, 51);
+            this.background0 = RUI_2.RUI.ColorUNorm(15, 15, 15, 255);
+            this.background1 = RUI_2.RUI.ColorUNorm(30, 30, 30, 255);
+            this.background2 = RUI_2.RUI.ColorUNorm(37, 37, 38);
+            this.background3 = RUI_2.RUI.ColorUNorm(51, 51, 51);
             this.primary = RUI_2.RUI.ColorUNorm(0, 122, 204);
             this.primary0 = RUI_2.RUI.ColorUNorm(9, 71, 113);
             this.inactive = RUI_2.RUI.ColorUNorm(63, 63, 70);
@@ -257,9 +257,16 @@ define("rui/RUIFlexContainer", ["require", "exports", "rui/RUIObject", "rui/RUIC
             var updateMode = this.containerUpdateCheck();
             if (updateMode == RUIContainer_1.RUIContainerUpdateMode.None)
                 return;
+            //onLayoutPre
+            for (var i = 0; i < clen; i++) {
+                children[i].onLayoutPre();
+            }
             if (updateMode == RUIContainer_1.RUIContainerUpdateMode.LayoutUpdate) {
                 for (var i = 0; i < clen; i++) {
-                    children[i].onLayout();
+                    var c = children[i];
+                    if (!c._enabled)
+                        continue;
+                    c.onLayout();
                 }
                 return;
             }
@@ -294,6 +301,8 @@ define("rui/RUIFlexContainer", ["require", "exports", "rui/RUIObject", "rui/RUIC
                 var relativeChildren = [];
                 for (var i = 0; i < clen; i++) {
                     var c = children[i];
+                    if (!c._enabled)
+                        continue;
                     if (!c.isOnFlow) {
                         relativeChildren.push(c);
                         continue;
@@ -339,8 +348,16 @@ define("rui/RUIFlexContainer", ["require", "exports", "rui/RUIObject", "rui/RUIC
                         this._calheight = childMaxSide + this.padding[RUIObject_2.RUIConst.TOP] + this.padding[RUIObject_2.RUIConst.BOTTOM];
                     }
                 }
+                if (this._calwidth == null) {
+                    this._calwidth = 0;
+                }
+                if (this._calheight == null) {
+                    this._calheight = 0;
+                }
                 for (var i = 0; i < clen; i++) {
                     var c = children[i];
+                    if (!c._enabled)
+                        continue;
                     if (!c.isOnFlow)
                         continue;
                     var flowsize = c.flex == null ? (isVertical ? c.height : c.width) : RUIObject_2.ROUND(c.flex * sizePerFlex);
@@ -368,6 +385,16 @@ define("rui/RUIFlexContainer", ["require", "exports", "rui/RUIObject", "rui/RUIC
                     c.fillPositionOffset();
                 }
                 this.onLayoutRelativeUI(relativeChildren);
+            }
+            else {
+                if (this._calwidth == null)
+                    this._calwidth = 0;
+                if (this._calheight == null)
+                    this._calheight = 0;
+            }
+            if (this._calwidth == null || this._calheight == null) {
+                console.error(this);
+                throw new Error();
             }
             this.isdirty = false;
             this._resized = false;
@@ -399,6 +426,7 @@ define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUI"], f
             _this.boxOverflow = RUIObject_3.RUIOverflow.Clip;
             _this.boxOrientation = RUIObject_3.RUIOrientation.Vertical;
             _this.boxBorder = null;
+            _this.boxBackground = null;
             _this.children = [];
             /** mark execute for children ui of @function traversal */
             _this.skipChildTraversal = false;
@@ -406,6 +434,13 @@ define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUI"], f
         }
         RUIContainer.prototype.onBuild = function () {
         };
+        Object.defineProperty(RUIContainer.prototype, "isVertical", {
+            get: function () {
+                return this.boxOrientation == RUIObject_3.RUIOrientation.Vertical;
+            },
+            enumerable: true,
+            configurable: true
+        });
         RUIContainer.prototype.addChild = function (ui) {
             if (ui == null) {
                 console.warn('can not add undefined child');
@@ -417,9 +452,12 @@ define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUI"], f
                 return;
             }
             ui.parent = this;
-            ui._root = this._root;
+            ui.setRoot(this._root);
             c.push(ui);
             ui.setDirty();
+        };
+        RUIContainer.prototype.hasChild = function (ui) {
+            return this.children.indexOf(ui) >= 0;
         };
         RUIContainer.prototype.removeChild = function (ui) {
             if (ui == null)
@@ -428,10 +466,20 @@ define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUI"], f
             var index = c.indexOf(ui);
             if (index < 0)
                 return;
-            this.children = c.splice(index, 1);
-            this.isdirty = true;
+            c.splice(index, 1);
+            this.setDirty();
             ui.parent = null;
-            ui._root = null;
+            ui.setRoot(null);
+        };
+        RUIContainer.prototype.removeChildByIndex = function (index) {
+            var c = this.children;
+            if (index < 0 || index >= c.length)
+                return null;
+            var ui = c[index];
+            c.splice(index, 1);
+            this.setDirty();
+            ui.parent = null;
+            ui.setRoot(null);
         };
         RUIContainer.prototype.containerUpdateCheck = function () {
             if (!this.isdirty && !this._resized) {
@@ -459,16 +507,26 @@ define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUI"], f
         RUIContainer.prototype.onLayout = function () {
             var isVertical = this.boxOrientation == RUIObject_3.RUIOrientation.Vertical;
             var children = this.children;
+            var clen = children.length;
             //check for dirty
             var updateMode = this.containerUpdateCheck();
             if (updateMode == RUIContainerUpdateMode.None)
                 return;
+            //onLayoutPre
+            for (var i = 0; i < clen; i++) {
+                children[i].onLayoutPre();
+            }
             if (updateMode == RUIContainerUpdateMode.LayoutUpdate) {
-                for (var i = 0, clen = children.length; i < clen; i++) {
-                    children[i].onLayout();
+                for (var i = 0; i < clen; i++) {
+                    var c = children[i];
+                    if (!c._enabled)
+                        continue;
+                    c.onLayout();
                 }
                 return;
             }
+            var isRelative = (this.position == RUIObject_3.RUIPosition.Relative || this.position == RUIObject_3.RUIPosition.Absolute);
+            //fillsize
             var offset = 0;
             var maxsize = 0;
             var offsetside = 0;
@@ -482,10 +540,14 @@ define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUI"], f
             if (children.length != 0) {
                 for (var i = 0, len = children.length; i < len; i++) {
                     var c = children[i];
+                    if (!c._enabled)
+                        continue;
                     if (c.isOnFlow == false) {
                         relativeChildren.push(c);
                         continue;
                     }
+                    c._flexwidth = null;
+                    c._flexheight = null;
                     c.onLayout();
                     var cw = c._calwidth;
                     var ch = c._calheight;
@@ -520,7 +582,6 @@ define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUI"], f
             }
             else {
             }
-            var isRelative = (this.position == RUIObject_3.RUIPosition.Relative || this.position == RUIObject_3.RUIPosition.Absolute);
             if (!isRelative) {
                 if (isVertical) {
                     this._calwidth = maxsize + padding[RUIObject_3.RUIConst.RIGHT] + padding[RUIObject_3.RUIConst.LEFT];
@@ -534,6 +595,67 @@ define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUI"], f
                     this._calwidth = this.width;
                 if (this.height != RUIObject_3.RUIAuto)
                     this._calheight = this.height;
+            }
+            else {
+                if (this._root.root == this) {
+                    var cleft = this.left;
+                    var cright = this.right;
+                    var ctop = this.top;
+                    var cbottom = this.bottom;
+                    var constraintH = cleft != RUIObject_3.RUIAuto && cright != RUIObject_3.RUIAuto;
+                    var constraintV = ctop != RUIObject_3.RUIAuto && cbottom != RUIObject_3.RUIAuto;
+                    var cwidth = this.width;
+                    var cheight = this.height;
+                    var rrect = this._root.rootRect;
+                    if (rrect == null) {
+                        console.error(this._root);
+                        throw new Error();
+                    }
+                    var rwidth = rrect[2];
+                    var rheight = rrect[3];
+                    if (constraintH) {
+                        this._calwidth = rwidth - cleft - cright;
+                        this._caloffsetx = cleft;
+                    }
+                    else {
+                        if (cwidth != RUIObject_3.RUIAuto) {
+                            this._calwidth = cwidth;
+                            if (cleft != RUIObject_3.RUIAuto) {
+                                this._caloffsetx = cleft;
+                            }
+                            else if (cright != RUIObject_3.RUIAuto) {
+                                this._caloffsetx = rwidth - cwidth - cright;
+                            }
+                            else {
+                                this._caloffsetx = RUIObject_3.ROUND((rwidth - cwidth) / 2.0);
+                            }
+                        }
+                        else {
+                            throw new Error();
+                        }
+                    }
+                    if (constraintV) {
+                        this._calheight = rheight - ctop - cbottom;
+                        this._caloffsety = ctop;
+                    }
+                    else {
+                        if (cheight != RUIObject_3.RUIAuto) {
+                            this._calwidth = cwidth;
+                            if (ctop != RUIObject_3.RUIAuto) {
+                                this._caloffsety = ctop;
+                            }
+                            else if (cbottom != RUIObject_3.RUIAuto) {
+                                this._caloffsety = rheight - cheight - cbottom;
+                            }
+                            else {
+                                this._caloffsety = RUIObject_3.ROUND((rheight - cheight) / 2.0);
+                            }
+                        }
+                        else {
+                            throw new Error();
+                        }
+                    }
+                }
             }
             //process relative children
             this.onLayoutRelativeUI(relativeChildren);
@@ -613,6 +735,8 @@ define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUI"], f
             var children = this.children;
             for (var i = 0, clen = children.length; i < clen; i++) {
                 var c = children[i];
+                if (!c._enabled)
+                    continue;
                 if (c.visible)
                     c.onDraw(cmd);
             }
@@ -621,6 +745,8 @@ define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUI"], f
         RUIContainer.prototype.onDrawPre = function (cmd) {
             var rect = this.calculateRect();
             this._rect = rect;
+            if (this.boxBackground != null)
+                cmd.DrawRectWithColor(rect, this.boxBackground);
             if (this.boxBorder != null)
                 cmd.DrawBorder(rect, this.boxBorder);
             var paddingrect = this.RectMinusePadding(rect, this.padding);
@@ -636,13 +762,13 @@ define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUI"], f
                 cmd.PopClipRect();
         };
         RUIContainer.prototype.RectMinusePadding = function (recta, offset) {
-            var pleft = offset[3];
-            var ptop = offset[0];
+            var pleft = Math.max(offset[3], 0);
+            var ptop = Math.max(offset[0], 0);
             return [
                 recta[0] + pleft,
                 recta[1] + ptop,
-                recta[2] - offset[1] - pleft,
-                recta[3] - offset[2] - ptop
+                recta[2] - Math.max(offset[1], 0) - pleft,
+                recta[3] - Math.max(offset[2], 0) - ptop
             ];
         };
         RUIContainer.prototype.setRoot = function (root) {
@@ -652,12 +778,7 @@ define("rui/RUIContainer", ["require", "exports", "rui/RUIObject", "rui/RUI"], f
             var children = this.children;
             for (var i = 0, clen = children.length; i < clen; i++) {
                 var c = children[i];
-                if (c instanceof RUIContainer) {
-                    c.setRoot(root);
-                }
-                else {
-                    c._root = root;
-                }
+                c.setRoot(root);
             }
         };
         RUIContainer.prototype.onMouseWheel = function (e) {
@@ -698,12 +819,7 @@ define("rui/RUIRoot", ["require", "exports", "rui/RUIEvent", "rui/RUIContainer",
                 throw new Error("root ui must have no parent.");
             this.expandSize = expandSize;
             this.root = ui;
-            if (ui instanceof RUIContainer_2.RUIContainer) {
-                ui.setRoot(this);
-            }
-            else {
-                ui._root = this;
-            }
+            ui.setRoot(this);
         }
         Object.defineProperty(RUIRoot.prototype, "rootRect", {
             get: function () {
@@ -713,9 +829,10 @@ define("rui/RUIRoot", ["require", "exports", "rui/RUIEvent", "rui/RUIContainer",
             configurable: true
         });
         RUIRoot.prototype.resizeRoot = function (width, height) {
-            if (this.m_rootSizeWidth == width && this.m_rootSizeHeight == height)
+            if (this.m_rootSizeWidth == width && this.m_rootSizeHeight == height) {
                 return;
-            this.isdirty = true;
+            }
+            this.root.setDirty(true);
             if (this.expandSize) {
                 var rootui = this.root;
                 var uiwidth = rootui.width;
@@ -821,6 +938,8 @@ define("rui/RUIRoot", ["require", "exports", "rui/RUIEvent", "rui/RUIContainer",
         RUIRoot.prototype.traversalAll = function (x, y) {
             var list = [];
             var f = function (ui) {
+                if (!ui._enabled)
+                    return;
                 if (ui.rectContains(x, y)) {
                     list.push(ui);
                 }
@@ -837,6 +956,8 @@ define("rui/RUIRoot", ["require", "exports", "rui/RUIEvent", "rui/RUIContainer",
         RUIRoot.prototype.traversalNormal = function (x, y) {
             var target = null;
             var f = function (ui) {
+                if (!ui._enabled)
+                    return;
                 if (ui.rectContains(x, y)) {
                     if (target == null) {
                         target = ui;
@@ -927,12 +1048,13 @@ define("rui/RUIObject", ["require", "exports", "rui/RUI"], function (require, ex
             this.parent = null;
             this.isdirty = true;
             this.isClip = true;
+            this.enabled = true;
+            this._enabled = true;
             this._caloffsetx = 0;
             this._caloffsety = 0;
             this._calx = 0;
             this._caly = 0;
             this._resized = true;
-            this._debuglog = false;
         }
         RUIObject.prototype.onDraw = function (cmd) {
         };
@@ -962,17 +1084,29 @@ define("rui/RUIObject", ["require", "exports", "rui/RUI"], function (require, ex
             enumerable: true,
             configurable: true
         });
+        RUIObject.prototype.onLayoutPre = function () {
+            if (this.enabled != this._enabled) {
+                this._enabled = this.enabled;
+                this.setDirty(true);
+            }
+        };
         RUIObject.prototype.onLayout = function () {
-            if (this._debugOnLayout != null)
-                this._debugOnLayout();
+            if (this._root == null) {
+                console.error(this);
+                throw new Error('ui root is null');
+            }
             var isRoot = this.isRoot;
             this.isdirty = false;
             if (!this._resized) {
-                if (this._calwidth == null)
+                var calw = this._calwidth;
+                var calh = this._calheight;
+                if (calw == null)
                     throw new Error();
-                if (this._calheight == null)
+                if (calh == null)
                     throw new Error();
-                return;
+                if (this._flexheight == calh && this._flexwidth == calw) {
+                    return;
+                }
             }
             this.fillSize();
             if (this._calheight == exports.RUIAuto)
@@ -996,6 +1130,9 @@ define("rui/RUIObject", ["require", "exports", "rui/RUI"], function (require, ex
             enumerable: true,
             configurable: true
         });
+        RUIObject.prototype.setRoot = function (root) {
+            this._root = root;
+        };
         RUIObject.prototype.setDirty = function (resize) {
             if (resize === void 0) { resize = false; }
             this.isdirty = true;
@@ -1004,10 +1141,15 @@ define("rui/RUIObject", ["require", "exports", "rui/RUI"], function (require, ex
                 root.isdirty = true;
             }
             if (this.parent != null) {
-                this.parent.isdirty = true;
+                this.parent.popupDirty();
             }
             if (resize)
                 this._resized = true;
+        };
+        RUIObject.prototype.popupDirty = function () {
+            this.isdirty = true;
+            if (this.parent != null)
+                this.parent.popupDirty();
         };
         RUIObject.prototype.onMouseDown = function (e) { };
         RUIObject.prototype.onMouseUp = function (e) { };
@@ -1397,7 +1539,7 @@ define("gl/wglShaderLib", ["require", "exports"], function (require, exports) {
     exports.GLSL_FRAG_COLOR = '#version 300 es\nprecision lowp float;\n\nin vec4 vColor;\n\nout vec4 fragColor;\n\nvoid main(){\nfragColor = vColor;\n}';
     exports.GLSL_VERT_DEF = '#version 300 es\nprecision mediump float;\nin vec3 aPosition;\nin vec4 aColor;\nin vec4 aClip;\n\nuniform vec4 uProj;\nout vec4 vColor;\n\nvoid main(){\nvec2 pos =aPosition.xy;\npos = clamp(pos,aClip.xy,aClip.zw);\npos = pos * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,aPosition.z,1);\nvColor = aColor;\n}';
     exports.GLSL_FRAG_TEXT = '#version 300 es\nprecision lowp float;\n\nin vec4 vColor;\nin vec2 vUV;\n\nuniform sampler2D uSampler;\n\nout vec4 fragColor;\n\nvoid main(){\nfragColor = texture(uSampler,vUV);\n}';
-    exports.GLSL_VERT_TEXT = '#version 300 es\nprecision mediump float;\nin vec3 aPosition;\nin vec4 aColor;\nin vec2 aUV;\nin vec4 aClip;\n\nuniform vec4 uProj;\nout vec4 vColor;\nout vec2 vUV;\n\nvoid main(){\nvec2 pos = aPosition.xy;\npos = clamp(pos,aClip.xy,aClip.zw);\npos = pos * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,aPosition.z,1);\nvColor = aColor;\nvUV =aUV;\n}';
+    exports.GLSL_VERT_TEXT = '#version 300 es\nprecision mediump float;\nin vec3 aPosition;\nin vec4 aColor;\nin vec2 aUV;\nin vec4 aClip;\n\nuniform vec4 uProj;\nout vec4 vColor;\nout vec2 vUV;\n\nvoid main(){\nvec2 pos = aPosition.xy;\npos = clamp(pos,aClip.xy,aClip.zw);\n\nvec2 offset = aPosition.xy - pos;\npos = pos * uProj.xy;\npos.y = 2.0 - pos.y;\npos.xy -=1.0;\ngl_Position = vec4(pos,aPosition.z,1);\nvColor = aColor;\nvUV =aUV - offset / 128.0;\n}';
 });
 define("rui/RUIFontTexture", ["require", "exports", "opentype.js", "rui/RUIEvent"], function (require, exports, opentype, RUIEvent_3) {
     "use strict";
@@ -1879,7 +2021,7 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
         RUIRenderer.prototype.resizeCanvas = function (w, h) {
             this.gl.canvas.width = w;
             this.gl.canvas.height = h;
-            //this.m_uicanvas.setSize(w,h);
+            this.m_uicanvas.setSize(w, h);
             this.m_projectParam = [2.0 / w, 2.0 / h, 0, 0];
             this.gl.viewport(0, 0, w, h);
             this.m_isResized = true;
@@ -1915,7 +2057,7 @@ define("rui/RUIRenderer", ["require", "exports", "wglut", "rui/RUIDrawCallBuffer
             gl.depthFunc(gl.LEQUAL);
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-            var clearColor = RUIStyle_1.RUIStyle.Default.background0;
+            var clearColor = RUIStyle_1.RUIStyle.Default.background1;
             gl.clearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
         };
         RUIRenderer.prototype.DrawCmdList = function (cmdlist) {
@@ -2041,6 +2183,10 @@ define("rui/RUICanvas", ["require", "exports", "rui/RUIInput", "rui/RUICursor", 
             enumerable: true,
             configurable: true
         });
+        RUICanvas.prototype.setSize = function (w, h) {
+            this.m_width = w;
+            this.m_height = h;
+        };
         return RUICanvas;
     }());
     exports.RUICanvas = RUICanvas;
@@ -2066,6 +2212,9 @@ define("rui/RUILayouter", ["require", "exports", "rui/RUIContainer", "rui/RUIObj
             // ui._caly = 0;
             // ui._level = 0;
             //Calculate All offset
+            var rootrect = uiroot.rootRect;
+            ui._calx = rootrect[0] + ui._caloffsetx;
+            ui._caly = rootrect[1] + ui._caloffsety;
             if (ui instanceof RUIContainer_4.RUIContainer) {
                 this.calculateOffset(ui);
             }
@@ -2121,7 +2270,8 @@ define("rui/RUIRectangle", ["require", "exports", "rui/RUIObject", "rui/RUI"], f
             if (noclip)
                 cmd.PushClipRect();
             var rect = this.calculateRect();
-            this._rect = rect;
+            this._rectclip = RUI_6.RUI.RectClip(rect, cmd.clipRect);
+            this._rect = this._rectclip;
             cmd.DrawRectWithColor(rect, this.m_debugColor);
             if (noclip)
                 cmd.PopClipRect();
@@ -2154,16 +2304,28 @@ define("rui/RUIRectangle", ["require", "exports", "rui/RUIObject", "rui/RUI"], f
     }(RUIObject_5.RUIObject));
     exports.RUIRectangle = RUIRectangle;
 });
-define("rui/widget/RUILabel", ["require", "exports", "rui/RUIObject", "rui/RUI"], function (require, exports, RUIObject_6, RUI_7) {
+define("rui/widget/RUILabel", ["require", "exports", "rui/RUIObject", "rui/RUI", "rui/RUIFontTexture"], function (require, exports, RUIObject_6, RUI_7, RUIFontTexture_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUILabel = /** @class */ (function (_super) {
         __extends(RUILabel, _super);
         function RUILabel(label) {
             var _this = _super.call(this) || this;
+            _this.m_textwidth = NaN;
             _this.label = label;
+            _this.width = 100;
             return _this;
         }
+        RUILabel.prototype.onLayoutPost = function () {
+            if (this.m_textwidth == NaN) {
+                var ftw = RUIFontTexture_3.RUIFontTexture.ASIICTexture.MeasureTextWith(this.label) + 20;
+                if (ftw != NaN) {
+                    this.m_textwidth = ftw;
+                    this.width = ftw;
+                    this.setDirty(true);
+                }
+            }
+        };
         RUILabel.prototype.onDraw = function (cmd) {
             var rect = this.calculateRect();
             this._rect = rect;
@@ -2184,7 +2346,7 @@ define("rui/widget/RUIButton", ["require", "exports", "rui/RUIObject", "rui/RUIS
         __extends(RUIButton, _super);
         function RUIButton(label, f) {
             var _this = _super.call(this) || this;
-            _this.m_color = RUIStyle_2.RUIStyle.Default.background1;
+            _this.m_color = RUIStyle_2.RUIStyle.Default.background3;
             _this.m_onhover = false;
             _this.label = label;
             _this.clickFunction = f;
@@ -2203,7 +2365,7 @@ define("rui/widget/RUIButton", ["require", "exports", "rui/RUIObject", "rui/RUIS
             this.m_onhover = true;
         };
         RUIButton.prototype.onMouseLeave = function () {
-            this.m_color = RUIStyle_2.RUIStyle.Default.background1;
+            this.m_color = RUIStyle_2.RUIStyle.Default.background3;
             this.setDirty();
             this.m_onhover = false;
         };
@@ -2221,7 +2383,7 @@ define("rui/widget/RUIButton", ["require", "exports", "rui/RUIObject", "rui/RUIS
                 this.m_color = RUIStyle_2.RUIStyle.Default.primary;
             }
             else {
-                this.m_color = RUIStyle_2.RUIStyle.Default.background2;
+                this.m_color = RUIStyle_2.RUIStyle.Default.background3;
             }
             this.setDirty();
         };
@@ -2288,453 +2450,7 @@ define("rui/widget/RUICanvas", ["require", "exports", "rui/RUIObject", "rui/RUIR
     }(RUIObject_8.RUIObject));
     exports.RUICanvas = RUICanvas;
 });
-define("rui/widget/RUISlider", ["require", "exports", "rui/RUIObject", "rui/RUIStyle"], function (require, exports, RUIObject_9, RUIStyle_3) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var RUISlider = /** @class */ (function (_super) {
-        __extends(RUISlider, _super);
-        function RUISlider(orientation) {
-            var _this = _super.call(this) || this;
-            _this.m_value = 0;
-            _this.orientation = orientation;
-            return _this;
-        }
-        Object.defineProperty(RUISlider.prototype, "value", {
-            get: function () {
-                return this.m_value;
-            },
-            set: function (val) {
-                this.m_value = val;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        RUISlider.prototype.onDraw = function (cmd) {
-            var rect = this.calculateRect();
-            this._rect = rect;
-            cmd.DrawRectWithColor(rect, RUIStyle_3.RUIStyle.Default.primary0);
-        };
-        return RUISlider;
-    }(RUIObject_9.RUIObject));
-    exports.RUISlider = RUISlider;
-});
-define("rui/RUIBinder", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    function RUIBind(tar, property, f) {
-        if (f == null)
-            return;
-        var descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(tar), property);
-        if (descriptor != null) {
-            var getter = descriptor.get;
-            var setter = descriptor.set;
-            if (getter == null || setter == null)
-                return;
-            Object.defineProperty(tar, property, {
-                enumerable: descriptor.enumerable,
-                get: function () {
-                    return getter.call(tar);
-                },
-                set: function (newval) {
-                    setter.call(tar, newval);
-                    f(tar[property]);
-                }
-            });
-        }
-        else {
-            var value = tar[property];
-            Object.defineProperty(tar, property, {
-                enumerable: true,
-                get: function () {
-                    return value;
-                },
-                set: function (newval) {
-                    value = newval;
-                    f(value);
-                }
-            });
-        }
-    }
-    exports.RUIBind = RUIBind;
-});
-define("rui/widget/RUIScrollBar", ["require", "exports", "rui/RUIObject", "rui/widget/RUIScrollView", "rui/RUIStyle", "rui/RUIContainer", "rui/RUIRectangle", "rui/RUIEvent", "rui/RUI"], function (require, exports, RUIObject_10, RUIScrollView_1, RUIStyle_4, RUIContainer_6, RUIRectangle_2, RUIEvent_6, RUI_9) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var RUIScrollBarThumb = /** @class */ (function (_super) {
-        __extends(RUIScrollBarThumb, _super);
-        function RUIScrollBarThumb(scrollbar) {
-            var _this = _super.call(this) || this;
-            _this.m_scrollBar = scrollbar;
-            _this.m_debugColor = RUIStyle_4.RUIStyle.Default.background2;
-            _this.m_isVertical = scrollbar.isVertical;
-            return _this;
-        }
-        RUIScrollBarThumb.prototype.onMouseDrag = function (e) {
-            var stage = e.stage;
-            if (stage == RUIEvent_6.RUIMouseDragStage.Begin) {
-                if (this.m_isVertical) {
-                    this.m_dragStart = e.mousey;
-                    this.m_dragStartTop = this.top;
-                }
-                else {
-                    this.m_dragStart = e.mousex;
-                    this.m_dragStartTop = this.left;
-                }
-            }
-            else if (stage == RUIEvent_6.RUIMouseDragStage.Update) {
-                if (this.m_isVertical) {
-                    this.position = (e.mousey - this.m_dragStart + this.m_dragStartTop);
-                    this.m_scrollBar.setBarPos(this.position);
-                }
-                else {
-                    this.position = (e.mousex - this.m_dragStart + this.m_dragStartTop);
-                    this.m_scrollBar.setBarPos(this.position);
-                }
-            }
-        };
-        return RUIScrollBarThumb;
-    }(RUIRectangle_2.RUIRectangle));
-    var RUIScrollBar = /** @class */ (function (_super) {
-        __extends(RUIScrollBar, _super);
-        function RUIScrollBar(orientation, scrollType) {
-            var _this = _super.call(this) || this;
-            _this.EventOnScroll = new REventEmitter();
-            _this.m_show = false;
-            _this.m_onHover = false;
-            _this.m_enabled = true;
-            _this.boxOrientation = orientation;
-            _this.scrollType = scrollType;
-            //add thumb
-            var rect = new RUIScrollBarThumb(_this);
-            rect.position = RUIObject_10.RUIPosition.Offset;
-            if (_this.isVertical) {
-                rect.left = 0;
-                rect.width = RUIScrollBar.THUMB_SIZE;
-                rect.height = 0;
-            }
-            else {
-                rect.left = 0;
-                rect.height = RUIScrollBar.THUMB_SIZE;
-                rect.width = 100;
-            }
-            _this.m_thumb = rect;
-            _this.addChild(rect);
-            return _this;
-        }
-        RUIScrollBar.prototype.setEnable = function (enable) {
-            if (this.m_enabled != enable) {
-                this.m_enabled = enable;
-                this.visible = enable;
-                this.setDirty();
-            }
-        };
-        Object.defineProperty(RUIScrollBar.prototype, "isVertical", {
-            get: function () {
-                return this.boxOrientation == RUIObject_10.RUIOrientation.Vertical;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        RUIScrollBar.prototype.onMouseLeave = function () {
-            this.m_onHover = false;
-            if (this.scrollType == RUIScrollView_1.RUIScrollType.Enabled) {
-                var self = this;
-                setTimeout(function () {
-                    self.doHide();
-                }, 1000);
-            }
-        };
-        RUIScrollBar.prototype.onMouseDown = function (e) {
-            var thumb = this.m_thumb;
-            if (this.isVertical) {
-                var offset = e.mousey - this._caly;
-                if (offset < thumb.top) {
-                    this.setBarPos(offset);
-                }
-                else {
-                    var pos = offset - thumb.height;
-                    this.setBarPos(pos);
-                }
-                this.setDirty();
-            }
-            else {
-                var offset = e.mousex - this._calx;
-                if (offset < thumb.left) {
-                    this.setBarPos(offset);
-                }
-                else {
-                    var pos = offset - thumb.width;
-                    this.setBarPos(pos);
-                }
-                this.setDirty();
-            }
-        };
-        RUIScrollBar.prototype.onLayout = function () {
-            _super.prototype.onLayout.call(this);
-        };
-        RUIScrollBar.prototype.onMouseEnter = function () {
-            this.m_onHover = true;
-            this.show();
-        };
-        RUIScrollBar.prototype.doHide = function () {
-            if (!this.m_onHover) {
-                this.m_show = false;
-                this.m_thumb.visible = false;
-                this.m_thumb.setDirty();
-                this.setDirty();
-            }
-        };
-        RUIScrollBar.prototype.show = function () {
-            if (this.m_show)
-                return;
-            if (this.scrollType == RUIScrollView_1.RUIScrollType.Enabled) {
-                this.m_show = true;
-                this.m_thumb.visible = true;
-                this.setDirty();
-                var self = this;
-                setTimeout(function () {
-                    self.doHide();
-                }, 1000);
-            }
-        };
-        RUIScrollBar.prototype.setBarSize = function (px) {
-            if (isNaN(px))
-                return;
-            var thumb = this.m_thumb;
-            if (this.isVertical) {
-                if (thumb.height != px) {
-                    this.m_thumbMaxSize = this._calheight - px;
-                    thumb.height = px;
-                    thumb.setDirty(true);
-                }
-            }
-            else {
-                if (thumb.width != px) {
-                    this.m_thumbMaxSize = this._calwidth - px;
-                    thumb.width = px;
-                    thumb.setDirty(true);
-                }
-            }
-        };
-        RUIScrollBar.prototype.setBarPos = function (px) {
-            if (isNaN(px))
-                return;
-            px = RUIObject_10.CLAMP(px, 0, this.m_thumbMaxSize);
-            var thumb = this.m_thumb;
-            if (this.isVertical) {
-                if (thumb.top != px) {
-                    this.EventOnScroll.emitRaw(px / this._calheight);
-                    this.show();
-                    thumb.top = px;
-                    thumb.setDirty();
-                    this.setDirty();
-                }
-            }
-            else {
-                if (thumb.left != px) {
-                    this.EventOnScroll.emitRaw(px / this._calwidth);
-                    this.show();
-                    thumb.left = px;
-                    thumb.setDirty();
-                    this.setDirty();
-                }
-            }
-        };
-        RUIScrollBar.prototype.setBarSizeVal = function (v) {
-            if (this.isVertical) {
-                this.setBarSize(RUIObject_10.ROUND(v * this._calheight));
-            }
-            else {
-                this.setBarSize(RUIObject_10.ROUND(v * this._calwidth));
-            }
-        };
-        RUIScrollBar.prototype.setBarPosVal = function (v) {
-            if (this.isVertical) {
-                this.setBarPos(RUIObject_10.ROUND(v * this._calheight));
-            }
-            else {
-                this.setBarPos(RUIObject_10.ROUND(v * this._calwidth));
-            }
-        };
-        RUIScrollBar.prototype.onDrawPre = function (cmd) {
-            _super.prototype.onDrawPre.call(this, cmd);
-            var scrolltype = this.scrollType;
-            if (scrolltype == RUIScrollView_1.RUIScrollType.Disabled)
-                return;
-            if (scrolltype == RUIScrollView_1.RUIScrollType.Always || this.m_show) {
-                cmd.DrawRectWithColor(this._rect, RUI_9.RUI.BLACK);
-                //draw thumb
-            }
-        };
-        RUIScrollBar.prototype.onDrawPost = function (cmd) {
-            _super.prototype.onDrawPost.call(this, cmd);
-        };
-        RUIScrollBar.BAR_SIZE = 10;
-        RUIScrollBar.THUMB_SIZE = 10;
-        return RUIScrollBar;
-    }(RUIContainer_6.RUIContainer));
-    exports.RUIScrollBar = RUIScrollBar;
-});
-define("rui/widget/RUIScrollView", ["require", "exports", "rui/RUIContainer", "rui/RUIObject", "rui/widget/RUIScrollBar", "rui/RUIStyle"], function (require, exports, RUIContainer_7, RUIObject_11, RUIScrollBar_1, RUIStyle_5) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var RUIScrollType;
-    (function (RUIScrollType) {
-        RUIScrollType[RUIScrollType["Enabled"] = 0] = "Enabled";
-        RUIScrollType[RUIScrollType["Disabled"] = 1] = "Disabled";
-        RUIScrollType[RUIScrollType["Always"] = 2] = "Always";
-    })(RUIScrollType = exports.RUIScrollType || (exports.RUIScrollType = {}));
-    var RUIScrollView = /** @class */ (function (_super) {
-        __extends(RUIScrollView, _super);
-        function RUIScrollView(scrollVertical, scrollHorizontal) {
-            if (scrollVertical === void 0) { scrollVertical = RUIScrollType.Enabled; }
-            if (scrollHorizontal === void 0) { scrollHorizontal = RUIScrollType.Enabled; }
-            var _this = _super.call(this) || this;
-            _this.m_maxscrollV = 0;
-            _this.m_maxscrollH = 0;
-            _this.m_offsetValV = 0;
-            _this.m_offsetValH = 0;
-            _this.wheelScroolPriority = RUIObject_11.RUIOrientation.Vertical;
-            _this.m_scrollHorizontal = scrollHorizontal;
-            _this.m_scrollVertical = scrollVertical;
-            _this.boxBorder = RUIStyle_5.RUIStyle.Default.border0;
-            //add container
-            var content = new RUIContainer_7.RUIContainer();
-            content.visible = true;
-            content.position = RUIObject_11.RUIPosition.Offset;
-            _super.prototype.addChild.call(_this, content);
-            _this.m_content = content;
-            //add scrollbar
-            _this.addScrollBar();
-            return _this;
-        }
-        RUIScrollView.prototype.addScrollBar = function () {
-            var hasVerticalBar = false;
-            var scrollVertical = this.m_scrollVertical;
-            if (scrollVertical != RUIScrollType.Disabled) {
-                var slider = new RUIScrollBar_1.RUIScrollBar(RUIObject_11.RUIOrientation.Vertical, scrollVertical);
-                slider.width = RUIScrollBar_1.RUIScrollBar.BAR_SIZE;
-                slider.position = RUIObject_11.RUIPosition.Relative;
-                slider.right = 0;
-                slider.top = 0;
-                slider.bottom = 0;
-                this.m_scrollBarV = slider;
-                _super.prototype.addChild.call(this, slider);
-                var self = this;
-                slider.EventOnScroll.on(function (val) {
-                    self.setContentScrollPosVal(null, val.object);
-                });
-                hasVerticalBar = true;
-            }
-            var scrollHorizontal = this.m_scrollHorizontal;
-            if (scrollHorizontal != RUIScrollType.Disabled) {
-                var slider = new RUIScrollBar_1.RUIScrollBar(RUIObject_11.RUIOrientation.Horizontal, scrollHorizontal);
-                slider.height = RUIScrollBar_1.RUIScrollBar.BAR_SIZE;
-                slider.position = RUIObject_11.RUIPosition.Relative;
-                slider.left = 0;
-                slider.right = hasVerticalBar ? RUIScrollBar_1.RUIScrollBar.BAR_SIZE : 0;
-                slider.bottom = 0;
-                this.m_scrollBarH = slider;
-                _super.prototype.addChild.call(this, slider);
-                var self = this;
-                slider.EventOnScroll.on(function (val) {
-                    self.setContentScrollPosVal(val.object, null);
-                });
-            }
-        };
-        RUIScrollView.prototype.setContentScrollPosVal = function (xval, yval) {
-            this.setContentScrollPos(xval ? (RUIObject_11.ROUND(-xval * this.m_content._calwidth)) : null, yval ? (-yval * this.m_content._calheight) : null);
-        };
-        RUIScrollView.prototype.setContentScrollPos = function (x, y) {
-            var changed = false;
-            var content = this.m_content;
-            if (x != null) {
-                var xpx = RUIObject_11.CLAMP(x, this.m_maxscrollH, 0);
-                if (!isNaN(xpx) && xpx != content.left) {
-                    content.left = xpx;
-                    changed = true;
-                    this.m_offsetValH = -xpx / content._calwidth;
-                    this.m_scrollBarH.setBarPosVal(this.m_offsetValH);
-                }
-            }
-            if (y != null) {
-                var ypx = RUIObject_11.CLAMP(y, this.m_maxscrollV, 0);
-                if (!isNaN(ypx) && ypx != content.top) {
-                    content.top = ypx;
-                    changed = true;
-                    this.m_offsetValV = -ypx / content._calheight;
-                    this.m_scrollBarV.setBarPosVal(this.m_offsetValV);
-                }
-            }
-            if (changed) {
-                this.setDirty();
-            }
-        };
-        RUIScrollView.prototype.onLayoutPost = function () {
-            if (this.m_scrollVertical != RUIScrollType.Disabled) {
-                var maxScrollV = this._calheight - this.m_content._calheight;
-                if (maxScrollV >= 0) {
-                    this.m_scrollBarV.setEnable(false);
-                }
-                else {
-                    this.m_scrollBarV.setEnable(true);
-                    this.m_maxscrollV = maxScrollV;
-                    var val = this._calheight / this.m_content._calheight;
-                    this.m_scrollBarV.setBarSizeVal(val);
-                }
-            }
-            if (this.m_scrollHorizontal != RUIScrollType.Disabled) {
-                var maxScrollH = this._calwidth - this.m_content._calwidth;
-                if (maxScrollH >= 0) {
-                    this.m_scrollBarH.setEnable(false);
-                }
-                else {
-                    this.m_scrollBarH.setEnable(true);
-                    this.m_maxscrollH = maxScrollH;
-                    var val = this._calwidth / this.m_content._calwidth;
-                    this.m_scrollBarH.setBarSizeVal(val);
-                }
-            }
-        };
-        RUIScrollView.prototype.onMouseWheel = function (e) {
-            var hasVertical = this.m_scrollVertical != RUIScrollType.Disabled;
-            var hasHorizontal = this.m_scrollHorizontal != RUIScrollType.Disabled;
-            var wheelVertical = true;
-            if (hasVertical) {
-                if (hasHorizontal) {
-                    wheelVertical = this.wheelScroolPriority == RUIObject_11.RUIOrientation.Vertical;
-                }
-            }
-            else {
-                if (hasHorizontal) {
-                    wheelVertical = false;
-                }
-                else {
-                    return;
-                }
-            }
-            var delta = e.delta * 0.5;
-            var content = this.m_content;
-            var newoffset = (wheelVertical ? content.top : content.left) - delta;
-            if (wheelVertical) {
-                this.setContentScrollPos(null, newoffset);
-            }
-            else {
-                this.setContentScrollPos(newoffset, null);
-            }
-            e.Use();
-        };
-        RUIScrollView.prototype.addChild = function (ui) {
-            this.m_content.addChild(ui);
-        };
-        RUIScrollView.prototype.removeChild = function (ui) {
-            this.m_content.removeChild(ui);
-        };
-        return RUIScrollView;
-    }(RUIContainer_7.RUIContainer));
-    exports.RUIScrollView = RUIScrollView;
-});
-define("rui/widget/RUIButtonGroup", ["require", "exports", "rui/RUIContainer", "rui/RUIObject", "rui/RUIStyle"], function (require, exports, RUIContainer_8, RUIObject_12, RUIStyle_6) {
+define("rui/widget/RUIButtonGroup", ["require", "exports", "rui/RUIContainer", "rui/RUIObject", "rui/RUIStyle"], function (require, exports, RUIContainer_6, RUIObject_9, RUIStyle_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUIButtonGroup = /** @class */ (function (_super) {
@@ -2747,13 +2463,14 @@ define("rui/widget/RUIButtonGroup", ["require", "exports", "rui/RUIContainer", "
             _this.m_hasBtnScroll = false;
             _this.m_buttons = buttons;
             _this.boxOrientation = orientation;
-            _this.boxBorder = RUIStyle_6.RUIStyle.Default.primary0;
+            _this.boxBorder = RUIStyle_3.RUIStyle.Default.primary0;
+            _this.boxClip = RUIContainer_6.RUIContainerClipType.ClipSelf;
             _this.padding = [1, 1, 1, 1];
             for (var i = 0, len = buttons.length; i < len; i++) {
                 var btn = buttons[i];
                 _this.addButton(btn);
             }
-            _this.m_isVertical = orientation == RUIObject_12.RUIOrientation.Vertical;
+            _this.m_isVertical = orientation == RUIObject_9.RUIOrientation.Vertical;
             _this.resizeButtons();
             return _this;
         }
@@ -2769,6 +2486,9 @@ define("rui/widget/RUIButtonGroup", ["require", "exports", "rui/RUIContainer", "
         RUIButtonGroup.prototype.removeButton = function (btn) {
             _super.prototype.removeChild.call(this, btn);
         };
+        RUIButtonGroup.prototype.getButtonIndex = function (btn) {
+            return this.m_buttons.indexOf(btn);
+        };
         RUIButtonGroup.prototype.onLayoutPost = function () {
             _super.prototype.onLayoutPost.call(this);
             if (!this.m_initResized) {
@@ -2777,7 +2497,7 @@ define("rui/widget/RUIButtonGroup", ["require", "exports", "rui/RUIContainer", "
                 this.m_initResized = true;
             }
             else {
-                var newisVertical = this.boxOrientation == RUIObject_12.RUIOrientation.Vertical;
+                var newisVertical = this.boxOrientation == RUIObject_9.RUIOrientation.Vertical;
                 if (newisVertical != this.m_isVertical) {
                     this.m_isVertical = newisVertical;
                     this.resizeButtons();
@@ -2790,7 +2510,7 @@ define("rui/widget/RUIButtonGroup", ["require", "exports", "rui/RUIContainer", "
             var isvertical = this.m_isVertical;
             if (isvertical) {
                 this.padding[3] = 1;
-                if (this.width != RUIObject_12.RUIAuto) {
+                if (this.width != RUIObject_9.RUIAuto) {
                     this.m_buttons.forEach(function (b) {
                         b.width = _this.width;
                     });
@@ -2803,7 +2523,7 @@ define("rui/widget/RUIButtonGroup", ["require", "exports", "rui/RUIContainer", "
             }
             else {
                 this.padding[0] = 1;
-                if (this.width == RUIObject_12.RUIAuto) {
+                if (this.width == RUIObject_9.RUIAuto) {
                     this.m_buttons.forEach(function (b) {
                         b.width = _this.buttonSize;
                     });
@@ -2828,7 +2548,7 @@ define("rui/widget/RUIButtonGroup", ["require", "exports", "rui/RUIContainer", "
                 if (this.m_btnTotalSize > this._calheight) {
                     var maxoffset = this.m_btnTotalSize - this._calheight;
                     offset -= e.delta * 0.25;
-                    offset = RUIObject_12.CLAMP(offset, -maxoffset, 0);
+                    offset = RUIObject_9.CLAMP(offset, -maxoffset, 0);
                     this.m_hasBtnScroll = true;
                 }
                 else {
@@ -2846,7 +2566,7 @@ define("rui/widget/RUIButtonGroup", ["require", "exports", "rui/RUIContainer", "
                 if (this.m_btnTotalSize > this._calwidth) {
                     var maxoffset = this.m_btnTotalSize - this._calwidth;
                     offset -= e.delta * 0.25;
-                    offset = RUIObject_12.CLAMP(offset, -maxoffset, 0);
+                    offset = RUIObject_9.CLAMP(offset, -maxoffset, 0);
                     this.m_hasBtnScroll = true;
                 }
                 else {
@@ -2862,80 +2582,946 @@ define("rui/widget/RUIButtonGroup", ["require", "exports", "rui/RUIContainer", "
         };
         RUIButtonGroup.BUTTON_WIDTH = 100;
         return RUIButtonGroup;
-    }(RUIContainer_8.RUIContainer));
+    }(RUIContainer_6.RUIContainer));
     exports.RUIButtonGroup = RUIButtonGroup;
 });
-define("rui/widget/RUIDebug", ["require", "exports", "rui/RUIContainer", "rui/widget/RUILabel", "rui/widget/RUIButton", "rui/RUIRectangle", "rui/RUIObject", "rui/RUIStyle", "rui/RUIFlexContainer", "rui/RUI"], function (require, exports, RUIContainer_9, RUILabel_1, RUIButton_1, RUIRectangle_3, RUIObject_13, RUIStyle_7, RUIFlexContainer_1, RUI_10) {
+define("rui/RUIBinder", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function BIND_EMITTER(property) {
+        return '_ruibind$' + property;
+    }
+    exports.BIND_EMITTER = BIND_EMITTER;
+    function RUIBind(tar, property, f) {
+        if (f == null)
+            return;
+        var identifier = BIND_EMITTER(property);
+        var emitter = tar[identifier];
+        if (emitter == undefined) {
+            emitter = [f];
+            tar[identifier] = emitter;
+            var descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(tar), property);
+            if (descriptor != null) {
+                var getter = descriptor.get;
+                var setter = descriptor.set;
+                if (getter == null || setter == null)
+                    return;
+                Object.defineProperty(tar, property, {
+                    enumerable: descriptor.enumerable,
+                    get: function () {
+                        return getter.call(tar);
+                    },
+                    set: function (newval) {
+                        setter.call(tar, newval);
+                        var val = tar[property];
+                        tar[identifier].forEach(function (f) {
+                            f(val);
+                        });
+                    }
+                });
+            }
+            else {
+                var value = tar[property];
+                Object.defineProperty(tar, property, {
+                    enumerable: true,
+                    get: function () {
+                        return value;
+                    },
+                    set: function (newval) {
+                        value = newval;
+                        var val = tar[property];
+                        tar[identifier].forEach(function (f) {
+                            f(val);
+                        });
+                    }
+                });
+            }
+        }
+        else {
+            if (emitter.indexOf(f) >= 0) {
+                console.warn('function alread binded');
+                return;
+            }
+            else {
+                emitter.push(f);
+            }
+        }
+    }
+    exports.RUIBind = RUIBind;
+});
+define("rui/widget/RUIScrollBar", ["require", "exports", "rui/RUIObject", "rui/RUIContainer", "rui/RUIStyle", "rui/RUIRectangle", "rui/RUIEvent"], function (require, exports, RUIObject_10, RUIContainer_7, RUIStyle_4, RUIRectangle_2, RUIEvent_6) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    // import { RUISlider } from "./RUISlider";
+    // import { RUIOrientation, RUIPosition, RUIObject, ROUND, CLAMP } from "../RUIObject";
+    // import { RUIScrollType } from "./RUIScrollView";
+    // import { RUICmdList } from "../RUICmdList";
+    // import { RUIStyle } from "../RUIStyle";
+    // import { RUIContainer } from "../RUIContainer";
+    // import { RUIRectangle } from "../RUIRectangle";
+    // import { RUIMouseDragEvent, RUIMouseDragStage, RUIMouseEvent, RUIEventEmitter } from "../RUIEvent";
+    // import { RUI } from "../RUI";
+    // class RUIScrollBarThumb extends RUIRectangle{
+    //     private m_scrollBar: RUIScrollBar;
+    //     private m_dragStart: number;
+    //     private m_dragStartTop:number;
+    //     public position: number;
+    //     private m_isVertical:boolean;
+    //     public constructor(scrollbar: RUIScrollBar){
+    //         super();
+    //         this.m_scrollBar = scrollbar;
+    //         this.m_debugColor = RUIStyle.Default.background2;
+    //         this.m_isVertical= scrollbar.isVertical;
+    //     }
+    //     public onMouseDrag(e:RUIMouseDragEvent){
+    //         let stage = e.stage;
+    //         if(stage == RUIMouseDragStage.Begin){
+    //             if(this.m_isVertical){
+    //                 this.m_dragStart = e.mousey;
+    //                 this.m_dragStartTop = this.top;
+    //             }
+    //             else{
+    //                 this.m_dragStart = e.mousex;
+    //                 this.m_dragStartTop =this.left;
+    //             }
+    //         }
+    //         else if(stage == RUIMouseDragStage.Update){
+    //             if(this.m_isVertical){
+    //                 this.position = (e.mousey - this.m_dragStart + this.m_dragStartTop);
+    //                 this.m_scrollBar.setBarPos(this.position);
+    //             }
+    //             else{
+    //                 this.position = (e.mousex - this.m_dragStart + this.m_dragStartTop);
+    //                 this.m_scrollBar.setBarPos(this.position);
+    //             }
+    //         }
+    //     }
+    // }
+    // export class RUIScrollBar extends RUIContainer{
+    //     public EventOnScroll: RUIEventEmitter<number> = new RUIEventEmitter();
+    //     public scrollType: RUIScrollType;
+    //     private m_show : boolean= false;
+    //     private m_onHover:boolean = false;
+    //     private m_thumb: RUIScrollBarThumb;
+    //     private m_thumbMaxSize: number;
+    //     private m_enabled:boolean = true;
+    //     public static readonly BAR_SIZE:number = 10;
+    //     public static readonly THUMB_SIZE:number = 10;
+    //     public setEnable(enable:boolean){
+    //         if(this.m_enabled != enable){
+    //             this.m_enabled = enable;
+    //             this.visible = enable;
+    //             this.setDirty();
+    //         }
+    //     }
+    //     public get isVertical():boolean{
+    //         return this.boxOrientation == RUIOrientation.Vertical;
+    //     }
+    //     public constructor(orientation: RUIOrientation,scrollType: RUIScrollType){
+    //         super();
+    //         this.boxOrientation = orientation;
+    //         this.scrollType = scrollType;
+    //         //add thumb
+    //         let rect = new RUIScrollBarThumb(this);
+    //         rect.position = RUIPosition.Offset;
+    //         if(this.isVertical){
+    //             rect.left = 0;
+    //             rect.width = RUIScrollBar.THUMB_SIZE;
+    //             rect.height = 0;
+    //         }
+    //         else{
+    //             rect.left=0;
+    //             rect.height = RUIScrollBar.THUMB_SIZE;
+    //             rect.width = 100;
+    //         }
+    //         this.m_thumb = rect;
+    //         this.addChild(rect);
+    //     }
+    //     public onMouseLeave(){
+    //         this.m_onHover= false;
+    //         if(this.scrollType == RUIScrollType.Enabled){
+    //             var self = this;
+    //             setTimeout(() => {
+    //                 self.doHide();
+    //             }, 1000);
+    //         }
+    //     }
+    //     public onMouseDown(e:RUIMouseEvent){
+    //         let thumb = this.m_thumb;
+    //         if(this.isVertical){
+    //             let offset = e.mousey - this._caly;
+    //             if(offset < thumb.top){
+    //                 this.setBarPos(offset);
+    //             }
+    //             else{
+    //                 let pos = offset - thumb.height;
+    //                 this.setBarPos(pos);
+    //             }
+    //             this.setDirty();
+    //         }
+    //         else{
+    //             let offset = e.mousex - this._calx;
+    //             if(offset < thumb.left){
+    //                 this.setBarPos(offset);
+    //             }
+    //             else{
+    //                 let pos = offset - thumb.width;
+    //                 this.setBarPos(pos);
+    //             }
+    //             this.setDirty();
+    //         }
+    //     }
+    //     public onLayout(){
+    //         super.onLayout();
+    //     }
+    //     public onMouseEnter(){
+    //         this.m_onHover = true;
+    //         this.show();
+    //     }
+    //     private doHide(){
+    //         if(!this.m_onHover){
+    //             this.m_show = false;
+    //             this.m_thumb.visible= false;
+    //             this.m_thumb.setDirty();
+    //             this.setDirty();
+    //         }
+    //     }
+    //     public show(){
+    //         if(this.m_show) return;
+    //         if(this.scrollType == RUIScrollType.Enabled){
+    //             this.m_show=true;
+    //             this.m_thumb.visible= true;
+    //             this.setDirty();
+    //             var self = this;
+    //             setTimeout(() => {
+    //                 self.doHide();
+    //             }, 1000);
+    //         }
+    //     }
+    //     public setBarSize(px:number){
+    //         if(isNaN(px)) return;
+    //         let thumb= this.m_thumb;
+    //         if(this.isVertical){
+    //             if(thumb.height != px){
+    //                 this.m_thumbMaxSize = this._calheight - px;
+    //                 thumb.height = px;
+    //                 thumb.setDirty(true);
+    //             }
+    //         }
+    //         else{
+    //             if(thumb.width != px){
+    //                 this.m_thumbMaxSize = this._calwidth - px;
+    //                 thumb.width = px;
+    //                 thumb.setDirty(true);
+    //             }
+    //         }
+    //     }
+    //     public setBarPos(px:number){
+    //         if(isNaN(px)) return;
+    //         px = CLAMP(px,0,this.m_thumbMaxSize);
+    //         let thumb = this.m_thumb;
+    //         if(this.isVertical){
+    //             if(thumb.top != px){
+    //                 this.EventOnScroll.emitRaw(px / this._calheight);
+    //                 this.show();
+    //                 thumb.top = px;
+    //                 thumb.setDirty();
+    //                 this.setDirty();
+    //             }
+    //         }
+    //         else{
+    //             if(thumb.left != px){
+    //                 this.EventOnScroll.emitRaw(px / this._calwidth);
+    //                 this.show();
+    //                 thumb.left = px;
+    //                 thumb.setDirty();
+    //                 this.setDirty();
+    //             }
+    //         }
+    //     }
+    //     public setBarSizeVal(v:number){
+    //         if(this.isVertical){
+    //             this.setBarSize(ROUND(v * this._calheight));
+    //         }
+    //         else{
+    //             this.setBarSize(ROUND(v * this._calwidth));
+    //         }
+    //     }
+    //     public setBarPosVal(v:number){
+    //         if(this.isVertical){
+    //             this.setBarPos(ROUND(v * this._calheight));
+    //         }else{
+    //             this.setBarPos(ROUND(v * this._calwidth));
+    //         }
+    //     }
+    //     public onDrawPre(cmd:RUICmdList){
+    //         super.onDrawPre(cmd);
+    //         let scrolltype = this.scrollType;
+    //         if(scrolltype == RUIScrollType.Disabled) return;
+    //         if(scrolltype == RUIScrollType.Always || this.m_show){
+    //             cmd.DrawRectWithColor(this._rect,RUI.BLACK);
+    //             //draw thumb
+    //         }
+    //     }
+    //     public onDrawPost(cmd:RUICmdList){
+    //         super.onDrawPost(cmd);
+    //     }
+    // }
+    var RUIScrollType;
+    (function (RUIScrollType) {
+        RUIScrollType[RUIScrollType["Enabled"] = 0] = "Enabled";
+        RUIScrollType[RUIScrollType["Disabled"] = 1] = "Disabled";
+        RUIScrollType[RUIScrollType["Always"] = 2] = "Always";
+    })(RUIScrollType = exports.RUIScrollType || (exports.RUIScrollType = {}));
+    var RUIScrollBarThumb = /** @class */ (function (_super) {
+        __extends(RUIScrollBarThumb, _super);
+        function RUIScrollBarThumb(scrollbar) {
+            var _this = _super.call(this) || this;
+            _this.m_scrollbar = null;
+            _this.m_onHover = false;
+            _this.m_onDrag = false;
+            _this.m_scrollbar = scrollbar;
+            _this.m_debugColor = RUIStyle_4.RUIStyle.Default.background2;
+            return _this;
+        }
+        RUIScrollBarThumb.prototype.onMouseDrag = function (e) {
+            var isvertical = this.m_scrollbar.isVertical;
+            if (e.stage == RUIEvent_6.RUIMouseDragStage.Begin) {
+                this.m_dragStartOffset = (isvertical ? e.mousey - this.top : e.mousex - this.left);
+                this.m_onDrag = true;
+            }
+            else if (e.stage == RUIEvent_6.RUIMouseDragStage.Update) {
+                var pos = (isvertical ? e.mousey : e.mousex) - this.m_dragStartOffset;
+                var bar = this.m_scrollbar;
+                var barsize = isvertical ? bar._calheight : bar._calwidth;
+                var off = isvertical ? this.top : this.left;
+                pos = RUIObject_10.CLAMP(pos, 0, barsize - (isvertical ? this._calheight : this._calwidth));
+                if (off == pos)
+                    return;
+                pos = pos / barsize;
+                bar.onThumbDrag(pos);
+                this.m_onDrag = true;
+            }
+            else {
+                this.m_onDrag = false;
+            }
+            this.setDirty();
+        };
+        RUIScrollBarThumb.prototype.onMouseEnter = function () {
+            this.m_onHover = true;
+            this.setDirty();
+        };
+        RUIScrollBarThumb.prototype.onMouseLeave = function () {
+            this.m_onHover = false;
+            this.setDirty();
+        };
+        RUIScrollBarThumb.prototype.onLayoutPost = function () {
+            if (this.m_onDrag) {
+                this.m_debugColor = RUIStyle_4.RUIStyle.Default.primary0;
+            }
+            else if (this.m_onHover) {
+                this.m_debugColor = RUIStyle_4.RUIStyle.Default.primary;
+            }
+            else {
+                this.m_debugColor = RUIStyle_4.RUIStyle.Default.background3;
+            }
+        };
+        return RUIScrollBarThumb;
+    }(RUIRectangle_2.RUIRectangle));
+    var RUIScrollBar = /** @class */ (function (_super) {
+        __extends(RUIScrollBar, _super);
+        function RUIScrollBar(orit, type) {
+            if (orit === void 0) { orit = RUIObject_10.RUIOrientation.Horizontal; }
+            if (type === void 0) { type = RUIScrollType.Enabled; }
+            var _this = _super.call(this) || this;
+            _this.m_show = true;
+            _this.EventOnScroll = new RUIEvent_6.RUIEventEmitter();
+            _this.boxOrientation = orit;
+            _this.m_scrolltype = type;
+            _this.m_size = 0.5;
+            _this.m_position = 0.0;
+            var thumb = new RUIScrollBarThumb(_this);
+            thumb.width = 10;
+            thumb.height = 10;
+            thumb.position = RUIObject_10.RUIPosition.Offset;
+            _this.m_thumb = thumb;
+            _this.addChild(thumb);
+            _this.setOrientation(_this.boxOrientation);
+            _this.scrollSize = 0.5;
+            return _this;
+        }
+        Object.defineProperty(RUIScrollBar.prototype, "scrollSize", {
+            get: function () {
+                return this.m_size;
+            },
+            set: function (val) {
+                var v = RUIObject_10.CLAMP(val, 0, 1.0);
+                if (this.m_size != v) {
+                    this.m_show = true;
+                    if (v == 0 || v == 1.0) {
+                        this.scrollPos = 0;
+                        this.EventOnScroll.emitRaw(0);
+                        if (!this.isAlwayShow) {
+                            this.m_show = false;
+                        }
+                    }
+                    this.m_size = v;
+                    this.setDirty(true);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RUIScrollBar.prototype, "scrollPos", {
+            get: function () {
+                return this.m_position;
+            },
+            set: function (val) {
+                var v = RUIObject_10.CLAMP(val, 0, 1.0 - this.m_size);
+                if (this.m_position != v) {
+                    this.m_position = v;
+                    this.setDirty();
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RUIScrollBar.prototype, "isAlwayShow", {
+            get: function () {
+                return this.m_scrolltype == RUIScrollType.Always;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        RUIScrollBar.prototype.onThumbDrag = function (val) {
+            this.scrollPos = val;
+            this.EventOnScroll.emitRaw(val);
+        };
+        RUIScrollBar.prototype.onScrollBarClick = function (val) {
+            this.scrollPos = val;
+            this.EventOnScroll.emitRaw(val);
+        };
+        RUIScrollBar.prototype.onLayoutPost = function () {
+            var isvertical = this.isVertical;
+            var barsize = (isvertical ? this._calheight : this._calwidth);
+            var thumbsize = barsize * this.m_size;
+            var thumbpos = barsize * this.m_position;
+            var thumb = this.m_thumb;
+            if (isvertical) {
+                if (thumb.height != thumbsize) {
+                    thumb.height = thumbsize;
+                    thumb.setDirty(true);
+                }
+                if (thumb.top != thumbpos) {
+                    thumb.top = thumbpos;
+                    thumb.setDirty();
+                }
+            }
+            else {
+                if (thumb.width != thumbsize) {
+                    thumb.width = thumbsize;
+                    thumb.setDirty(true);
+                }
+                if (thumb.left != thumbpos) {
+                    thumb.left = thumbpos;
+                    thumb.setDirty();
+                }
+            }
+        };
+        RUIScrollBar.prototype.onMouseDown = function (e) {
+            if (this.scrollSize == 0)
+                return;
+            var isvertical = this.isVertical;
+            if (isvertical) {
+                var pos = (e.mousey - this._caly) / this._calheight;
+                if (pos < this.m_position) {
+                    this.onScrollBarClick(pos);
+                }
+                else {
+                    var posend = this.scrollPos + this.scrollSize;
+                    if (pos > posend) {
+                        this.onScrollBarClick(pos - this.scrollSize);
+                    }
+                }
+            }
+            else {
+                var pos = (e.mousex - this._calx) / this._calwidth;
+                if (pos < this.m_position) {
+                    this.onScrollBarClick(pos);
+                }
+                else {
+                    var posend = this.scrollPos + this.scrollSize;
+                    if (pos > posend) {
+                        this.onScrollBarClick(pos - this.scrollSize);
+                    }
+                }
+            }
+        };
+        RUIScrollBar.prototype.setOrientation = function (orit) {
+            if (this.isVertical) {
+                this.width = RUIScrollBar.BAR_SIZE;
+            }
+            else {
+                this.height = RUIScrollBar.BAR_SIZE;
+            }
+        };
+        RUIScrollBar.prototype.onDrawPre = function (cmd) {
+            _super.prototype.onDrawPre.call(this, cmd);
+            if (this.m_show) {
+                cmd.DrawRectWithColor(this._rect, RUIStyle_4.RUIStyle.Default.background0);
+            }
+        };
+        RUIScrollBar.BAR_SIZE = 10;
+        return RUIScrollBar;
+    }(RUIContainer_7.RUIContainer));
+    exports.RUIScrollBar = RUIScrollBar;
+});
+define("rui/widget/RUIScrollView", ["require", "exports", "rui/RUIContainer", "rui/widget/RUIScrollBar", "rui/RUIObject", "rui/RUIStyle"], function (require, exports, RUIContainer_8, RUIScrollBar_1, RUIObject_11, RUIStyle_5) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    // import { RUIContainer, RUIContainerClipType } from "../RUIContainer";
+    // import { RUIPosition, RUIObject, RUIOrientation, RUIAuto, CLAMP, ROUND } from "../RUIObject";
+    // import { RUISlider } from "./RUISlider";
+    // import { RUIBind } from "../RUIBinder";
+    // import { RUIScrollBar } from "./RUIScrollBar";
+    // import { RUIWheelEvent } from "../RUIEvent";
+    // import { RUIStyle } from "../RUIStyle";
+    // export enum RUIScrollType{
+    //     Enabled,
+    //     Disabled,
+    //     Always
+    // }
+    // export class RUIScrollView extends RUIContainer{
+    //     private m_scrollVertical: RUIScrollType;
+    //     private m_scrollHorizontal :RUIScrollType;
+    //     private m_content: RUIContainer;
+    //     private m_scrollBarV: RUIScrollBar;
+    //     private m_scrollBarH :RUIScrollBar;
+    //     private m_maxscrollV :number = 0;
+    //     private m_maxscrollH :number = 0;
+    //     private m_offsetValV:number = 0;
+    //     private m_offsetValH:number = 0;
+    //     public wheelScroolPriority: RUIOrientation = RUIOrientation.Vertical;
+    //     public constructor(scrollVertical: RUIScrollType =RUIScrollType.Enabled,scrollHorizontal: RUIScrollType = RUIScrollType.Enabled){
+    //         super();
+    //         this.m_scrollHorizontal = scrollHorizontal;
+    //         this.m_scrollVertical = scrollVertical;
+    //         this.boxBorder = RUIStyle.Default.border0;
+    //         //add container
+    //         let content = new RUIContainer();
+    //         content.visible =true;
+    //         content.position = RUIPosition.Offset;
+    //         super.addChild(content);
+    //         this.m_content = content;
+    //         //add scrollbar
+    //         this.addScrollBar();
+    //     }
+    //     private addScrollBar(){
+    //         let hasVerticalBar = false;
+    //         let scrollVertical = this.m_scrollVertical;
+    //         if(scrollVertical != RUIScrollType.Disabled){
+    //             let slider = new RUIScrollBar(RUIOrientation.Vertical,scrollVertical);
+    //             slider.width = RUIScrollBar.BAR_SIZE;
+    //             slider.position = RUIPosition.Relative;
+    //             slider.right = 0;
+    //             slider.top = 0;
+    //             slider.bottom = 0;
+    //             this.m_scrollBarV = slider;
+    //             super.addChild(slider);
+    //             var self = this;
+    //             slider.EventOnScroll.on((val)=>{
+    //                 self.setContentScrollPosVal(null,val.object);
+    //             });
+    //             hasVerticalBar = true;
+    //         }
+    //         let scrollHorizontal = this.m_scrollHorizontal;
+    //         if(scrollHorizontal != RUIScrollType.Disabled){
+    //             let slider = new RUIScrollBar(RUIOrientation.Horizontal,scrollHorizontal);
+    //             slider.height = RUIScrollBar.BAR_SIZE;
+    //             slider.position = RUIPosition.Relative;
+    //             slider.left = 0;
+    //             slider.right = hasVerticalBar ? RUIScrollBar.BAR_SIZE : 0;
+    //             slider.bottom = 0;
+    //             this.m_scrollBarH = slider;
+    //             super.addChild(slider);
+    //             var self = this;
+    //             slider.EventOnScroll.on((val)=>{
+    //                 self.setContentScrollPosVal(val.object,null);
+    //             })
+    //         }
+    //     }
+    //     private setContentScrollPosVal(xval?:number,yval?:number){
+    //         this.setContentScrollPos(xval?(ROUND(-xval * this.m_content._calwidth)):null,yval?(-yval * this.m_content._calheight):null);
+    //     }
+    //     private setContentScrollPos(x?:number,y?:number){
+    //         let changed = false;
+    //         let content = this.m_content;
+    //         if(x != null){
+    //             let xpx = CLAMP(x,this.m_maxscrollH,0)
+    //             if(!isNaN(xpx) && xpx != content.left){
+    //                 content.left = xpx;
+    //                 changed = true;
+    //                 this.m_offsetValH = -xpx / content._calwidth;
+    //                 this.m_scrollBarH.setBarPosVal(this.m_offsetValH);
+    //             }
+    //         }
+    //         if(y != null){
+    //             let ypx = CLAMP(y,this.m_maxscrollV,0)
+    //             if(!isNaN(ypx) && ypx != content.top){
+    //                 content.top = ypx;
+    //                 changed= true;
+    //                 this.m_offsetValV = -ypx / content._calheight;
+    //                 this.m_scrollBarV.setBarPosVal(this.m_offsetValV);
+    //             }
+    //         }
+    //         if(changed){
+    //             this.setDirty();
+    //         }
+    //     }
+    //     public onLayoutPost(){
+    //         if(this.m_scrollVertical != RUIScrollType.Disabled){
+    //             let maxScrollV = this._calheight -  this.m_content._calheight;
+    //             if(maxScrollV >=0 ){
+    //                 this.m_scrollBarV.setEnable(false);
+    //             }
+    //             else{
+    //                 this.m_scrollBarV.setEnable(true);
+    //                 this.m_maxscrollV = maxScrollV;
+    //                 let val = this._calheight / this.m_content._calheight;
+    //                 this.m_scrollBarV.setBarSizeVal(val);
+    //             }
+    //         }
+    //         if(this.m_scrollHorizontal != RUIScrollType.Disabled){
+    //             let maxScrollH =  this._calwidth - this.m_content._calwidth;
+    //             if(maxScrollH >= 0){
+    //                 this.m_scrollBarH.setEnable(false);
+    //             }
+    //             else{
+    //                 this.m_scrollBarH.setEnable(true);
+    //                 this.m_maxscrollH = maxScrollH;
+    //                 let val =this._calwidth / this.m_content._calwidth;
+    //                 this.m_scrollBarH.setBarSizeVal(val);
+    //             }
+    //         }
+    //     }
+    //     public onMouseWheel(e:RUIWheelEvent){
+    //         let hasVertical = this.m_scrollVertical != RUIScrollType.Disabled;
+    //         let hasHorizontal = this.m_scrollHorizontal != RUIScrollType.Disabled;
+    //         let wheelVertical = true;
+    //         if(hasVertical){
+    //             if(hasHorizontal){
+    //                 wheelVertical = this.wheelScroolPriority == RUIOrientation.Vertical;
+    //             }
+    //         }
+    //         else{
+    //             if(hasHorizontal){
+    //                 wheelVertical = false;
+    //             }
+    //             else{
+    //                 return;
+    //             }
+    //         }
+    //         let delta = e.delta *0.5;
+    //         let content = this.m_content;
+    //         let newoffset = (wheelVertical ? content.top : content.left) - delta;
+    //         if(wheelVertical){
+    //             this.setContentScrollPos(null,newoffset);
+    //         }
+    //         else{
+    //             this.setContentScrollPos(newoffset,null);
+    //         }
+    //         e.Use();
+    //     }
+    //     public addChild(ui:RUIObject){
+    //         this.m_content.addChild(ui);
+    //     }
+    //     public removeChild(ui:RUIObject){
+    //         this.m_content.removeChild(ui);
+    //     }
+    // }
+    var RUIScrollView = /** @class */ (function (_super) {
+        __extends(RUIScrollView, _super);
+        function RUIScrollView(scrollH, scrollV) {
+            if (scrollH === void 0) { scrollH = RUIScrollBar_1.RUIScrollType.Enabled; }
+            if (scrollV === void 0) { scrollV = RUIScrollBar_1.RUIScrollType.Enabled; }
+            var _this = _super.call(this) || this;
+            _this.boxBorder = RUIStyle_5.RUIStyle.Default.border0;
+            _this.padding = [1, 11, 11, 1];
+            var content = new RUIContainer_8.RUIContainer();
+            content.position = RUIObject_11.RUIPosition.Offset;
+            _super.prototype.addChild.call(_this, content);
+            _this.m_content = content;
+            _this.scrollVertical = scrollV;
+            _this.scrollHorizontal = scrollH;
+            return _this;
+        }
+        Object.defineProperty(RUIScrollView.prototype, "scrollVertical", {
+            get: function () {
+                return this.m_scrolltypeV;
+            },
+            set: function (type) {
+                var bar = this.m_scrollbarV;
+                if (bar == null) {
+                    bar = new RUIScrollBar_1.RUIScrollBar(RUIObject_11.RUIOrientation.Vertical, type);
+                    bar.EventOnScroll.on(this.onBarScrollVertical.bind(this));
+                    bar.position = RUIObject_11.RUIPosition.Relative;
+                    bar.top = 0;
+                    bar.bottom = 0;
+                    bar.right = 0;
+                    _super.prototype.addChild.call(this, bar);
+                    this.m_scrollbarV = bar;
+                }
+                this.m_scrolltypeV = type;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RUIScrollView.prototype, "scrollHorizontal", {
+            get: function () {
+                return this.m_scrolltypeH;
+            },
+            set: function (type) {
+                var bar = this.m_scrollbarH;
+                if (bar == null) {
+                    bar = new RUIScrollBar_1.RUIScrollBar(RUIObject_11.RUIOrientation.Horizontal, type);
+                    bar.EventOnScroll.on(this.onBarScrollHorizontal.bind(this));
+                    bar.position = RUIObject_11.RUIPosition.Relative;
+                    bar.left = 0;
+                    bar.right = this.m_scrolltypeV == RUIScrollBar_1.RUIScrollType.Disabled ? 0 : RUIScrollBar_1.RUIScrollBar.BAR_SIZE;
+                    bar.bottom = 0;
+                    _super.prototype.addChild.call(this, bar);
+                    this.m_scrollbarH = bar;
+                }
+                this.m_scrolltypeH = type;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        RUIScrollView.prototype.onBarScrollVertical = function (e) {
+            this.m_content.top = -RUIObject_11.ROUND(e.object * (this.m_content._calheight));
+        };
+        RUIScrollView.prototype.onBarScrollHorizontal = function (e) {
+            this.m_content.left = -RUIObject_11.ROUND(e.object * (this.m_content._calwidth));
+        };
+        RUIScrollView.prototype.setScrollPosition = function (h, v) {
+            if (h != null)
+                this.m_scrollbarH.scrollPos = 0;
+            if (v != null)
+                this.m_scrollbarV.scrollPos = 0;
+        };
+        RUIScrollView.prototype.updateScrollBarVertical = function () {
+            var content = this.m_content;
+            //Vertical
+            var contenth = content._calheight;
+            var contentvalV = 0;
+            if (contenth > this._calheight) {
+                contentvalV = (this._calheight - 12) / contenth;
+            }
+            if (contentvalV != this.m_contentvalV) {
+                this.m_contentvalV = contentvalV;
+                if (this.m_scrolltypeV != RUIScrollBar_1.RUIScrollType.Disabled) {
+                    this.m_scrollbarV.scrollSize = contentvalV;
+                }
+                this.FixHorizontalBarSize();
+            }
+        };
+        RUIScrollView.prototype.updateScrollBarHorizontal = function () {
+            var content = this.m_content;
+            //Horizontal
+            var contentw = content._calwidth;
+            var contentvalH = 0;
+            if (contentw > this._calwidth) {
+                contentvalH = (this._calheight - 12) / contentw;
+            }
+            if (contentvalH != this.m_contentvalH) {
+                this.m_contentvalH = contentvalH;
+                if (this.m_scrolltypeH != RUIScrollBar_1.RUIScrollType.Disabled) {
+                    this.m_scrollbarH.scrollSize = contentvalH;
+                }
+            }
+        };
+        RUIScrollView.prototype.onLayoutPost = function () {
+            this.updateScrollBarVertical();
+            this.updateScrollBarHorizontal();
+        };
+        RUIScrollView.prototype.FixHorizontalBarSize = function () {
+            if (this.m_scrollbarV.enabled) {
+                this.m_scrollbarH.right = RUIScrollBar_1.RUIScrollBar.BAR_SIZE;
+            }
+            else {
+                this.m_scrollbarH.right = 0;
+            }
+        };
+        RUIScrollView.prototype.addChild = function (ui) {
+            this.m_content.addChild(ui);
+        };
+        RUIScrollView.prototype.removeChild = function (ui) {
+            this.m_content.removeChild(ui);
+        };
+        RUIScrollView.prototype.removeChildByIndex = function (index) {
+            return this.m_content.removeChildByIndex(index);
+        };
+        RUIScrollView.prototype.hasChild = function (ui) {
+            return this.m_content.hasChild(ui);
+        };
+        return RUIScrollView;
+    }(RUIContainer_8.RUIContainer));
+    exports.RUIScrollView = RUIScrollView;
+});
+define("rui/widget/RUITabView", ["require", "exports", "rui/RUIContainer", "rui/RUIObject", "rui/widget/RUIButtonGroup", "rui/widget/RUIButton", "rui/RUIStyle", "rui/RUIBinder", "rui/widget/RUIScrollView"], function (require, exports, RUIContainer_9, RUIObject_12, RUIButtonGroup_1, RUIButton_1, RUIStyle_6, RUIBinder_1, RUIScrollView_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUITabView = /** @class */ (function (_super) {
+        __extends(RUITabView, _super);
+        function RUITabView(pages, tabpos) {
+            if (tabpos === void 0) { tabpos = RUIObject_12.RUIConst.TOP; }
+            var _this = _super.call(this) || this;
+            _this.boxBorder = RUIStyle_6.RUIStyle.Default.primary;
+            var self = _this;
+            _this.m_pages = pages;
+            var buttons;
+            if (pages != null) {
+                buttons = [];
+                pages.forEach(function (page) {
+                    buttons.push(new RUIButton_1.RUIButton(page.label, _this.onMenuClick.bind(self)));
+                });
+            }
+            var pagewrap = new RUIScrollView_1.RUIScrollView();
+            pagewrap.boxBorder = null;
+            var menu;
+            if (tabpos == RUIObject_12.RUIConst.TOP || tabpos == RUIObject_12.RUIConst.BOTTOM) {
+                _this.boxOrientation = RUIObject_12.RUIOrientation.Vertical;
+                menu = new RUIButtonGroup_1.RUIButtonGroup(buttons, RUIObject_12.RUIOrientation.Horizontal);
+                if (tabpos == RUIObject_12.RUIConst.TOP) {
+                    _super.prototype.addChild.call(_this, menu);
+                    _super.prototype.addChild.call(_this, pagewrap);
+                }
+                else {
+                    _super.prototype.addChild.call(_this, pagewrap);
+                    _super.prototype.addChild.call(_this, menu);
+                }
+            }
+            else {
+                _this.boxOrientation = RUIObject_12.RUIOrientation.Horizontal;
+                menu = new RUIButtonGroup_1.RUIButtonGroup(buttons, RUIObject_12.RUIOrientation.Vertical);
+                menu.width = 100;
+                RUIBinder_1.RUIBind(_this, "_calheight", function (v) { return menu.height = v; });
+                if (tabpos == RUIObject_12.RUIConst.LEFT) {
+                    _super.prototype.addChild.call(_this, menu);
+                    _super.prototype.addChild.call(_this, pagewrap);
+                }
+                else {
+                    _super.prototype.addChild.call(_this, pagewrap);
+                    _super.prototype.addChild.call(_this, menu);
+                }
+            }
+            _this.m_menu = menu;
+            _this.m_pageWrap = pagewrap;
+            //Bind
+            RUIBinder_1.RUIBind(_this, "_calheight", function (v) { return pagewrap.height = v; });
+            RUIBinder_1.RUIBind(_this, "_calwidth", function (v) { return pagewrap.width = v - 100; });
+            _this.setPageIndex(0);
+            return _this;
+        }
+        RUITabView.prototype.onMenuClick = function (b) {
+            var index = this.m_menu.getButtonIndex(b);
+            if (index >= 0)
+                this.setPageIndex(index);
+        };
+        RUITabView.prototype.setPageIndex = function (index) {
+            if (this.m_pageIndex == index)
+                return;
+            var ui = this.m_pages[index].ui;
+            if (ui != null) {
+                var wrap = this.m_pageWrap;
+                wrap.setScrollPosition(0, 0);
+                wrap.removeChildByIndex(0);
+                wrap.addChild(ui);
+                this.m_pageIndex = index;
+            }
+        };
+        RUITabView.prototype.addChild = function (ui) {
+        };
+        RUITabView.prototype.removeChild = function (ui) {
+        };
+        return RUITabView;
+    }(RUIContainer_9.RUIContainer));
+    exports.RUITabView = RUITabView;
+});
+define("rui/widget/RUICollapsibleContainer", ["require", "exports", "rui/RUIContainer", "rui/widget/RUIButton", "rui/RUI", "rui/RUIStyle"], function (require, exports, RUIContainer_10, RUIButton_2, RUI_9, RUIStyle_7) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RUICollapsibleContainer = /** @class */ (function (_super) {
+        __extends(RUICollapsibleContainer, _super);
+        function RUICollapsibleContainer(label, show) {
+            var _this = _super.call(this) || this;
+            _this.m_show = show;
+            _this.boxBorder = RUIStyle_7.RUIStyle.Default.border0;
+            _this.boxBackground = RUIStyle_7.RUIStyle.Default.background0;
+            _this.padding = RUI_9.RUI.Vector(1);
+            var button = new RUIButton_2.RUIButton(label, _this.onButtonClick.bind(_this));
+            _super.prototype.addChild.call(_this, button);
+            var container = new RUIContainer_10.RUIContainer();
+            _this.m_container = container;
+            if (_this.m_show)
+                _super.prototype.addChild.call(_this, container);
+            console.log(_this.m_container);
+            return _this;
+        }
+        RUICollapsibleContainer.prototype.onButtonClick = function (b) {
+            if (this.m_show) {
+                _super.prototype.removeChild.call(this, this.m_container);
+                this.m_show = false;
+            }
+            else {
+                _super.prototype.addChild.call(this, this.m_container);
+                this.m_show = true;
+            }
+        };
+        RUICollapsibleContainer.prototype.addChild = function (ui) {
+            this.m_container.addChild(ui);
+        };
+        RUICollapsibleContainer.prototype.removeChild = function (ui) {
+            this.m_container.removeChild(ui);
+        };
+        return RUICollapsibleContainer;
+    }(RUIContainer_10.RUIContainer));
+    exports.RUICollapsibleContainer = RUICollapsibleContainer;
+});
+define("rui/widget/RUIDebug", ["require", "exports", "rui/RUIContainer", "rui/widget/RUILabel", "rui/widget/RUIButton", "rui/RUIRectangle", "rui/RUIObject", "rui/widget/RUIButtonGroup", "rui/RUIStyle", "rui/RUIFlexContainer", "rui/RUI", "rui/widget/RUITabView", "rui/widget/RUIScrollBar", "rui/widget/RUIScrollView", "rui/widget/RUICollapsibleContainer"], function (require, exports, RUIContainer_11, RUILabel_1, RUIButton_3, RUIRectangle_3, RUIObject_13, RUIButtonGroup_2, RUIStyle_8, RUIFlexContainer_1, RUI_10, RUITabView_1, RUIScrollBar_2, RUIScrollView_2, RUICollapsibleContainer_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RUIDebug = /** @class */ (function (_super) {
         __extends(RUIDebug, _super);
         function RUIDebug() {
             var _this = _super.call(this) || this;
-            _this.width = 800;
-            _this.padding = [10, 10, 10, 10];
-            _this.boxBorder = RUI_10.RUI.RED;
-            _this.boxClip = RUIContainer_9.RUIContainerClipType.NoClip;
-            _this.LayoutContainer();
-            _this.LayoutFlexContainer();
-            _this.LayoutClip();
-            _this.WidgetButtons();
-            _this.WidgetLabel();
+            _this.boxBorder = RUIStyle_8.RUIStyle.Default.border0;
+            _this.position = RUIObject_13.RUIPosition.Absolute;
+            _this.left = 100;
+            _this.right = 100;
+            _this.top = 100;
+            _this.bottom = 100;
+            var pages = [];
+            pages.push({ label: 'basis', ui: _this.PageBasis() });
+            pages.push({ label: 'container', ui: _this.PageContainer() });
+            var tabview = new RUITabView_1.RUITabView(pages, RUIObject_13.RUIConst.LEFT);
+            tabview.position = RUIObject_13.RUIPosition.Relative;
+            tabview.left = 0;
+            tabview.right = 0;
+            tabview.top = 0;
+            tabview.bottom = 0;
+            _this.addChild(tabview);
             return _this;
-            // let button = new RUIButton("button1");
-            // this.addChild(button);
-            // {
-            //     var btnGroup = new RUIButtonGroup([
-            //         new RUIButton('AAA'),
-            //         new RUIButton('BBB'),
-            //         new RUIButton('CCC'),
-            //         new RUIButton('DDD'),
-            //         new RUIButton('EEE'),
-            //     ],RUIOrientation.Horizontal);
-            //     btnGroup.width = 450;
-            //     this.addChild(btnGroup);
-            //     // let canvas = new RUICanvas();
-            //     // this.addChild(canvas);
-            //     let btnGroupSwitch = new RUIButton('Switch BtnGroup',(b)=>{
-            //         let orit = btnGroup.boxOrientation == RUIOrientation.Horizontal;
-            //         btnGroup.boxOrientation = orit ? RUIOrientation.Vertical : RUIOrientation.Horizontal;
-            //         if(orit){
-            //             btnGroup.width =120;
-            //             btnGroup.height = 70;
-            //         }
-            //         else{
-            //             btnGroup.width = 450;
-            //             btnGroup.height = RUIAuto;
-            //         }
-            //     });
-            //     this.addChild(btnGroupSwitch);
-            // }
-            // {
-            //     let rect1 = new RUIRectangle();
-            //     rect1.height= 400;
-            //     rect1.width =10;
-            //     this.addChild(rect1);
-            // }
-            // {
-            //     //relative container test
-            //     var rcontainer = new RUIContainer();
-            //     rcontainer.position = RUIPosition.Relative;
-            //     rcontainer.left = 20;
-            //     rcontainer.right = 400;
-            //     rcontainer.top = 410;
-            //     rcontainer.bottom = 10;
-            //     this.addChild(rcontainer);
-            //     var rect1 =new RUIRectangle();
-            //     rect1.width = 20;
-            //     rect1.height = 20;
-            //     var t = ()=>{
-            //         rect1.height= Math.random() *100;
-            //         rect1.setDirty(true);
-            //         setTimeout(t, 1000);
-            //     }
-            //     setTimeout(t, 1000);
-            //     rcontainer.addChild(rect1);
-            // }
+            // this.BasisEnable();
+            // this.BasisChildren();
+            // this.LayoutContainer();
+            // this.LayoutFlexContainer();
+            // this.LayoutClip();
+            // this.LayoutMarginPadding();
+            // this.WidgetButtons();
+            // this.WidgetLabel();
+            // this.WidgetTabView();
+            // this.WidgetScrollView();
             // {
             //     let scrollview = new RUIScrollView();
             //     scrollview.width = 400;
@@ -2949,45 +3535,52 @@ define("rui/widget/RUIDebug", ["require", "exports", "rui/RUIContainer", "rui/wi
             //     }
             // }
         }
-        RUIDebug.prototype.LayoutContainer = function () {
-            var label = new RUILabel_1.RUILabel('1.0-Container');
-            this.addChild(label);
-            var container = new RUIContainer_9.RUIContainer();
-            this.addChild(container);
-            container.boxOrientation = RUIObject_13.RUIOrientation.Horizontal;
-            container.boxBorder = RUIStyle_7.RUIStyle.Default.primary;
-            container.padding = [3, 3, 3, 3];
-            container.margin = [0, 0, 10, 0];
-            //vertical
+        RUIDebug.prototype.PageBasis = function () {
+            var container = new RUIContainer_11.RUIContainer();
+            this.PageBasisAddRemove(container);
+            return container;
+        };
+        RUIDebug.prototype.PageContainer = function () {
+            var container = new RUIContainer_11.RUIContainer();
+            this.PageContainerRUIContainer(container);
+            this.PageContainerMarginPadding(container);
+            this.PageContainerFlexContainer(container);
+            return container;
+        };
+        RUIDebug.prototype.PageContainerRUIContainer = function (parent) {
+            var collapse = new RUICollapsibleContainer_1.RUICollapsibleContainer('RUIContainer', true);
+            collapse.width = 400;
+            parent.addChild(collapse);
             {
-                var c = new RUIContainer_9.RUIContainer();
+                collapse.addChild(new RUILabel_1.RUILabel('Vertical'));
+                var c = new RUIContainer_11.RUIContainer();
                 c.boxOrientation = RUIObject_13.RUIOrientation.Vertical;
-                c.boxBorder = RUIStyle_7.RUIStyle.Default.primary;
-                container.addChild(c);
+                c.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
+                collapse.addChild(c);
                 c.addChild(new RUIRectangle_3.RUIRectangle(50, 30));
                 c.addChild(new RUIRectangle_3.RUIRectangle(100, 30));
             }
-            //horizontal
             {
-                var c = new RUIContainer_9.RUIContainer();
-                c.boxBorder = RUIStyle_7.RUIStyle.Default.primary;
+                collapse.addChild(new RUILabel_1.RUILabel('Horizontal'));
+                var c = new RUIContainer_11.RUIContainer();
+                c.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
                 c.margin = [0, 0, 0, 10];
                 c.boxOrientation = RUIObject_13.RUIOrientation.Horizontal;
-                container.addChild(c);
+                collapse.addChild(c);
                 c.addChild(new RUIRectangle_3.RUIRectangle(30, 50));
                 c.addChild(new RUIRectangle_3.RUIRectangle(30, 100));
                 c.addChild(new RUIRectangle_3.RUIRectangle(30, 70));
             }
-            //nested 
             {
-                var c = new RUIContainer_9.RUIContainer();
-                c.boxBorder = RUIStyle_7.RUIStyle.Default.primary;
+                collapse.addChild(new RUILabel_1.RUILabel('Nested'));
+                var c = new RUIContainer_11.RUIContainer();
+                c.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
                 c.margin = [0, 0, 0, 10];
                 c.boxOrientation = RUIObject_13.RUIOrientation.Vertical;
-                container.addChild(c);
+                collapse.addChild(c);
                 c.addChild(new RUIRectangle_3.RUIRectangle(50, 30));
                 {
-                    var c1 = new RUIContainer_9.RUIContainer();
+                    var c1 = new RUIContainer_11.RUIContainer();
                     c1.boxOrientation = RUIObject_13.RUIOrientation.Horizontal;
                     c1.addChild(new RUIRectangle_3.RUIRectangle(30, 30));
                     c1.addChild(new RUIRectangle_3.RUIRectangle(30, 50));
@@ -2997,21 +3590,68 @@ define("rui/widget/RUIDebug", ["require", "exports", "rui/RUIContainer", "rui/wi
                 c.addChild(new RUIRectangle_3.RUIRectangle(70, 30));
             }
         };
-        RUIDebug.prototype.LayoutFlexContainer = function () {
-            var label = new RUILabel_1.RUILabel('1.1-FlexContainer');
-            this.addChild(label);
-            var container = new RUIContainer_9.RUIContainer();
-            this.addChild(container);
-            container.boxOrientation = RUIObject_13.RUIOrientation.Horizontal;
-            container.boxBorder = RUIStyle_7.RUIStyle.Default.primary;
-            container.padding = [3, 3, 3, 3];
-            container.margin = [0, 0, 10, 0];
-            //Flex vertical
+        RUIDebug.prototype.PageContainerMarginPadding = function (parent) {
+            var collapse = new RUICollapsibleContainer_1.RUICollapsibleContainer('Margin/Padding', true);
+            collapse.width = 400;
+            parent.addChild(collapse);
+            var c = new RUIContainer_11.RUIContainer();
+            c.boxOrientation = RUIObject_13.RUIOrientation.Horizontal;
+            collapse.addChild(c);
+            {
+                var c1 = new RUIContainer_11.RUIContainer();
+                c1.margin = [0, 20, 0, 20];
+                c1.boxBorder = RUI_10.RUI.RED;
+                c1.width = 50;
+                c1.padding = [1, 1, 1, -20];
+                c.addChild(c1);
+                c1.addChild(new RUIRectangle_3.RUIRectangle(50, 30));
+            }
+            {
+                var c2 = new RUIContainer_11.RUIContainer();
+                c2.margin = [0, 20, 0, 20];
+                c2.boxBorder = RUI_10.RUI.RED;
+                c2.width = 50;
+                c2.padding = [1, 1, 1, -20];
+                c2.boxClip = RUIContainer_11.RUIContainerClipType.NoClip;
+                c.addChild(c2);
+                c2.addChild(new RUIRectangle_3.RUIRectangle(50, 30));
+            }
+            {
+                var c3 = new RUIContainer_11.RUIContainer();
+                c3.margin = [0, 20, 0, 20];
+                c3.boxBorder = RUI_10.RUI.RED;
+                c3.width = 50;
+                c3.padding = [1, 1, 1, 20];
+                c.addChild(c3);
+                c3.addChild(new RUIRectangle_3.RUIRectangle(50, 30));
+            }
+            {
+                var c4 = new RUIContainer_11.RUIContainer();
+                c4.margin = [0, 20, 0, 20];
+                c4.boxBorder = RUI_10.RUI.RED;
+                c4.width = 50;
+                c4.padding = [1, 1, 1, 20];
+                c.addChild(c4);
+                var r = new RUIRectangle_3.RUIRectangle(50, 30);
+                r.isClip = false;
+                c4.addChild(r);
+            }
+        };
+        RUIDebug.prototype.PageContainerFlexContainer = function (parent) {
+            var collapse = new RUICollapsibleContainer_1.RUICollapsibleContainer('FlexContainer', true);
+            collapse.width = 400;
+            parent.addChild(collapse);
+            var fc = new RUIContainer_11.RUIContainer();
+            collapse.addChild(fc);
+            fc.boxOrientation = RUIObject_13.RUIOrientation.Horizontal;
+            fc.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
+            fc.padding = [3, 3, 3, 3];
+            fc.margin = [0, 0, 10, 0];
             {
                 var c = new RUIFlexContainer_1.RUIFlexContainer();
-                container.addChild(c);
+                fc.addChild(c);
                 c.boxOrientation = RUIObject_13.RUIOrientation.Horizontal;
-                c.boxBorder = RUIStyle_7.RUIStyle.Default.primary;
+                c.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
                 c.padding = [3, 3, 3, 3];
                 c.margin = [0, 10, 0, 0];
                 c.width = 100;
@@ -3028,12 +3668,11 @@ define("rui/widget/RUIDebug", ["require", "exports", "rui/RUIContainer", "rui/wi
                 c.addChild(r2);
                 c.addChild(r3);
             }
-            //Flex horizontal
             {
                 var c = new RUIFlexContainer_1.RUIFlexContainer();
-                container.addChild(c);
+                fc.addChild(c);
                 c.boxOrientation = RUIObject_13.RUIOrientation.Vertical;
-                c.boxBorder = RUIStyle_7.RUIStyle.Default.primary;
+                c.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
                 c.padding = [3, 3, 3, 3];
                 c.margin = [0, 10, 0, 0];
                 c.width = 100;
@@ -3051,35 +3690,11 @@ define("rui/widget/RUIDebug", ["require", "exports", "rui/RUIContainer", "rui/wi
                 c.addChild(r2);
                 c.addChild(r3);
             }
-            //Flex vertical exten
             {
                 var c = new RUIFlexContainer_1.RUIFlexContainer();
-                c._debugname = "hhhh";
-                container.addChild(c);
-                c.boxOrientation = RUIObject_13.RUIOrientation.Horizontal;
-                c.boxBorder = RUIStyle_7.RUIStyle.Default.primary;
-                c.padding = [3, 3, 3, 3];
-                c.margin = [0, 10, 0, 0];
-                c.width = 100;
-                //auto expands to container's height
-                var r1 = new RUIRectangle_3.RUIRectangle();
-                r1.flex = 1;
-                var r2 = new RUIRectangle_3.RUIRectangle();
-                r2.flex = 1;
-                r2.height = 60;
-                var r3 = new RUIRectangle_3.RUIRectangle();
-                r3.flex = 2;
-                r3.height = 30;
-                c.addChild(r1);
-                c.addChild(r2);
-                c.addChild(r3);
-            }
-            //Flex horizontal exten
-            {
-                var c = new RUIFlexContainer_1.RUIFlexContainer();
-                container.addChild(c);
+                fc.addChild(c);
                 c.boxOrientation = RUIObject_13.RUIOrientation.Vertical;
-                c.boxBorder = RUIStyle_7.RUIStyle.Default.primary;
+                c.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
                 c.padding = [3, 3, 3, 3];
                 c.margin = [0, 10, 0, 0];
                 c.height = 70;
@@ -3095,23 +3710,143 @@ define("rui/widget/RUIDebug", ["require", "exports", "rui/RUIContainer", "rui/wi
                 c.addChild(r2);
                 c.addChild(r3);
             }
+            var fc2 = new RUIContainer_11.RUIContainer();
+            collapse.addChild(fc2);
+            fc2.boxOrientation = RUIObject_13.RUIOrientation.Horizontal;
+            fc2.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
+            fc2.padding = [3, 3, 3, 3];
+            fc2.margin = [20, 0, 10, 0];
+            {
+                var c1 = new RUIFlexContainer_1.RUIFlexContainer();
+                c1.padding = RUI_10.RUI.Vector(3);
+                c1.height = 100;
+                fc2.addChild(c1);
+                var r1 = new RUIRectangle_3.RUIRectangle();
+                r1.flex = 1;
+                r1.width = 100;
+                var r2 = new RUIButton_3.RUIButton('flexbtn');
+                r2.height = 50;
+                r2.width = 120;
+                var r3 = new RUIRectangle_3.RUIRectangle();
+                r3.flex = 2;
+                r3.width = 30;
+                c1.addChild(r1);
+                c1.addChild(r2);
+                c1.addChild(r3);
+            }
+        };
+        RUIDebug.prototype.PageBasisAddRemove = function (parent) {
+            var collapse = new RUICollapsibleContainer_1.RUICollapsibleContainer('remove/add children', true);
+            collapse.width = 400;
+            collapse.padding = RUI_10.RUI.Vector(3);
+            collapse.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
+            parent.addChild(collapse);
+            var c = new RUIContainer_11.RUIContainer();
+            c.boxOrientation = RUIObject_13.RUIOrientation.Horizontal;
+            collapse.addChild(c);
+            var btnAdd = new RUIButton_3.RUIButton('Add', function (b) {
+                c.addChild(new RUIRectangle_3.RUIRectangle(20, 20));
+                c.setDirty();
+            });
+            btnAdd.width = 50;
+            collapse.addChild(btnAdd);
+            var btnDel = new RUIButton_3.RUIButton('Remove', function (b) {
+                c.removeChildByIndex(0);
+            });
+            btnDel.width = 50;
+            collapse.addChild(btnDel);
+        };
+        RUIDebug.prototype.BasisEnable = function () {
+            this.addChild(new RUILabel_1.RUILabel('0.0-Enabled'));
+            var container = new RUIContainer_11.RUIContainer();
+            container.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
+            container.boxOrientation = RUIObject_13.RUIOrientation.Horizontal;
+            container.padding = RUI_10.RUI.Vector(2);
+            this.addChild(container);
+            //container
+            {
+                var c = new RUIContainer_11.RUIContainer();
+                c.padding = RUI_10.RUI.Vector(3);
+                c.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
+                container.addChild(c);
+                var r1 = new RUIRectangle_3.RUIRectangle(120, 20);
+                var btn = new RUIButton_3.RUIButton('enable/disable', function (b) {
+                    r1.enabled = !r1.enabled;
+                    r1.setDirty(true);
+                });
+                btn.width = 100;
+                c.addChild(btn);
+                c.addChild(r1);
+            }
+            //container has  single child
+            {
+                var rect = new RUIRectangle_3.RUIRectangle(50, 50);
+                rect.enabled = true;
+                var btn = new RUIButton_3.RUIButton("ClickMe", function (b) {
+                    rect.enabled = !rect.enabled;
+                    rect.setDirty(true);
+                });
+                btn.width = 50;
+                var c = new RUIContainer_11.RUIContainer();
+                c.padding = RUI_10.RUI.Vector(3);
+                c.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
+                c.addChild(rect);
+                container.addChild(c);
+                container.addChild(btn);
+            }
+            //flex
+            {
+                var c = new RUIFlexContainer_1.RUIFlexContainer();
+                c.padding = RUI_10.RUI.Vector(3);
+                c.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
+                c.height = 70;
+                var r = new RUIRectangle_3.RUIRectangle(120);
+                r.flex = 1;
+                var btn = new RUIButton_3.RUIButton('enable/disable', function (b) {
+                    r.enabled = !r.enabled;
+                    r.setDirty(true);
+                });
+                btn.width = 100;
+                btn.flex = 2;
+                c.addChild(btn);
+                c.addChild(r);
+                container.addChild(c);
+            }
+            //flex has single child
+            {
+                var r2 = new RUIRectangle_3.RUIRectangle(50, 50);
+                r2.flex = 1;
+                r2.enabled = true;
+                var btn = new RUIButton_3.RUIButton("ClickMe", function (b) {
+                    r2.enabled = !r2.enabled;
+                    r2.setDirty(true);
+                });
+                btn.width = 50;
+                var c2 = new RUIFlexContainer_1.RUIFlexContainer();
+                c2.padding = RUI_10.RUI.Vector(3);
+                c2.height = 56;
+                c2.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
+                c2.addChild(r2);
+                container.addChild(c2);
+                container.addChild(btn);
+            }
         };
         RUIDebug.prototype.LayoutClip = function () {
             var label = new RUILabel_1.RUILabel('1.1-LayoutClip');
             this.addChild(label);
-            var container = new RUIContainer_9.RUIContainer();
+            var container = new RUIContainer_11.RUIContainer();
             this.addChild(container);
             container.boxOrientation = RUIObject_13.RUIOrientation.Horizontal;
-            container.boxBorder = RUIStyle_7.RUIStyle.Default.primary;
+            container.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
             container.padding = [3, 3, 3, 3];
             {
-                var container2 = new RUIContainer_9.RUIContainer();
+                var container2 = new RUIContainer_11.RUIContainer();
                 container2.padding = [2, 2, 2, 2];
                 container2.margin = [0, 50, 0, 0];
                 container2.height = 94;
                 container2.width = 40;
-                container2.boxBorder = RUIStyle_7.RUIStyle.Default.primary;
-                container2.boxClip = RUIContainer_9.RUIContainerClipType.NoClip;
+                container2.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
+                container2.boxClip = RUIContainer_11.RUIContainerClipType.NoClip;
                 container.addChild(container2);
                 //clip default
                 var r1 = new RUIRectangle_3.RUIRectangle();
@@ -3135,12 +3870,12 @@ define("rui/widget/RUIDebug", ["require", "exports", "rui/RUIContainer", "rui/wi
                 container2.addChild(r3);
             }
             {
-                var container1 = new RUIContainer_9.RUIContainer();
+                var container1 = new RUIContainer_11.RUIContainer();
                 container1.padding = [2, 2, 2, 2];
                 container1.margin = [0, 50, 0, 0];
                 container1.height = 94;
                 container1.width = 40;
-                container1.boxBorder = RUIStyle_7.RUIStyle.Default.primary;
+                container1.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
                 container.addChild(container1);
                 //clip default
                 var r1 = new RUIRectangle_3.RUIRectangle();
@@ -3164,11 +3899,11 @@ define("rui/widget/RUIDebug", ["require", "exports", "rui/RUIContainer", "rui/wi
                 container1.addChild(r3);
             }
             {
-                var container1 = new RUIContainer_9.RUIContainer();
+                var container1 = new RUIContainer_11.RUIContainer();
                 container1.padding = [2, 2, 2, 2];
                 container1.height = 94;
                 container1.width = 40;
-                container1.boxBorder = RUIStyle_7.RUIStyle.Default.primary;
+                container1.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
                 container.addChild(container1);
                 //clip default
                 var r1 = new RUIRectangle_3.RUIRectangle();
@@ -3195,26 +3930,26 @@ define("rui/widget/RUIDebug", ["require", "exports", "rui/RUIContainer", "rui/wi
                 container1.addChild(r3);
             }
             {
-                var c = new RUIContainer_9.RUIContainer();
+                var c = new RUIContainer_11.RUIContainer();
                 c.padding = [2, 2, 2, 2];
                 c.margin = [0, 0, 0, 50];
                 c.height = 100;
                 c.width = 100;
-                c.boxBorder = RUIStyle_7.RUIStyle.Default.primary;
+                c.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
                 container.addChild(c);
-                var c1 = new RUIContainer_9.RUIContainer();
+                var c1 = new RUIContainer_11.RUIContainer();
                 c1.padding = RUI_10.RUI.Vector(10);
                 c1.width = 70;
                 c1.height = 70;
-                c1.boxBorder = RUIStyle_7.RUIStyle.Default.primary;
+                c1.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
                 c1.position = RUIObject_13.RUIPosition.Offset;
                 c1.left = 50;
                 c1.top = 70;
                 c1.addChild(new RUIRectangle_3.RUIRectangle(60, 60));
                 c.addChild(c1);
-                var c2 = new RUIContainer_9.RUIContainer();
-                c2.boxBorder = RUIStyle_7.RUIStyle.Default.primary;
-                c2.boxClip = RUIContainer_9.RUIContainerClipType.ClipSelf;
+                var c2 = new RUIContainer_11.RUIContainer();
+                c2.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
+                c2.boxClip = RUIContainer_11.RUIContainerClipType.ClipSelf;
                 c2.position = RUIObject_13.RUIPosition.Relative;
                 c2.padding = RUI_10.RUI.Vector(2);
                 c2.width = 70;
@@ -3232,29 +3967,133 @@ define("rui/widget/RUIDebug", ["require", "exports", "rui/RUIContainer", "rui/wi
         RUIDebug.prototype.WidgetButtons = function () {
             var label = new RUILabel_1.RUILabel('2.0-Buttons');
             this.addChild(label);
-            this.addChild(new RUIButton_1.RUIButton('Button1'));
+            this.addChild(new RUIButton_3.RUIButton('Button1'));
             {
-                var btn1 = new RUIButton_1.RUIButton('LongText');
+                var btn1 = new RUIButton_3.RUIButton('LongText');
                 btn1.width = 70;
                 this.addChild(btn1);
             }
             //Button in container
             {
-                var c = new RUIContainer_9.RUIContainer();
+                var c = new RUIContainer_11.RUIContainer();
                 c.width = 100;
-                c.padding = [1, 1, 1, 50];
-                c.boxBorder = RUIStyle_7.RUIStyle.Default.primary;
+                c.padding = [1, 1, 1, -50];
+                c.boxBorder = RUIStyle_8.RUIStyle.Default.primary;
                 this.addChild(c);
-                var btn = new RUIButton_1.RUIButton('Hello');
+                var btn = new RUIButton_3.RUIButton('Hello');
                 btn.width = 100;
                 c.addChild(btn);
+            }
+            //ButtonGroup
+            {
+                var btnGroup = new RUIButtonGroup_2.RUIButtonGroup([
+                    new RUIButton_3.RUIButton('AAA'),
+                    new RUIButton_3.RUIButton('BBB'),
+                    new RUIButton_3.RUIButton('CCC'),
+                    new RUIButton_3.RUIButton('DDD'),
+                    new RUIButton_3.RUIButton('EEE'),
+                ], RUIObject_13.RUIOrientation.Horizontal);
+                btnGroup.width = 450;
+                this.addChild(btnGroup);
+                // let canvas = new RUICanvas();
+                // this.addChild(canvas);
+                var btnGroupSwitch = new RUIButton_3.RUIButton('Switch BtnGroup', function (b) {
+                    var orit = btnGroup.boxOrientation == RUIObject_13.RUIOrientation.Horizontal;
+                    btnGroup.boxOrientation = orit ? RUIObject_13.RUIOrientation.Vertical : RUIObject_13.RUIOrientation.Horizontal;
+                    if (orit) {
+                        btnGroup.width = 120;
+                        btnGroup.height = 70;
+                    }
+                    else {
+                        btnGroup.width = 450;
+                        btnGroup.height = RUIObject_13.RUIAuto;
+                    }
+                });
+                this.addChild(btnGroupSwitch);
             }
         };
         RUIDebug.prototype.WidgetLabel = function () {
             this.addChild(new RUILabel_1.RUILabel("2.1-Label"));
         };
+        RUIDebug.prototype.WidgetTabView = function () {
+            {
+                var c1 = new RUIContainer_11.RUIContainer();
+                c1.addChild(new RUIRectangle_3.RUIRectangle(100, 20));
+                c1.addChild(new RUIRectangle_3.RUIRectangle(40, 50));
+                c1.addChild(new RUIRectangle_3.RUIRectangle(500, 100));
+                c1.addChild(new RUIRectangle_3.RUIRectangle(20, 200));
+                var tabview1 = new RUITabView_1.RUITabView([
+                    { label: 'Tab1', ui: new RUIRectangle_3.RUIRectangle(30, 40) },
+                    { label: 'Tab2', ui: c1 }
+                ], RUIObject_13.RUIConst.LEFT);
+                tabview1.width = 400;
+                tabview1.height = 300;
+                this.addChild(tabview1);
+            }
+        };
+        RUIDebug.prototype.WidgetScrollView = function () {
+            this.addChild(new RUILabel_1.RUILabel("2.2-scrollView"));
+            {
+                var c = new RUIContainer_11.RUIContainer();
+                c.boxOrientation = RUIObject_13.RUIOrientation.Horizontal;
+                this.addChild(c);
+                var sbarHorizontal = new RUIScrollBar_2.RUIScrollBar(RUIObject_13.RUIOrientation.Horizontal, RUIScrollBar_2.RUIScrollType.Always);
+                sbarHorizontal.width = 500;
+                this.addChild(sbarHorizontal);
+                var btnszInc = new RUIButton_3.RUIButton('szInc', function (b) {
+                    sbarHorizontal.scrollSize += 0.1;
+                });
+                btnszInc.width = 50;
+                c.addChild(btnszInc);
+                var btnszDec = new RUIButton_3.RUIButton('szDec', function (b) {
+                    sbarHorizontal.scrollSize -= 0.1;
+                });
+                btnszDec.width = 50;
+                c.addChild(btnszDec);
+                var btnposInc = new RUIButton_3.RUIButton('posInc', function (b) {
+                    sbarHorizontal.scrollPos += 0.1;
+                });
+                btnposInc.width = 50;
+                c.addChild(btnposInc);
+                var btnposDec = new RUIButton_3.RUIButton('posDec', function (b) {
+                    sbarHorizontal.scrollPos -= 0.1;
+                });
+                btnposDec.width = 50;
+                c.addChild(btnposDec);
+            }
+            {
+                var c2 = new RUIContainer_11.RUIContainer();
+                c2.boxOrientation = RUIObject_13.RUIOrientation.Horizontal;
+                c2.margin = [10, 0, 0, 0];
+                this.addChild(c2);
+                var sbarVertical = new RUIScrollBar_2.RUIScrollBar(RUIObject_13.RUIOrientation.Vertical, RUIScrollBar_2.RUIScrollType.Enabled);
+                sbarVertical.height = 120;
+                c2.addChild(sbarVertical);
+                {
+                    var sv = new RUIScrollView_2.RUIScrollView(RUIScrollBar_2.RUIScrollType.Always, RUIScrollBar_2.RUIScrollType.Always);
+                    sv.margin = [0, 0, 0, 10];
+                    sv.width = 150;
+                    sv.height = 150;
+                    c2.addChild(sv);
+                    var rect1 = new RUIRectangle_3.RUIRectangle(250, 50);
+                    var btn = new RUIButton_3.RUIButton('Click', function (b) {
+                        if (sv.hasChild(rect1)) {
+                            sv.removeChild(rect1);
+                        }
+                        else {
+                            sv.addChild(rect1);
+                        }
+                    });
+                    btn.width = 100;
+                    btn.height = 50;
+                    sv.addChild(new RUIRectangle_3.RUIRectangle(50, 50));
+                    sv.addChild(btn);
+                    sv.addChild(new RUIRectangle_3.RUIRectangle(20, 50));
+                }
+            }
+        };
         return RUIDebug;
-    }(RUIContainer_9.RUIContainer));
+    }(RUIContainer_11.RUIContainer));
     exports.RUIDebug = RUIDebug;
 });
 define("rui/RUITest", ["require", "exports", "rui/RUICanvas", "rui/RUICmdList", "rui/RUIRoot", "rui/RUILayouter", "rui/widget/RUIDebug"], function (require, exports, RUICanvas_1, RUICmdList_2, RUIRoot_2, RUILayouter_2, RUIDebug_1) {
@@ -3302,9 +4141,35 @@ define("rui", ["require", "exports", "rui/RUICanvas", "rui/RUITest"], function (
     __export(RUICanvas_2);
     __export(RUITest_1);
 });
-define("rui/widget/RUITabView", ["require", "exports"], function (require, exports) {
+define("rui/widget/RUISlider", ["require", "exports", "rui/RUIObject", "rui/RUIStyle"], function (require, exports, RUIObject_14, RUIStyle_9) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var RUISlider = /** @class */ (function (_super) {
+        __extends(RUISlider, _super);
+        function RUISlider(orientation) {
+            var _this = _super.call(this) || this;
+            _this.m_value = 0;
+            _this.orientation = orientation;
+            return _this;
+        }
+        Object.defineProperty(RUISlider.prototype, "value", {
+            get: function () {
+                return this.m_value;
+            },
+            set: function (val) {
+                this.m_value = val;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        RUISlider.prototype.onDraw = function (cmd) {
+            var rect = this.calculateRect();
+            this._rect = rect;
+            cmd.DrawRectWithColor(rect, RUIStyle_9.RUIStyle.Default.primary0);
+        };
+        return RUISlider;
+    }(RUIObject_14.RUIObject));
+    exports.RUISlider = RUISlider;
 });
 // import { UIObject, UIAlign } from "../UIObject";
 // import { RUIDrawCall } from "../RUIDrawCall";

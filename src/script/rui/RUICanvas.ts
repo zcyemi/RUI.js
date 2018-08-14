@@ -77,4 +77,9 @@ export class RUICanvas {
         return [0, 0, this.m_width, this.m_height];
     }
 
+    public setSize(w:number,h:number){
+        this.m_width = w;
+        this.m_height= h;
+    }
+
 }

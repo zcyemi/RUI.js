@@ -26,12 +26,7 @@ export class RUIRoot {
 
         this.expandSize = expandSize;
         this.root = ui;
-        if(ui instanceof RUIContainer){
-            ui.setRoot(this);
-        }
-        else{
-            ui._root = this;
-        }
+        ui.setRoot(this);
     }
 
     public get rootRect():RUIRect{
@@ -40,9 +35,11 @@ export class RUIRoot {
 
     public resizeRoot(width: number, height: number) {
 
-        if(this.m_rootSizeWidth == width && this.m_rootSizeHeight == height) return; 
+        if(this.m_rootSizeWidth == width && this.m_rootSizeHeight == height) {
+            return; 
+        }
 
-        this.isdirty = true;
+        this.root.setDirty(true);
 
         if (this.expandSize) {
             let rootui =this.root;
@@ -129,6 +126,8 @@ export class RUIRoot {
                             }
                         }
 
+                        
+
                         if(curActiveUI != null && this.m_activeUIonDrag){
                             curActiveUI.onMouseDrag(new RUIMouseDragEvent(e,RUIMouseDragStage.End));
                         }
@@ -167,6 +166,7 @@ export class RUIRoot {
         var list: RUIObject[] = [];
 
         let f = (ui: RUIObject) => {
+            if(!ui._enabled) return;
             if (ui.rectContains(x, y)) {
                 list.push(ui);
             }
@@ -186,6 +186,7 @@ export class RUIRoot {
         var target: RUIObject = null;
 
         let f = (ui: RUIObject) => {
+            if(!ui._enabled) return;
             if (ui.rectContains(x, y)) {
                 if (target == null) {
                     target = ui;

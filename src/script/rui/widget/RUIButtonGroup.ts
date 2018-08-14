@@ -26,6 +26,7 @@ export class RUIButtonGroup extends RUIContainer{
         this.m_buttons = buttons;
         this.boxOrientation = orientation;
         this.boxBorder = RUIStyle.Default.primary0;
+        this.boxClip = RUIContainerClipType.Clip;
         this.padding = [1,1,1,1];
 
 
@@ -53,6 +54,10 @@ export class RUIButtonGroup extends RUIContainer{
 
     public removeButton(btn:RUIButton){
         super.removeChild(btn);
+    }
+
+    public getButtonIndex(btn:RUIButton){
+        return this.m_buttons.indexOf(btn);
     }
 
     public onLayoutPost(){

@@ -25,6 +25,7 @@ export class RUIContainer extends RUIObject {
     public boxOverflow: RUIOverflow = RUIOverflow.Clip;
     public boxOrientation: RUIOrientation = RUIOrientation.Vertical;
     public boxBorder?: number[] = null;
+    public boxBackground?:number[] = null;
 
     public children: RUIObject[] = [];
 
@@ -33,6 +34,10 @@ export class RUIContainer extends RUIObject {
 
     public onBuild(){
 
+    }
+
+    public get isVertical(){
+        return this.boxOrientation == RUIOrientation.Vertical;
     }
 
 
@@ -48,10 +53,14 @@ export class RUIContainer extends RUIObject {
         }
 
         ui.parent = this;
-        ui._root = this._root;
+        ui.setRoot(this._root);
         c.push(ui);
 
         ui.setDirty();
+    }
+
+    public hasChild(ui:RUIObject):boolean{
+        return this.children.indexOf(ui) >=0;
     }
 
     public removeChild(ui: RUIObject) {
@@ -59,11 +68,20 @@ export class RUIContainer extends RUIObject {
         let c = this.children;
         let index = c.indexOf(ui);
         if (index < 0) return;
-        this.children = c.splice(index, 1);
-
-        this.isdirty = true;
+        c.splice(index, 1);
+        this.setDirty();
         ui.parent = null;
-        ui._root = null;
+        ui.setRoot(null);
+    }
+
+    public removeChildByIndex(index:number):RUIObject{
+        let c =this.children;
+        if(index <0 || index >= c.length) return null;
+        let ui = c[index];
+        c.splice(index,1);
+        this.setDirty();
+        ui.parent = null;
+        ui.setRoot(null);
     }
 
     protected containerUpdateCheck(): RUIContainerUpdateMode{
@@ -97,17 +115,29 @@ export class RUIContainer extends RUIObject {
         let isVertical = this.boxOrientation == RUIOrientation.Vertical;
 
         let children = this.children;
-
+        let clen = children.length;
 
         //check for dirty
         let updateMode = this.containerUpdateCheck();
+
         if(updateMode == RUIContainerUpdateMode.None) return;
+
+        //onLayoutPre
+        for(var i=0;i<clen;i++){
+            children[i].onLayoutPre();
+        }
+
         if(updateMode == RUIContainerUpdateMode.LayoutUpdate){
-            for(var i=0,clen = children.length;i<clen;i++){
-                children[i].onLayout();
+            for(var i=0;i<clen;i++){
+                let c = children[i];
+                if(!c._enabled) continue;
+                c.onLayout();
             }
             return;
         }
+        
+        let isRelative = (this.position == RUIPosition.Relative || this.position == RUIPosition.Absolute);
+        //fillsize
 
         let offset = 0;
         let maxsize = 0;
@@ -129,11 +159,15 @@ export class RUIContainer extends RUIObject {
             for (var i = 0, len = children.length; i < len; i++) {
                 let c = children[i];
 
+                if(!c._enabled) continue;
+
                 if (c.isOnFlow == false) {
                     relativeChildren.push(c);
                     continue;
                 }
 
+                c._flexwidth = null;
+                c._flexheight = null;
                 c.onLayout();
 
                 let cw = c._calwidth;
@@ -175,7 +209,7 @@ export class RUIContainer extends RUIObject {
         else {
         }
 
-        let isRelative = (this.position == RUIPosition.Relative || this.position == RUIPosition.Absolute);
+        
 
         if(!isRelative){
             if (isVertical) {
@@ -189,6 +223,72 @@ export class RUIContainer extends RUIObject {
     
             if (this.width != RUIAuto) this._calwidth = this.width;
             if (this.height != RUIAuto) this._calheight = this.height;
+        }
+        else{
+
+            if(this._root.root == this){
+                let cleft = this.left;
+                let cright = this.right;
+                let ctop = this.top;
+                let cbottom = this.bottom;
+                
+                let constraintH = cleft != RUIAuto && cright != RUIAuto;
+                let constraintV = ctop != RUIAuto && cbottom != RUIAuto;
+
+                let cwidth = this.width;
+                let cheight = this.height;
+
+                let rrect = this._root.rootRect;
+                if(rrect == null){
+                    console.error(this._root);
+                    throw new Error();
+                }
+                let rwidth = rrect[2];
+                let rheight = rrect[3];
+                if(constraintH){
+                    this._calwidth = rwidth - cleft - cright;
+                    this._caloffsetx = cleft;
+                }
+                else{
+                    if(cwidth != RUIAuto){
+                        this._calwidth = cwidth;
+                        if(cleft != RUIAuto){
+                            this._caloffsetx = cleft;
+                        }
+                        else if(cright != RUIAuto){
+                            this._caloffsetx = rwidth - cwidth - cright;
+                        }
+                        else{
+                            this._caloffsetx = ROUND((rwidth - cwidth)/2.0);
+                        }
+                    }
+                    else{
+                        throw new Error();
+                    }
+                }
+
+                if(constraintV){
+                    this._calheight = rheight - ctop - cbottom;
+                    this._caloffsety = ctop;
+                }
+                else{
+                    if(cheight != RUIAuto){
+                        this._calwidth = cwidth;
+                        if(ctop != RUIAuto){
+                            this._caloffsety = ctop;
+                        }
+                        else if(cbottom != RUIAuto){
+                            this._caloffsety = rheight - cheight - cbottom;
+                        }
+                        else{
+                            this._caloffsety = ROUND((rheight - cheight) / 2.0);
+                        }
+                    }
+                    else{
+                        throw new Error();
+                    }
+                }
+            }
         }
 
         //process relative children
@@ -289,6 +389,7 @@ export class RUIContainer extends RUIObject {
         let children = this.children;
         for (var i = 0, clen = children.length; i < clen; i++) {
             let c = children[i];
+            if(!c._enabled) continue;
             if(c.visible) c.onDraw(cmd);
         }
 
@@ -297,8 +398,10 @@ export class RUIContainer extends RUIObject {
 
     public onDrawPre(cmd: RUICmdList) {
 
+
         let rect = this.calculateRect()
         this._rect = rect;
+        if(this.boxBackground != null) cmd.DrawRectWithColor(rect,this.boxBackground);
         if(this.boxBorder != null) cmd.DrawBorder(rect, this.boxBorder);
         let paddingrect = this.RectMinusePadding(rect, this.padding);
 
@@ -318,14 +421,14 @@ export class RUIContainer extends RUIObject {
 
     protected RectMinusePadding(recta: RUIRect, offset: number[]): RUIRect {
 
-        let pleft = offset[3];
-        let ptop = offset[0];
+        let pleft = Math.max(offset[3],0);
+        let ptop = Math.max(offset[0],0);
 
         return [
             recta[0] + pleft,
             recta[1] + ptop,
-            recta[2] - offset[1] - pleft,
-            recta[3] - offset[2] - ptop
+            recta[2] - Math.max(offset[1],0) - pleft,
+            recta[3] - Math.max(offset[2],0) - ptop
         ];
     }
 
@@ -337,12 +440,7 @@ export class RUIContainer extends RUIObject {
         let children =this.children;
         for(var i=0,clen=children.length;i<clen;i++){
             let c = children[i];
-            if(c instanceof RUIContainer){
-                c.setRoot(root);
-            }
-            else{
-                c._root = root;
-            }
+            c.setRoot(root);
         }
     }
 

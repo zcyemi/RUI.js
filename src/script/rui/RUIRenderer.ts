@@ -57,7 +57,7 @@ export class RUIRenderer{
         this.gl.canvas.width =w;
         this.gl.canvas.height = h;
 
-        //this.m_uicanvas.setSize(w,h);
+        this.m_uicanvas.setSize(w,h);
 
         this.m_projectParam = [2.0/w,2.0/h,0,0];
         this.gl.viewport(0,0,w,h);
@@ -95,7 +95,7 @@ export class RUIRenderer{
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
 
-        let clearColor = RUIStyle.Default.background0;
+        let clearColor = RUIStyle.Default.background1;
         gl.clearColor(clearColor[0],clearColor[1],clearColor[2],clearColor[3]);
     }
 
