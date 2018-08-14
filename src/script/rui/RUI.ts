@@ -29,6 +29,37 @@ export function SIZE(val:number){
     return Math.max(0,val);
 }
 
+export class RUISize{
+    private m_val?:number;
+
+    public constructor(v:number){
+        this.m_val= v;
+    }
+
+    public get value():number{
+        return this.m_val;
+    }
+    public set value(v:number){
+        this.m_val= v;
+    }
+
+    private static s_auto: RUISize = new RUISize(null);
+    public static get Auto():RUISize{
+        return this.s_auto;
+    }
+
+    public Equals(size:RUISize):boolean{
+        if(size === this) return true;
+        if(size.m_val == this.m_val) return true;
+        return false;
+    }
+}
+
+
+export interface RUILayouter{
+    onLayout();
+}
+
 export class RUI{
 
     public static readonly RED:RUIColor = [1,0,0,1];

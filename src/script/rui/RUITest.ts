@@ -5,7 +5,7 @@ import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIRoot } from "./RUIRoot";
 import { RUIOrientation, RUIPosition } from "./RUIObject";
 import { RUIContainer } from "./RUIContainer";
-import { RUILayouter } from "./RUILayouter";
+import { RUILayout } from "./RUILayout";
 import { RUIRectangle } from "./RUIRectangle";
 import { RUIDebug } from "./widget/RUIDebug";
 
@@ -15,7 +15,7 @@ export class RUITest{
 
 
     private m_ruiroot: RUIRoot;
-    private m_ruilayouter: RUILayouter;
+    private m_ruilayouter: RUILayout;
     private m_ruicmdlist: RUICmdList;
 
     private m_ruicanvas: RUICanvas;
@@ -28,7 +28,7 @@ export class RUITest{
     private buildUI(){
         
         this.m_ruicmdlist = new RUICmdList();
-        this.m_ruilayouter = new RUILayouter();
+        this.m_ruilayouter = new RUILayout();
 
         var ui = new RUIDebug();
 

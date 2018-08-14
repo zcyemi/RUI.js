@@ -2,7 +2,7 @@ import { RUIObject, RUIPosition } from "../RUIObject";
 import { RUIRoot } from "../RUIRoot";
 import { RUIContainer } from "../RUIContainer";
 import { RUICmdList } from "../RUICmdList";
-import { RUILayouter } from "../RUILayouter";
+import { RUILayout } from "../RUILayout";
 import { RUIRectangle } from "../RUIRectangle";
 import { RUIMouseDragEvent, RUIMouseDragStage } from "../RUIEvent";
 
@@ -12,7 +12,7 @@ export class RUICanvas extends RUIObject{
 
     private m_canvasRoot:RUIRoot;
     private m_canvasContianer:RUIContainer;
-    private m_layouter: RUILayouter;
+    private m_layouter: RUILayout;
 
     private m_rect1 : RUIObject;
     private m_canvasOriginX: number = 0;
@@ -26,7 +26,7 @@ export class RUICanvas extends RUIObject{
 
     private init(){
 
-        this.m_layouter = new RUILayouter();
+        this.m_layouter = new RUILayout();
         this.height = 300;
 
         let container = new RUIContainer();

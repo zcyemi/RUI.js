@@ -3,7 +3,7 @@ import { RUICmdList } from "./RUICmdList";
 import { RUIMouseEvent, RUIMouseDragEvent } from "./RUIEvent";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIContainer } from "./RUIContainer";
-import { RUI } from "./RUI";
+import { RUI, RUILayouter } from "./RUI";
 
 export const RUIAuto: number= -1;
 
@@ -103,6 +103,8 @@ export class RUIObject{
     public _resized:boolean = true;
 
     public _debugname:string;
+
+    public layouter: RUILayouter;
 
 
     public onDraw(cmd:RUICmdList){

@@ -2,7 +2,7 @@ import { RUIRoot } from "./RUIRoot";
 import { RUIContainer } from "./RUIContainer";
 import { RUIOrientation } from "./RUIObject";
 
-export class RUILayouter{
+export class RUILayout{
 
     public build(uiroot: RUIRoot){
 
