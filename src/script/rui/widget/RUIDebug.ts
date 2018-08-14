@@ -82,13 +82,7 @@ export class RUIDebug extends RUIContainer {
     private PageBasis() {
         let container = new RUIContainer();
 
-        var cc = new RUICollapsibleContainer('test', true);
-        cc.addChild(new RUIRectangle(100, 200));
-        cc.addChild(new RUIRectangle(50, 70));
-        cc.width = 200;
-        cc.margin = RUI.Vector(5);
-        container.addChild(cc);
-
+        this.PageBasisAddRemove(container);
 
         return container;
     }
@@ -326,27 +320,29 @@ export class RUIDebug extends RUIContainer {
         }
     }
 
-    private BasisChildren() {
-        this.addChild(new RUILabel('0.1-Children'));
+    private PageBasisAddRemove(parent:RUIContainer) {
+        var collapse = new RUICollapsibleContainer('remove/add children',true);
+        collapse.width= 400;
+        collapse.padding = RUI.Vector(3);
+        collapse.boxBorder = RUIStyle.Default.primary;
+        parent.addChild(collapse);
 
         var c = new RUIContainer();
-        c.padding = RUI.Vector(3);
         c.boxOrientation = RUIOrientation.Horizontal;
-        c.boxBorder = RUIStyle.Default.primary;
-        this.addChild(c);
+        collapse.addChild(c);
 
         let btnAdd = new RUIButton('Add', (b) => {
             c.addChild(new RUIRectangle(20, 20));
             c.setDirty();
         });
         btnAdd.width = 50;
-        this.addChild(btnAdd);
+        collapse.addChild(btnAdd);
 
-        let btnDel = new RUIButton('Delete', (b) => {
+        let btnDel = new RUIButton('Remove', (b) => {
             c.removeChildByIndex(0);
         });
         btnDel.width = 50;
-        this.addChild(btnDel);
+        collapse.addChild(btnDel);
 
     }
 
