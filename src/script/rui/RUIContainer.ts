@@ -25,6 +25,7 @@ export class RUIContainer extends RUIObject {
     public boxOverflow: RUIOverflow = RUIOverflow.Clip;
     public boxOrientation: RUIOrientation = RUIOrientation.Vertical;
     public boxBorder?: number[] = null;
+    public boxBackground?:number[] = null;
 
     public children: RUIObject[] = [];
 
@@ -134,6 +135,9 @@ export class RUIContainer extends RUIObject {
             }
             return;
         }
+        
+        let isRelative = (this.position == RUIPosition.Relative || this.position == RUIPosition.Absolute);
+        //fillsize
 
         let offset = 0;
         let maxsize = 0;
@@ -205,7 +209,7 @@ export class RUIContainer extends RUIObject {
         else {
         }
 
-        let isRelative = (this.position == RUIPosition.Relative || this.position == RUIPosition.Absolute);
+        
 
         if(!isRelative){
             if (isVertical) {
@@ -397,6 +401,7 @@ export class RUIContainer extends RUIObject {
 
         let rect = this.calculateRect()
         this._rect = rect;
+        if(this.boxBackground != null) cmd.DrawRectWithColor(rect,this.boxBackground);
         if(this.boxBorder != null) cmd.DrawBorder(rect, this.boxBorder);
         let paddingrect = this.RectMinusePadding(rect, this.padding);
 

@@ -9,25 +9,41 @@ import { RUIStyle } from "../RUIStyle";
 import { RUIRenderer } from "../RUIRenderer";
 import { RUIFlexContainer } from "../RUIFlexContainer";
 import { RUI } from "../RUI";
-import { RUITabView } from "./RUITabView";
+import { RUITabView, RUITabPage } from "./RUITabView";
 import { RUIScrollBar, RUIScrollType } from "./RUIScrollBar";
 import { RUIScrollView } from "./RUIScrollView";
+import { RUICollapsibleContainer } from "./RUICollapsibleContainer";
 
 
 export class RUIDebug extends RUIContainer {
 
     public constructor() {
         super();
-        this.boxBorder = RUI.RED;
+        this.boxBorder = RUIStyle.Default.border0;
 
         this.position = RUIPosition.Absolute;
-        this.padding = RUI.Vector(5);
         this.left = 100;
         this.right = 100;
         this.top = 100;
         this.bottom = 100;
 
-        this.addChild(new RUIRectangle(100,100));
+        let pages : RUITabPage[] = [];
+
+        var cc = new RUICollapsibleContainer('test',true);
+        cc.addChild(new RUIRectangle(100,200));
+        cc.addChild(new RUIRectangle(50,70));
+        cc.width = 200;
+        cc.margin = RUI.Vector(5);
+        pages.push({label:'basis',ui:cc});
+
+
+        let tabview = new RUITabView(pages,RUIConst.LEFT);
+        tabview.position = RUIPosition.Relative;
+        tabview.left =0;
+        tabview.right = 0;
+        tabview.top = 0;
+        tabview.bottom = 0;
+        this.addChild(tabview);
 
 
         // this.BasisEnable();
