@@ -1,9 +1,13 @@
 import { RUIOrientation, RUIConst, RUIAuto, ROUND, RUIObject } from "./RUIObject";
 import { RUIContainer, RUIContainerUpdateMode } from "./RUIContainer";
+import { RUILayouter, RUILayoutData, RUIVal } from "./RUI";
 
 
 export class RUIFlexContainer extends RUIContainer{
 
+
+    public layoutFlexAccu:number;
+    public layoutFixedAccu:number;
 
     public onLayout(){
 
@@ -203,4 +207,155 @@ export class RUIFlexContainer extends RUIContainer{
 
     }
 
+}
+
+export class RUIFlexLayouter implements RUILayouter{
+    private static s_default = new RUIFlexLayouter();
+    public static get Default():RUIFlexLayouter{
+        return this.s_default;
+    }
+
+    private constructor(){
+
+    }
+
+    private AccuFlex(flex:RUIFlexContainer,ui:RUIObject,isvertical:boolean){
+        if(ui.flex != null){
+            flex.layoutFlexAccu += ui.flex;
+        }
+        else{
+            if(flex.isVertical){
+                if(ui.layoutHeight === RUIVal.Auto){
+                    throw new Error();
+                }
+                else{
+                    flex.layoutFixedAccu += ui.layoutHeight.value;
+                }
+            }
+            else{
+                if(ui.layoutWidth === RUIVal.Auto){
+                    throw new Error();
+                }else{
+                    flex.layoutFixedAccu += ui.layoutWidth.value;
+                }
+            }
+        }
+    }
+
+    public Layout(ui:RUIObject){
+        if(!(ui instanceof RUIFlexContainer)) throw new Error();
+        var cui = <RUIFlexContainer> ui;
+        let children = cui.children;
+        var self = this;
+
+        cui.layoutWidth = cui.rWith.Clone;
+        cui.layoutHeight = cui.rHeight.Clone;
+
+        cui.layoutFlexAccu = 0;
+        cui.layoutFixedAccu = 0;
+
+        if(cui.isVertical){
+            if(cui.layoutWidth == RUIVal.Auto){
+                let maxwidth = -1;
+                children.forEach(c=>{
+                    c.Layout();
+                    if(c.layoutWidth != RUIVal.Auto){
+                        maxwidth = Math.max(maxwidth,c.layoutWidth.value);
+                    }
+                    self.AccuFlex(cui,c,true);
+                })
+                cui.layoutWidth = maxwidth == -1? RUIVal.Auto: new RUIVal(maxwidth);
+                return;
+            }
+            else{
+                children.forEach(c=>{
+                    c.Layout();
+                    self.AccuFlex(cui,c,true);
+                });
+                return;
+            }
+        }
+        else{
+            if(cui.layoutHeight == RUIVal.Auto){
+                let maxheight = -1;
+                children.forEach(c=>{
+                    c.Layout();
+                    if(c.layoutHeight != RUIVal.Auto){
+                        maxheight = Math.max(maxheight,c.layoutHeight.value);
+                        self.AccuFlex(cui,c,false);
+                    }
+                })
+                cui.layoutHeight = maxheight == -1? RUIVal.Auto: new RUIVal(maxheight);
+                return;
+            }
+            else{
+                children.forEach(c=>{
+                    c.Layout();
+                    self.AccuFlex(cui,c,false);
+                })
+                return;
+            }
+        }
+    }
+
+    public LayoutPost(ui:RUIObject,data:RUILayoutData){
+        if(!(ui instanceof RUIFlexContainer)) throw new Error();
+
+        var cui = <RUIFlexContainer> ui;
+        let children = cui.children;
+
+        //Fill flex
+        if(data.flexWidth != null){
+            cui.layoutWidth = new RUIVal(data.flexWidth);
+        }
+        if(data.flexHeight != null){
+            cui.layoutHeight = new RUIVal(data.flexHeight);
+        }
+
+        if(ui.layoutWidth === RUIVal.Auto){
+            ui.layoutWidth = data.containerWidth.Clone;
+        }
+        if(ui.layoutHeight == RUIVal.Auto){
+            ui.layoutHeight = data.containerHeight.Clone;
+        }
+
+        //start flex calculate
+        var sizePerFlex = 0;
+        if(cui.isVertical){
+            sizePerFlex = (cui.layoutHeight.value - cui.layoutFixedAccu) / cui.layoutFlexAccu;
+        }
+        else{
+            sizePerFlex = (cui.layoutWidth.value - cui.layoutFixedAccu) / cui.layoutFlexAccu;
+        }
+
+        var cdata = new RUILayoutData();
+        cdata.containerHeight = cui.layoutHeight.Clone;
+        cdata.containerWidth = cui.layoutWidth.Clone;
+
+        children.forEach(c=>{
+            let csize = 0;
+            if(c.flex == null){
+                csize = ROUND(c.flex * sizePerFlex);
+            }else{
+                csize = cui.isVertical ? c.layoutHeight.value : c.layoutWidth.value;
+            }
+
+            if(cui.isVertical){
+                data.flexWidth = null;
+                data.flexHeight = csize;
+            }
+            else{
+                data.flexHeight = null;
+                data.flexWidth = csize;
+            }
+            c.LayoutPost(data);
+            
+            //calculate offset
+        });
+
+        cui.rCalWidth = cui.layoutWidth.value;
+        cui.rCalHeight = cui.layoutHeight.value;
+        
+
+    }
 }

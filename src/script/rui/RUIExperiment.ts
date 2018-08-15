@@ -284,7 +284,7 @@ class FlexLayouter implements Layouter{
                     c.onLayout();
                     if(c.layoutHeight!=AUTO){
                         maxheight= Math.max(maxheight,c.layoutHeight);
-                        self.AccuFlex(cui,c,true);
+                        self.AccuFlex(cui,c,false);
                     }
                 });
                 cui.layoutHeight = maxheight;
@@ -293,7 +293,7 @@ class FlexLayouter implements Layouter{
             else{
                 children.forEach(c=>{
                     c.onLayout();
-                    self.AccuFlex(cui,c,true);
+                    self.AccuFlex(cui,c,false);
                 });
                 return;
             }

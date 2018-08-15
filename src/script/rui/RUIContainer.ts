@@ -489,7 +489,7 @@ export class RUIContainerLayouter implements RUILayouter{
             cui.layoutWidth= new RUIVal(cui.width);
             cui.layoutHeight = new RUIVal(cui.height);
 
-            children.forEach(c=>c.onLayout());
+            children.forEach(c=>c.Layout());
             return;
         }
 
@@ -500,7 +500,7 @@ export class RUIContainerLayouter implements RUILayouter{
 
                 let maxwdith = -1;
                 children.forEach(c=>{
-                    c.onLayout();
+                    c.Layout();
                     if(c.layoutWidth != RUIVal.Auto) maxwdith = Math.max(maxwdith,c.layoutWidth.value);
 
                 })
@@ -510,7 +510,7 @@ export class RUIContainerLayouter implements RUILayouter{
                 cui.layoutWidth = RUIVal.Auto;
                 let maxheight = -1;
                 children.forEach(c=>{
-                    c.onLayout();
+                    c.Layout();
                     if(c.layoutHeight != RUIVal.Auto) maxheight = Math.max(maxheight,c.layoutHeight.value);
                     cui.layoutHeight = maxheight == -1? RUIVal.Auto: new RUIVal(maxheight);
                 })
@@ -525,12 +525,12 @@ export class RUIContainerLayouter implements RUILayouter{
 
             if(cui.isVertical){
                 cui.layoutHeight = RUIVal.Auto;
-                children.forEach(c=>c.onLayout());
+                children.forEach(c=>c.Layout());
             }
             else{
                 let maxheight = -1;
                 children.forEach(c=>{
-                    c.onLayout();
+                    c.Layout();
                     if(c.layoutHeight != RUIVal.Auto) maxheight = Math.max(maxheight,c.layoutHeight.value);
                 })
                 cui.layoutHeight = maxheight == -1? RUIVal.Auto: new RUIVal(maxheight);
@@ -542,14 +542,14 @@ export class RUIContainerLayouter implements RUILayouter{
             if(cui.isVertical){
                 let maxwidth = -1;
                 children.forEach(c=>{
-                    c.onLayout();
+                    c.Layout();
                     if(c.layoutWidth != RUIVal.Auto) maxwidth= Math.max(maxwidth,c.layoutWidth.value);
                 })
                 cui.layoutWidth= maxwidth == -1? RUIVal.Auto: new RUIVal(maxwidth);
             }
             else{
                 cui.layoutWidth = RUIVal.Auto;
-                children.forEach(c=>c.onLayout());
+                children.forEach(c=>c.Layout());
             }
         }
     }
