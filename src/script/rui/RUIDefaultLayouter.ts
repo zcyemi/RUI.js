@@ -1,55 +1,44 @@
-import { RUILayouter, RUIVal, RUISizePair } from "./RUI";
+import { RUILayouter, RUIVal, RUISizePair, RUILayoutData } from "./RUI";
 import { RUIObject, RUIAuto } from "./RUIObject";
 
 export class RUIDefaultLayouter implements RUILayouter{
 
     private static s_layouter = new RUIDefaultLayouter();
-
     public static get Layouter():RUIDefaultLayouter{
         return this.s_layouter;
     }
 
-    private constructor(){
 
+    public Layout(ui:RUIObject){
+        ui.layoutWidth = ui.rWith.Clone;
+        ui.layoutHeight = ui.rHeight.Clone;
     }
 
-    public onLayout(ui:RUIObject,width:RUIVal,height:RUIVal,maxwidth?:number,maxheight?:number){
+    public LayoutPost(ui:RUIObject,data:RUILayoutData){
 
-        let rwidth = ui.rWith;
-        let rheight = ui.rHeight;
-        
-        //calculate width
-        if(rwidth === RUIVal.Auto){
-            if(width === RUIVal.Auto){
-                if(maxwidth == null) throw new Error();
-                ui.rCalWidth = maxwidth;
-            }
-            else{
-                ui.rCalWidth = width.value;
-            }
+        if(data.flexWidth != null){
+            ui.rCalWidth = data.flexWidth;
         }
         else{
-            ui.rCalWidth = rwidth.value;
-        }
-
-        //calculate height
-        if(rheight === RUIVal.Auto){
-            if(height === RUIVal.Auto){
-                if(maxheight == null) throw new Error();
-                ui.rCalHeight = maxheight;
+            if(ui.layoutWidth === RUIVal.Auto){
+                ui.rCalWidth = data.containerWidth.value;
             }
             else{
-                ui.rCalHeight = height.value;
+                ui.rCalWidth= ui.layoutWidth.value;
             }
         }
-        else{
-            ui.rCalHeight = rheight.value;
+
+        if(data.flexHeight != null){
+            ui.rCalHeight = data.flexHeight;
         }
-
-
+        else{
+            if(ui.layoutHeight === RUIVal.Auto){
+                ui.rCalHeight = data.containerHeight.value;
+            }
+            else{
+                ui.rCalHeight = ui.layoutHeight.value;
+            }
+        }
     }
 
-    public estimateSize(ui:RUIObject):RUISizePair{
-        return {width:ui.rWith,height:ui.rHeight};
-    }
 }

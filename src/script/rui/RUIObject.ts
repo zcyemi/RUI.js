@@ -3,7 +3,7 @@ import { RUICmdList } from "./RUICmdList";
 import { RUIMouseEvent, RUIMouseDragEvent } from "./RUIEvent";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIContainer } from "./RUIContainer";
-import { RUI, RUILayouter, RUIVal } from "./RUI";
+import { RUI, RUILayouter, RUIVal, RUILayoutData } from "./RUI";
 import { RUIDefaultLayouter } from "./RUIDefaultLayouter";
 
 export const RUIAuto: number= -1;
@@ -118,6 +118,13 @@ export class RUIObject{
 
     public rCalWidth:number;
     public rCalHeight:number;
+
+    public Layout(){
+        this.layouter.Layout(this);
+    }
+    public LayoutPost(data:RUILayoutData){
+        this.layouter.LayoutPost(this,data);
+    }
 
     //Layouter end
 

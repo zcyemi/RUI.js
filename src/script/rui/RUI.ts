@@ -1,4 +1,4 @@
-import { RUIRect, RUIRectP, RUIObject } from "./RUIObject";
+import { RUIRect, RUIRectP, RUIObject, RUIAuto } from "./RUIObject";
 
 
 if(Array.prototype['includes'] == null){
@@ -53,23 +53,32 @@ export class RUIVal{
         if(size.m_val == this.m_val) return true;
         return false;
     }
+
+    public get Clone():RUIVal{
+        if(this === RUIVal.Auto) return this;
+        return new RUIVal(this.m_val);
+    }
 }
 
 
 export type RUISizePair = {width:RUIVal,height:RUIVal};
 
 export interface RUILayouter{
-    /**
-     * 
-     * @param ui target ui object
-     * @param width setted width from container, such as flex container
-     * @param height setted height from container
-     * @param maxwidth when @param width is equal to RUIVal.Auto this parameter must be setted
-     * @param maxheight when @param height is equal to RUIVal.Auto this parameter must be setted
-     */
-    onLayout(ui:RUIObject,width:RUIVal,height:RUIVal,maxwidth?:number,maxheight?:number);
 
-    estimateSize(ui:RUIObject):RUISizePair;
+    /**
+     * calculate ui.LayoutWidth ui.LayoutHeight
+     * @param ui Target UI object.
+     */
+    Layout(ui:RUIObject);
+    LayoutPost(ui:RUIObject,data:RUILayoutData);
+}
+
+export class RUILayoutData{
+
+    public containerWidth:RUIVal;
+    public containerHeight:RUIVal;
+    public flexWidth?:number;
+    public flexHeight?:number;
 }
 
 export class RUI{

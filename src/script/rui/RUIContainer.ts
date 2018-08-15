@@ -4,7 +4,7 @@ import { RUIStyle } from "./RUIStyle";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIRoot } from "./RUIRoot";
 import { RUIWheelEvent } from "./RUIEvent";
-import { RUI, RUILayouter, RUIVal, RUISizePair } from "./RUI";
+import { RUI, RUILayouter, RUIVal, RUISizePair, RUILayoutData } from "./RUI";
 
 
 export enum RUIContainerUpdateMode{
@@ -26,11 +26,17 @@ export class RUIContainer extends RUIObject {
     public boxOrientation: RUIOrientation = RUIOrientation.Vertical;
     public boxBorder?: number[] = null;
     public boxBackground?:number[] = null;
+    public boxSideExtens:boolean = false;
 
     public children: RUIObject[] = [];
 
     /** mark execute for children ui of @function traversal */
     public skipChildTraversal: boolean = false;
+
+    public constructor(){
+        super();
+        this.layouter= RUIContainerLayouter.Layouter;
+    }
 
     public onBuild(){
 
@@ -474,16 +480,169 @@ export class RUIContainerLayouter implements RUILayouter{
         return this.s_layouter;
     }
 
-    public onLayout(ui:RUIObject,width:RUIVal,height:RUIVal,maxwidth?:number,maxheight?:number){
+    public Layout(ui:RUIObject){
+        let cui = <RUIContainer> ui;
+        let children = cui.children;
 
-        let cui = <RUIContainer>ui;
+        //FixedSize
+        if(cui.rWith != RUIVal.Auto && cui.rHeight != RUIVal.Auto){
+            cui.layoutWidth= new RUIVal(cui.width);
+            cui.layoutHeight = new RUIVal(cui.height);
 
+            children.forEach(c=>c.onLayout());
+            return;
+        }
 
+        //All auto
+        if(cui.rWith == RUIVal.Auto && cui.rHeight == RUIVal.Auto){
+            if(cui.isVertical){
+                cui.layoutHeight = RUIVal.Auto;
+
+                let maxwdith = -1;
+                children.forEach(c=>{
+                    c.onLayout();
+                    if(c.layoutWidth != RUIVal.Auto) maxwdith = Math.max(maxwdith,c.layoutWidth.value);
+
+                })
+                cui.layoutWidth = maxwdith == -1 ? RUIVal.Auto: new RUIVal(maxwdith);
+            }
+            else{
+                cui.layoutWidth = RUIVal.Auto;
+                let maxheight = -1;
+                children.forEach(c=>{
+                    c.onLayout();
+                    if(c.layoutHeight != RUIVal.Auto) maxheight = Math.max(maxheight,c.layoutHeight.value);
+                    cui.layoutHeight = maxheight == -1? RUIVal.Auto: new RUIVal(maxheight);
+                })
+            }
+
+            return;
+        }
+
+        if(cui.rWith != RUIVal.Auto){
+            //height is auto
+            cui.layoutWidth = cui.rWith.Clone;
+
+            if(cui.isVertical){
+                cui.layoutHeight = RUIVal.Auto;
+                children.forEach(c=>c.onLayout());
+            }
+            else{
+                let maxheight = -1;
+                children.forEach(c=>{
+                    c.onLayout();
+                    if(c.layoutHeight != RUIVal.Auto) maxheight = Math.max(maxheight,c.layoutHeight.value);
+                })
+                cui.layoutHeight = maxheight == -1? RUIVal.Auto: new RUIVal(maxheight);
+            }
+        }
+        else{
+            //width is auto
+            cui.layoutHeight = cui.rHeight.Clone;
+            if(cui.isVertical){
+                let maxwidth = -1;
+                children.forEach(c=>{
+                    c.onLayout();
+                    if(c.layoutWidth != RUIVal.Auto) maxwidth= Math.max(maxwidth,c.layoutWidth.value);
+                })
+                cui.layoutWidth= maxwidth == -1? RUIVal.Auto: new RUIVal(maxwidth);
+            }
+            else{
+                cui.layoutWidth = RUIVal.Auto;
+                children.forEach(c=>c.onLayout());
+            }
+        }
     }
 
+    public LayoutPost(ui:RUIObject,data:RUILayoutData){
 
-    public estimateSize(ui:RUIObject):RUISizePair{
-        return {width:ui.rWith,height:ui.rHeight};
+        let cui = <RUIContainer>ui;
+        let children = cui.children;
+
+
+        //Fill flex
+        if(data.flexWidth != null){
+            cui.layoutWidth =new RUIVal(data.flexWidth);
+        }
+        if(data.flexHeight != null){
+            cui.layoutHeight = new RUIVal(data.flexHeight);
+        }
+
+        //Fill auto
+        if(cui.isVertical && cui.layoutWidth === RUIVal.Auto){
+            cui.layoutWidth = data.containerWidth.Clone;
+        }
+        else if(cui.layoutHeight === RUIVal.Auto){
+            cui.layoutHeight = data.containerHeight.Clone;
+        }
+
+        //Fixed Size
+        if(cui.layoutWidth != RUIVal.Auto && cui.layoutHeight != RUIVal.Auto){
+            cui.rCalWidth= cui.layoutWidth.value;
+            cui.rCalHeight = cui.layoutHeight.value;
+
+            let cdata = new RUILayoutData();
+            cdata.containerWidth = new RUIVal(cui.rCalWidth);
+            cdata.containerHeight = new RUIVal(cui.rCalHeight);
+
+            children.forEach(c=>c.LayoutPost(cdata));
+
+            return;
+        }
+
+        //Side auto
+        if(cui.isVertical){
+            let cdata = new RUILayoutData();
+            cdata.containerWidth = cui.layoutWidth.Clone;
+            cdata.containerHeight = data.containerHeight.Clone;
+
+            var maxChildWidth = 0;
+            var accuChildHeight = 0;
+            children.forEach(c=>{
+                c.LayoutPost(cdata);
+                maxChildWidth = Math.max(maxChildWidth,c.rCalWidth);
+                accuChildHeight += c.rCalHeight;
+            });
+
+            if(cui.boxSideExtens){
+                if(maxChildWidth < data.containerWidth.value){
+                    cui.rCalWidth = data.containerWidth.value;
+                }
+                else{
+                    cui.rCalWidth = maxChildWidth;
+                }
+            }
+            else{
+                cui.rCalWidth = maxChildWidth;
+            }
+            cui.rCalHeight = accuChildHeight;
+        }
+        else{
+            let cdata =new RUILayoutData();
+            cdata.containerWidth = cui.layoutWidth.Clone;
+            cdata.containerHeight =cui.layoutHeight.Clone;
+
+            var maxChildHeight =0;
+            var accuChildWidth = 0;
+            children.forEach(c=>{
+                c.LayoutPost(cdata);
+                maxChildHeight = Math.max(maxChildHeight,c.rCalHeight);
+                accuChildWidth += c.rCalWidth;
+            });
+
+            if(cui.boxSideExtens){
+                if(maxChildHeight < data.containerHeight.value){
+                    cui.rCalHeight = data.containerHeight.value;
+                }
+                else{
+                    cui.rCalHeight = data.containerHeight.value;
+                }
+            }else{
+                cui.rCalHeight = maxChildHeight;
+            }
+            cui.rCalWidth= accuChildWidth;
+        }
+        return;
     }
 
 }
