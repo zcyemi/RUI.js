@@ -4,7 +4,7 @@ import { RUIStyle } from "./RUIStyle";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIRoot } from "./RUIRoot";
 import { RUIWheelEvent } from "./RUIEvent";
-import { RUI } from "./RUI";
+import { RUI, RUILayouter, RUIVal, RUISizePair } from "./RUI";
 
 
 export enum RUIContainerUpdateMode{
@@ -464,4 +464,26 @@ export class RUIContainer extends RUIObject {
             }
         }
     }
+}
+
+
+export class RUIContainerLayouter implements RUILayouter{
+
+    private static s_layouter = new RUIContainerLayouter();
+    public static get Layouter():RUIContainerLayouter{
+        return this.s_layouter;
+    }
+
+    public onLayout(ui:RUIObject,width:RUIVal,height:RUIVal,maxwidth?:number,maxheight?:number){
+
+        let cui = <RUIContainer>ui;
+
+
+    }
+
+
+    public estimateSize(ui:RUIObject):RUISizePair{
+        return {width:ui.rWith,height:ui.rHeight};
+    }
+
 }

@@ -3,7 +3,8 @@ import { RUICmdList } from "./RUICmdList";
 import { RUIMouseEvent, RUIMouseDragEvent } from "./RUIEvent";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIContainer } from "./RUIContainer";
-import { RUI, RUILayouter } from "./RUI";
+import { RUI, RUILayouter, RUIVal } from "./RUI";
+import { RUIDefaultLayouter } from "./RUIDefaultLayouter";
 
 export const RUIAuto: number= -1;
 
@@ -104,8 +105,23 @@ export class RUIObject{
 
     public _debugname:string;
 
-    public layouter: RUILayouter;
 
+    /* Refactoring Start*/
+
+    public rWith:RUIVal = RUIVal.Auto;
+    public rHeight:RUIVal = RUIVal.Auto;
+
+    //Layouter
+    public layouter: RUILayouter = RUIDefaultLayouter.Layouter;
+    public layoutWidth: RUIVal;
+    public layoutHeight:RUIVal;
+
+    public rCalWidth:number;
+    public rCalHeight:number;
+
+    //Layouter end
+
+    /* Refactoring end */
 
     public onDraw(cmd:RUICmdList){
     }
@@ -165,6 +181,7 @@ export class RUIObject{
 
         this._resized = false;
     }
+
 
     public onLayoutPost(){
 
