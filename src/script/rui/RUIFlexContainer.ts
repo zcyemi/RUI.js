@@ -9,6 +9,11 @@ export class RUIFlexContainer extends RUIContainer{
     public layoutFlexAccu:number;
     public layoutFixedAccu:number;
 
+    public constructor(){
+        super();
+        this.layouter = RUIFlexLayouter.Default;
+    }
+
     public onLayout(){
 
         let isVertical = this.boxOrientation == RUIOrientation.Vertical;
@@ -216,7 +221,6 @@ export class RUIFlexLayouter implements RUILayouter{
     }
 
     private constructor(){
-
     }
 
     private AccuFlex(flex:RUIFlexContainer,ui:RUIObject,isvertical:boolean){
@@ -253,6 +257,8 @@ export class RUIFlexLayouter implements RUILayouter{
 
         cui.layoutFlexAccu = 0;
         cui.layoutFixedAccu = 0;
+
+        
 
         if(cui.isVertical){
             if(cui.layoutWidth == RUIVal.Auto){
@@ -301,6 +307,10 @@ export class RUIFlexLayouter implements RUILayouter{
     public LayoutPost(ui:RUIObject,data:RUILayoutData){
         if(!(ui instanceof RUIFlexContainer)) throw new Error();
 
+
+
+
+
         var cui = <RUIFlexContainer> ui;
         let children = cui.children;
 
@@ -328,13 +338,15 @@ export class RUIFlexLayouter implements RUILayouter{
             sizePerFlex = (cui.layoutWidth.value - cui.layoutFixedAccu) / cui.layoutFlexAccu;
         }
 
+        console.log(sizePerFlex);
+
         var cdata = new RUILayoutData();
         cdata.containerHeight = cui.layoutHeight.Clone;
         cdata.containerWidth = cui.layoutWidth.Clone;
 
         children.forEach(c=>{
             let csize = 0;
-            if(c.flex == null){
+            if(c.flex != null){
                 csize = ROUND(c.flex * sizePerFlex);
             }else{
                 csize = cui.isVertical ? c.layoutHeight.value : c.layoutWidth.value;

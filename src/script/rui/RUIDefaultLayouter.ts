@@ -16,6 +16,10 @@ export class RUIDefaultLayouter implements RUILayouter{
 
     public LayoutPost(ui:RUIObject,data:RUILayoutData){
 
+
+        console.log(data);
+        console.log(ui);
+        
         if(data.flexWidth != null){
             ui.rCalWidth = data.flexWidth;
         }
@@ -39,6 +43,8 @@ export class RUIDefaultLayouter implements RUILayouter{
                 ui.rCalHeight = ui.layoutHeight.value;
             }
         }
+
+        
     }
 
 }
