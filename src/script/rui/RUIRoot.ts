@@ -1,7 +1,8 @@
-import { RUIObject, RUIRect } from "./RUIObject";
+import { RUIObject, RUIRect, RUIOrientation } from "./RUIObject";
 import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIMouseDragEvent, RUIMouseDragStage, RUIWheelEvent } from "./RUIEvent";
 import { RUIContainer } from "./RUIContainer";
 import { RUIEventType } from "./RUIInput";
+import { RUILayoutData, RUIVal } from "./RUI";
 
 export class RUIRoot {
 
@@ -141,6 +142,57 @@ export class RUIRoot {
         }
     }
 
+
+    public layout(){
+
+        let root = this.root;
+        root.Layout();
+        var data = new RUILayoutData();
+        data.containerHeight = new RUIVal(this.m_rootSizeHeight);
+        data.containerWidth = new RUIVal(this.m_rootSizeWidth);
+        root.LayoutPost(data);
+
+        console.log(root);
+
+        root.isdirty = false;
+        this.isdirty = false;
+
+        if(root instanceof RUIContainer){
+            this.calculateFinalOffset(root);
+        }
+        else{
+            root._calx =0 ;
+            root._caly =0;
+        }
+    }
+
+    private calculateFinalOffset(cui:RUIContainer){
+        let children = cui.children;
+        let clen = children.length;
+
+        let isVertical = cui.boxOrientation == RUIOrientation.Vertical;
+
+        if(clen > 0){
+
+            let offx = cui._calx;
+            let offy = cui._caly;
+
+            let clevel = cui._level + 1;
+
+            for(var i=0;i<clen;i++){
+                var c= children[i];
+                c._level = clevel;
+
+                c._calx = offx + c.rOffx;
+                c._caly = offy + c.rOffy;
+
+                if(c instanceof RUIContainer){
+                    this.calculateFinalOffset(c);
+                }
+                //c.onLayoutPost();
+            }
+        }
+    }
 
     private dispatchMouseMove(x: number, y: number) {
         let newList = this.traversalAll(x, y);

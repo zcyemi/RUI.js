@@ -118,6 +118,8 @@ export class RUIObject{
 
     public rCalWidth:number;
     public rCalHeight:number;
+    public rOffx:number =0;
+    public rOffy:number =0;
 
     public Layout(){
         this.layouter.Layout(this);
@@ -138,6 +140,10 @@ export class RUIObject{
             this._width = val;
             this._resized = true;
         }
+
+        if(val != this.rWith.value){
+            this.rWith = new RUIVal(val);
+        }
         
     }
 
@@ -149,6 +155,10 @@ export class RUIObject{
         if(val != this._height){
             this._height = val;
             this._resized = true;
+        }
+
+        if(val != this.rHeight.value){
+            this.rHeight = new RUIVal(val);
         }
     }
     public get height():RUISize{
@@ -293,7 +303,8 @@ export class RUIObject{
     }
 
     public calculateRect(cliprect?:RUIRect):RUIRect{
-        let rect =  [this._calx,this._caly,this._calwidth,this._calheight];
+        //let rect =  [this._calx,this._caly,this._calwidth,this._calheight];
+        let rect = [this._calx,this._caly,this.rCalWidth,this.rCalHeight];
         if(cliprect != null){
             return RUI.RectClip(rect,cliprect);
         }

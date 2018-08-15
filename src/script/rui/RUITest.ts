@@ -8,6 +8,7 @@ import { RUIContainer } from "./RUIContainer";
 import { RUILayout } from "./RUILayout";
 import { RUIRectangle } from "./RUIRectangle";
 import { RUIDebug } from "./widget/RUIDebug";
+import { RUIStyle } from "./RUIStyle";
 
 
 export class RUITest{
@@ -30,7 +31,17 @@ export class RUITest{
         this.m_ruicmdlist = new RUICmdList();
         this.m_ruilayouter = new RUILayout();
 
-        var ui = new RUIDebug();
+        //var ui = new RUIDebug();
+
+        var ui = new RUIContainer();
+        {
+            ui.boxBorder = RUIStyle.Default.primary;
+
+            ui.addChild(new RUIRectangle(100,100));
+            ui.addChild(new RUIRectangle(20,70));
+            ui.addChild(new RUIRectangle(70,20));
+        }
+
 
         var root = new RUIRoot(ui,false);
         root.root = ui;
@@ -52,7 +63,8 @@ export class RUITest{
         let renderer= this.m_ruicanvas.renderer;
         if(uiroot.isdirty || renderer.needRedraw){
             let start = Date.now();
-            this.m_ruilayouter.build(uiroot);
+            //this.m_ruilayouter.build(uiroot);
+            uiroot.layout();
             console.log('> ' + (Date.now() - start));
             this.m_ruicmdlist.draw(uiroot);
             renderer.DrawCmdList(this.m_ruicmdlist);

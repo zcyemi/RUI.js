@@ -26,7 +26,6 @@ export class RUICollapsibleContainer extends RUIContainer{
         let container = new RUIContainer();
         this.m_container = container;
         if(this.m_show) super.addChild(container);  
-        console.log(this.m_container); 
     }
 
     private onButtonClick(b:RUIButton){

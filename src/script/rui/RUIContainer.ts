@@ -512,8 +512,8 @@ export class RUIContainerLayouter implements RUILayouter{
                 children.forEach(c=>{
                     c.Layout();
                     if(c.layoutHeight != RUIVal.Auto) maxheight = Math.max(maxheight,c.layoutHeight.value);
-                    cui.layoutHeight = maxheight == -1? RUIVal.Auto: new RUIVal(maxheight);
                 })
+                cui.layoutHeight = maxheight == -1? RUIVal.Auto: new RUIVal(maxheight);
             }
 
             return;
@@ -556,9 +556,24 @@ export class RUIContainerLayouter implements RUILayouter{
 
     public LayoutPost(ui:RUIObject,data:RUILayoutData){
 
+        if(ui.layoutHeight == null){
+            console.error(ui);
+            throw new Error();
+        }
+
+        if(ui.layoutWidth == null){
+            throw new Error();
+        }
+
         let cui = <RUIContainer>ui;
         let children = cui.children;
 
+        if(data.containerHeight == null){
+            throw new Error();
+        }
+        if(data.containerWidth == null){
+            throw new Error();
+        }
 
         //Fill flex
         if(data.flexWidth != null){
@@ -569,14 +584,23 @@ export class RUIContainerLayouter implements RUILayouter{
         }
 
         //Fill auto
-        if(cui.isVertical && cui.layoutWidth === RUIVal.Auto){
-            cui.layoutWidth = data.containerWidth.Clone;
+
+        var isvertical = cui.isVertical;
+
+        if(isvertical){
+            if(cui.layoutWidth === RUIVal.Auto){
+                cui.layoutWidth = data.containerWidth.Clone;
+            }
         }
-        else if(cui.layoutHeight === RUIVal.Auto){
-            cui.layoutHeight = data.containerHeight.Clone;
+        else{
+            if(cui.layoutHeight == RUIVal.Auto){
+                cui.layoutHeight = data.containerHeight.Clone;
+            }
         }
 
         //Fixed Size
+
+
         if(cui.layoutWidth != RUIVal.Auto && cui.layoutHeight != RUIVal.Auto){
             cui.rCalWidth= cui.layoutWidth.value;
             cui.rCalHeight = cui.layoutHeight.value;
@@ -585,7 +609,21 @@ export class RUIContainerLayouter implements RUILayouter{
             cdata.containerWidth = new RUIVal(cui.rCalWidth);
             cdata.containerHeight = new RUIVal(cui.rCalHeight);
 
-            children.forEach(c=>c.LayoutPost(cdata));
+
+            var accuSize = 0;
+            children.forEach(c=>{
+                c.LayoutPost(cdata);
+                if(isvertical){
+                    c.rOffx = 0;
+                    c.rOffy = accuSize;
+                    accuSize+=c.rCalHeight;
+                }
+                else{
+                    c.rOffy =0;
+                    c.rOffx = accuSize;
+                    accuSize+= c.rCalWidth;
+                }
+            });
 
             return;
         }
@@ -600,6 +638,8 @@ export class RUIContainerLayouter implements RUILayouter{
             var accuChildHeight = 0;
             children.forEach(c=>{
                 c.LayoutPost(cdata);
+                c.rOffx = 0;
+                c.rOffy = accuChildHeight;
                 maxChildWidth = Math.max(maxChildWidth,c.rCalWidth);
                 accuChildHeight += c.rCalHeight;
             });
@@ -626,6 +666,8 @@ export class RUIContainerLayouter implements RUILayouter{
             var accuChildWidth = 0;
             children.forEach(c=>{
                 c.LayoutPost(cdata);
+                c.rOffy =0;
+                c.rOffx = accuChildWidth;
                 maxChildHeight = Math.max(maxChildHeight,c.rCalHeight);
                 accuChildWidth += c.rCalWidth;
             });
