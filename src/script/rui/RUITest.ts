@@ -37,9 +37,11 @@ export class RUITest{
         {
             ui.boxBorder = RUIStyle.Default.primary;
             ui.boxOrientation = RUIOrientation.Horizontal;
+            //ui.boxSideExtens = true;
             
 
             let r1 = new RUIRectangle();
+            r1.height = 100;
             r1.flex = 2;
             let r2 = new RUIRectangle();
             r2.flex= 1;

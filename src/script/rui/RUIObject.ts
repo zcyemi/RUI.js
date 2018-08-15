@@ -142,7 +142,7 @@ export class RUIObject{
         }
 
         if(val != this.rWith.value){
-            this.rWith = new RUIVal(val);
+            this.rWith = (val == RUIAuto? RUIVal.Auto : new RUIVal(val));
         }
         
     }
@@ -158,7 +158,7 @@ export class RUIObject{
         }
 
         if(val != this.rHeight.value){
-            this.rHeight = new RUIVal(val);
+            this.rHeight = (val == RUIAuto? RUIVal.Auto : new RUIVal(val));
         }
     }
     public get height():RUISize{

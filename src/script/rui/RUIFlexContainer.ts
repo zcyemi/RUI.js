@@ -44,8 +44,6 @@ export class RUIFlexContainer extends RUIContainer{
 
         this.fillSize();
 
-
-
         if(null == (isVertical? this._calheight: this._calwidth)) throw new Error();
 
         
@@ -282,19 +280,21 @@ export class RUIFlexLayouter implements RUILayouter{
             }
         }
         else{
-            if(cui.layoutHeight == RUIVal.Auto){
+            if(cui.layoutHeight === RUIVal.Auto){
+
                 let maxheight = -1;
                 children.forEach(c=>{
                     c.Layout();
                     if(c.layoutHeight != RUIVal.Auto){
                         maxheight = Math.max(maxheight,c.layoutHeight.value);
-                        self.AccuFlex(cui,c,false);
                     }
+                    self.AccuFlex(cui,c,false);
                 })
                 cui.layoutHeight = maxheight == -1? RUIVal.Auto: new RUIVal(maxheight);
                 return;
             }
             else{
+
                 children.forEach(c=>{
                     c.Layout();
                     self.AccuFlex(cui,c,false);
@@ -309,10 +309,9 @@ export class RUIFlexLayouter implements RUILayouter{
 
 
 
-
-
         var cui = <RUIFlexContainer> ui;
         let children = cui.children;
+        var isvertical = cui.isVertical;
 
         //Fill flex
         if(data.flexWidth != null){
@@ -331,42 +330,70 @@ export class RUIFlexLayouter implements RUILayouter{
 
         //start flex calculate
         var sizePerFlex = 0;
-        if(cui.isVertical){
+        if(isvertical){
             sizePerFlex = (cui.layoutHeight.value - cui.layoutFixedAccu) / cui.layoutFlexAccu;
         }
         else{
             sizePerFlex = (cui.layoutWidth.value - cui.layoutFixedAccu) / cui.layoutFlexAccu;
         }
 
-        console.log(sizePerFlex);
-
         var cdata = new RUILayoutData();
+
         cdata.containerHeight = cui.layoutHeight.Clone;
         cdata.containerWidth = cui.layoutWidth.Clone;
+
+        cui.rCalWidth = cui.layoutWidth.value;
+        cui.rCalHeight = cui.layoutHeight.value;
+
+        if(cui.boxSideExtens){
+            if(isvertical){
+                cdata.containerWidth = data.containerWidth.Clone;
+                cui.rCalWidth = cdata.containerWidth.value;
+            }
+            else{
+                cdata.containerHeight = data.containerHeight.Clone;
+                cui.rCalHeight = cdata.containerHeight.value;
+            }
+        }
+
+        var offset = 0;
 
         children.forEach(c=>{
             let csize = 0;
             if(c.flex != null){
                 csize = ROUND(c.flex * sizePerFlex);
             }else{
-                csize = cui.isVertical ? c.layoutHeight.value : c.layoutWidth.value;
+                csize = isvertical ? c.layoutHeight.value : c.layoutWidth.value;
             }
 
-            if(cui.isVertical){
-                data.flexWidth = null;
-                data.flexHeight = csize;
+            if(isvertical){
+                cdata.flexWidth = null;
+                cdata.flexHeight = csize;
             }
             else{
-                data.flexHeight = null;
-                data.flexWidth = csize;
+                cdata.flexHeight = null;
+                cdata.flexWidth = csize;
             }
-            c.LayoutPost(data);
+
+            c.LayoutPost(cdata);
+
+            if(isvertical){
+                c.rOffx = 0;
+                c.rOffy = offset;
+
+                offset += c.rCalHeight;
+            }
+            else{
+                c.rOffx = offset;
+                c.rOffy = 0;
+                offset += c.rCalWidth;
+            }
             
-            //calculate offset
         });
 
-        cui.rCalWidth = cui.layoutWidth.value;
-        cui.rCalHeight = cui.layoutHeight.value;
+
+
+
         
 
     }

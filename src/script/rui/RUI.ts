@@ -55,7 +55,7 @@ export class RUIVal{
     }
 
     public get Clone():RUIVal{
-        if(this === RUIVal.Auto) return this;
+        if(this === RUIVal.Auto) return RUIVal.Auto;
         return new RUIVal(this.m_val);
     }
 }
