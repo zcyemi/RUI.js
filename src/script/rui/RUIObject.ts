@@ -108,7 +108,7 @@ export class RUIObject{
 
     /* Refactoring Start*/
 
-    public rWith:RUIVal = RUIVal.Auto;
+    public rWidth:RUIVal = RUIVal.Auto;
     public rHeight:RUIVal = RUIVal.Auto;
 
     //Layouter
@@ -141,8 +141,8 @@ export class RUIObject{
             this._resized = true;
         }
 
-        if(val != this.rWith.value){
-            this.rWith = (val == RUIAuto? RUIVal.Auto : new RUIVal(val));
+        if(val != this.rWidth.value){
+            this.rWidth = (val == RUIAuto? RUIVal.Auto : new RUIVal(val));
         }
         
     }

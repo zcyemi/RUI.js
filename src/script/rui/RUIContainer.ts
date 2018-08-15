@@ -485,7 +485,7 @@ export class RUIContainerLayouter implements RUILayouter{
         let children = cui.children;
 
         //FixedSize
-        if(cui.rWith != RUIVal.Auto && cui.rHeight != RUIVal.Auto){
+        if(cui.rWidth != RUIVal.Auto && cui.rHeight != RUIVal.Auto){
             cui.layoutWidth= new RUIVal(cui.width);
             cui.layoutHeight = new RUIVal(cui.height);
 
@@ -494,7 +494,7 @@ export class RUIContainerLayouter implements RUILayouter{
         }
 
         //All auto
-        if(cui.rWith == RUIVal.Auto && cui.rHeight == RUIVal.Auto){
+        if(cui.rWidth == RUIVal.Auto && cui.rHeight == RUIVal.Auto){
             if(cui.isVertical){
                 cui.layoutHeight = RUIVal.Auto;
 
@@ -519,9 +519,9 @@ export class RUIContainerLayouter implements RUILayouter{
             return;
         }
 
-        if(cui.rWith != RUIVal.Auto){
+        if(cui.rWidth != RUIVal.Auto){
             //height is auto
-            cui.layoutWidth = cui.rWith.Clone;
+            cui.layoutWidth = cui.rWidth.Clone;
 
             if(cui.isVertical){
                 cui.layoutHeight = RUIVal.Auto;

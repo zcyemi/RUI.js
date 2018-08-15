@@ -11,7 +11,7 @@ export class RUIDefaultLayouter implements RUILayouter{
 
     public Layout(ui:RUIObject){
        
-        ui.layoutWidth = ui.rWith.Clone;
+        ui.layoutWidth = ui.rWidth.Clone;
         ui.layoutHeight = ui.rHeight.Clone;
 
     }

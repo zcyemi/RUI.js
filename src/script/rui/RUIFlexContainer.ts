@@ -250,7 +250,7 @@ export class RUIFlexLayouter implements RUILayouter{
         let children = cui.children;
         var self = this;
 
-        cui.layoutWidth = cui.rWith.Clone;
+        cui.layoutWidth = cui.rWidth.Clone;
         cui.layoutHeight = cui.rHeight.Clone;
 
         cui.layoutFlexAccu = 0;
