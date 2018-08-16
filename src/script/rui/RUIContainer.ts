@@ -5,6 +5,7 @@ import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIRoot } from "./RUIRoot";
 import { RUIWheelEvent } from "./RUIEvent";
 import { RUI, RUILayouter, RUIVal, RUISizePair, RUILayoutData } from "./RUI";
+import { RUIDefaultLayouter } from "./RUIDefaultLayouter";
 
 
 export enum RUIContainerUpdateMode{
@@ -396,83 +397,19 @@ export class RUIContainer extends RUIObject {
         let cw = container.rCalWidth;
         let ch = container.rCalHeight;
 
+        let layoutRelative =RUIDefaultLayouter.LayoutRelative;
+
         for (var i = 0, clen = children.length; i < clen; i++) {
             let c = children[i];
             if (c.isOnFlow) continue;
 
             let isrelative = c.position == RUIPosition.Relative;
-
-            let cpw = isrelative ? cw : rw;
-            let cph = isrelative ? ch : rh;
-
-            let cleft = c.left;
-            let cright = c.right;
-            let ctop = c.top;
-            let cbottom = c.bottom;
-
-            let constraintHori = cleft != RUIAuto && cright != RUIAuto;
-            let constraintVert = ctop != RUIAuto && cbottom != RUIAuto;
-
-            let cwidth = 0;
-            let cheight = 0;
-
-            let coffx = cleft;
-            let coffy = ctop;
-
-            c.Layout();
-
-            if (constraintHori) {
-                cwidth = Math.max(0, cpw - cleft - cright);
+            if(isrelative){
+                layoutRelative(c,cw,ch);
             }
-            else {
-                if (c.layoutWidth != RUIVal.Auto) {
-                    cwidth = c.layoutWidth.value;
-                    if (cleft != RUIAuto) {
-
-                    }
-                    else if (cright != RUIAuto) {
-                        coffx = cpw - cright - cwidth;
-                    }
-                    else {
-                        coffx = ROUND((cpw - cwidth) / 2);
-                    }
-                }
-                else {
-                    throw new Error();
-                }
+            else{
+                layoutRelative(c,rw,rh);
             }
-
-            if (constraintVert) {
-                cheight = Math.max(0, cph - ctop - cbottom);
-            }
-            else {
-                if (c.layoutHeight != RUIVal.Auto) {
-                    cheight = c.layoutHeight.value;
-                    if (ctop != RUIAuto) {
-                    }
-                    else if (cbottom != RUIAuto) {
-                        coffy = cph - cbottom - cheight;
-                    }
-                    else {
-                        coffy = ROUND((cph - cheight) / 2);
-                    }
-                } else {
-                    throw new Error();
-                }
-            }
-
-            let data = new RUILayoutData();
-            data.flexWidth = cwidth;
-            data.flexHeight = cheight;
-            data.containerWidth = container.layoutWidth;
-            data.containerHeight = container.layoutHeight;
-
-            c.LayoutPost(data);
-            c.rCalWidth = cwidth;
-            c.rCalHeight = cheight;
-            c.rOffx = coffx;
-            c.rOffy = coffy;
-
         }
 
     }

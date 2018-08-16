@@ -3,6 +3,7 @@ import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIMouseDragEvent, RUIMou
 import { RUIContainer } from "./RUIContainer";
 import { RUIEventType } from "./RUIInput";
 import { RUILayoutData, RUIVal } from "./RUI";
+import { RUIDefaultLayouter } from "./RUIDefaultLayouter";
 
 export class RUIRoot {
 
@@ -146,11 +147,17 @@ export class RUIRoot {
     public layout(){
 
         let root = this.root;
-        root.Layout();
-        var data = new RUILayoutData();
-        data.containerHeight = new RUIVal(this.m_rootSizeHeight);
-        data.containerWidth = new RUIVal(this.m_rootSizeWidth);
-        root.LayoutPost(data);
+
+        if(root.isOnFlow){
+            root.Layout();
+            var data = new RUILayoutData();
+            data.containerHeight = new RUIVal(this.m_rootSizeHeight);
+            data.containerWidth = new RUIVal(this.m_rootSizeWidth);
+            root.LayoutPost(data);
+        }
+        else{
+            RUIDefaultLayouter.LayoutRelative(root,this.m_rootSizeWidth,this.m_rootSizeHeight);
+        }
 
         root.isdirty = false;
         this.isdirty = false;
@@ -159,8 +166,8 @@ export class RUIRoot {
             this.calculateFinalOffset(root);
         }
         else{
-            root._calx =0 ;
-            root._caly =0;
+            root._calx = root.rOffx;
+            root._caly = root.rOffy;
         }
     }
 

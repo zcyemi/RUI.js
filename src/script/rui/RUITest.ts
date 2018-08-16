@@ -34,12 +34,22 @@ export class RUITest{
         this.m_ruicmdlist = new RUICmdList();
         this.m_ruilayouter = new RUILayout();
 
-        var ui = new RUIDebug();
-        ui.position = RUIPosition.Absolute;
+
+        var ui = null;
+
+        ui = new RUIRectangle();
+        ui.position = RUIPosition.Relative;
         ui.left = 100;
         ui.right = 100;
         ui.top = 100;
-        ui.bottom =100;
+        ui.bottom= 100;
+
+        // var ui = new RUIDebug();
+        // ui.position = RUIPosition.Absolute;
+        // ui.left = 100;
+        // ui.right = 100;
+        // ui.top = 100;
+        // ui.bottom =100;
 
 
         var root = new RUIRoot(ui,false);
@@ -64,6 +74,8 @@ export class RUITest{
             let start = Date.now();
             //this.m_ruilayouter.build(uiroot);
             uiroot.layout();
+
+            console.log(uiroot);
             console.log('> ' + (Date.now() - start));
             this.m_ruicmdlist.draw(uiroot);
             renderer.DrawCmdList(this.m_ruicmdlist);
