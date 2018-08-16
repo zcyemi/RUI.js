@@ -574,6 +574,15 @@ export class RUIContainerLayouter implements RUILayouter{
     public Layout(ui:RUIObject){
         let cui = <RUIContainer> ui;
         let children = cui.children;
+        let clen = children.length;
+        let flowChildren = [];
+        for(var i=0;i<clen;i++){
+            let c=  children[i];
+            if(c.isOnFlow) flowChildren.push(c);
+        }
+        children = flowChildren;
+
+        console.log('flowchildren:  '+ children.length);
 
         //FixedSize
         if(cui.rWidth != RUIVal.Auto && cui.rHeight != RUIVal.Auto){
@@ -658,6 +667,14 @@ export class RUIContainerLayouter implements RUILayouter{
 
         let cui = <RUIContainer>ui;
         let children = cui.children;
+        let clen = children.length;
+        let flowChildren = [];
+        for(var i=0;i<clen;i++){
+            let c=  children[i];
+            if(c.isOnFlow) flowChildren.push(c);
+        }
+        children = flowChildren;
+
 
         if(data.containerHeight == null){
             throw new Error();
@@ -715,6 +732,8 @@ export class RUIContainerLayouter implements RUILayouter{
                     accuSize+= c.rCalWidth;
                 }
             });
+
+            cui.LayoutRelativeUI(cui,cui.children);
 
             return;
         }
@@ -775,6 +794,8 @@ export class RUIContainerLayouter implements RUILayouter{
             }
             cui.rCalWidth= accuChildWidth;
         }
+
+        cui.LayoutRelativeUI(cui,cui.children);
         return;
     }
 
