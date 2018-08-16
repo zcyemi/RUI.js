@@ -518,74 +518,77 @@ export class RUIContainerLayouter implements RUILayouter{
             if(c.isOnFlow) flowChildren.push(c);
         }
         children = flowChildren;
+        clen = children.length;
+        let isvertical = cui.isVertical;
 
-        //FixedSize
-        if(cui.rWidth != RUIVal.Auto && cui.rHeight != RUIVal.Auto){
-            cui.layoutWidth= new RUIVal(cui.width);
-            cui.layoutHeight = new RUIVal(cui.height);
-
-            children.forEach(c=>c.Layout());
-            return;
+        let f = (c)=>c.Layout();
+        var maxsize = -1;
+        if(isvertical && cui.rWidth === RUIVal.Auto){
+            f = (c)=>{
+                c.Layout();
+                if(c.layoutWidth != RUIVal.Auto) maxsize = Math.max(maxsize,c.layoutWidth.value);
+            }
+        }
+        else if(!isvertical && cui.rHeight === RUIVal.Auto){
+            f = (c)=>{
+                c.Layout();
+                if(c.layoutHeight != RUIVal.Auto) maxsize = Math.max(maxsize,c.layoutHeight.value);
+            }
         }
 
-        //All auto
-        if(cui.rWidth == RUIVal.Auto && cui.rHeight == RUIVal.Auto){
-            if(cui.isVertical){
-                cui.layoutHeight = RUIVal.Auto;
-
-                let maxwdith = -1;
-                children.forEach(c=>{
-                    c.Layout();
-                    if(c.layoutWidth != RUIVal.Auto) maxwdith = Math.max(maxwdith,c.layoutWidth.value);
-
-                })
-                cui.layoutWidth = maxwdith == -1 ? RUIVal.Auto: new RUIVal(maxwdith);
-            }
-            else{
-                cui.layoutWidth = RUIVal.Auto;
-                let maxheight = -1;
-                children.forEach(c=>{
-                    c.Layout();
-                    if(c.layoutHeight != RUIVal.Auto) maxheight = Math.max(maxheight,c.layoutHeight.value);
-                })
-                cui.layoutHeight = maxheight == -1? RUIVal.Auto: new RUIVal(maxheight);
-            }
-
-            return;
+        for(var i=0;i<clen;i++){
+            let c = children[i];
+            f(c);
         }
 
+        let parent = cui.parent;
+        let exten = cui.boxSideExtens && (parent == null ||(parent != null && (<RUIContainer>parent).boxOrientation == cui.boxOrientation ));
+
+        //width
         if(cui.rWidth != RUIVal.Auto){
-            //height is auto
             cui.layoutWidth = cui.rWidth.Clone;
-
-            if(cui.isVertical){
-                cui.layoutHeight = RUIVal.Auto;
-                children.forEach(c=>c.Layout());
-            }
-            else{
-                let maxheight = -1;
-                children.forEach(c=>{
-                    c.Layout();
-                    if(c.layoutHeight != RUIVal.Auto) maxheight = Math.max(maxheight,c.layoutHeight.value);
-                })
-                cui.layoutHeight = maxheight == -1? RUIVal.Auto: new RUIVal(maxheight);
-            }
         }
         else{
-            //width is auto
-            cui.layoutHeight = cui.rHeight.Clone;
-            if(cui.isVertical){
-                let maxwidth = -1;
-                children.forEach(c=>{
-                    c.Layout();
-                    if(c.layoutWidth != RUIVal.Auto) maxwidth= Math.max(maxwidth,c.layoutWidth.value);
-                })
-                cui.layoutWidth= maxwidth == -1? RUIVal.Auto: new RUIVal(maxwidth);
+            //exten
+            if(isvertical){
+                if(exten){
+                    cui.layoutWidth = RUIVal.Auto;
+                }
+                else{
+                    if(maxsize != -1){
+                        cui.layoutWidth = new RUIVal(maxsize);
+                    }
+                    else{
+                        cui.layoutWidth = RUIVal.Auto;
+                    }
+                }
             }
             else{
                 cui.layoutWidth = RUIVal.Auto;
-                children.forEach(c=>c.Layout());
             }
+        }
+        //height
+        if(cui.rHeight != RUIVal.Auto){
+            cui.layoutHeight = cui.rHeight.Clone;
+        }
+        else{
+            //exten
+            if(isvertical){
+                cui.layoutHeight = RUIVal.Auto;
+            }
+            else{
+                if(exten){
+                    cui.layoutHeight = RUIVal.Auto;
+                }
+                else{
+                    if(maxsize !=-1){
+                        cui.layoutHeight = new RUIVal(maxsize);
+                    }else{
+                        cui.layoutHeight = RUIVal.Auto;
+                    }
+                }
+            }
+
         }
     }
 
@@ -601,6 +604,11 @@ export class RUIContainerLayouter implements RUILayouter{
         }
 
         let cui = <RUIContainer>ui;
+
+        if(cui._debugname != null){
+            console.log(cui.layoutWidth.value + ' '+ cui.layoutHeight.value);
+        }
+
         let children = cui.children;
         let clen = children.length;
         let flowChildren = [];
@@ -629,6 +637,10 @@ export class RUIContainerLayouter implements RUILayouter{
         //Fill auto
 
         var isvertical = cui.isVertical;
+
+
+        
+
 
         if(isvertical){
             if(cui.layoutWidth === RUIVal.Auto){
@@ -674,6 +686,8 @@ export class RUIContainerLayouter implements RUILayouter{
         }
 
         //Side auto
+
+
         if(cui.isVertical){
             let cdata = new RUILayoutData();
             cdata.containerWidth = cui.layoutWidth.Clone;
@@ -689,7 +703,9 @@ export class RUIContainerLayouter implements RUILayouter{
                 accuChildHeight += c.rCalHeight;
             });
 
+
             if(cui.boxSideExtens){
+                
                 if(maxChildWidth < data.containerWidth.value){
                     cui.rCalWidth = data.containerWidth.value;
                 }

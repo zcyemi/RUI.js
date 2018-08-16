@@ -12,6 +12,7 @@ import { RUIStyle } from "./RUIStyle";
 import { RUITabView, RUITabPage } from "./widget/RUITabView";
 import { RUIButtonGroup } from "./widget/RUIButtonGroup";
 import { RUIButton } from "./widget/RUIButton";
+import { RUI } from "./RUI";
 
 
 export class RUITest{
@@ -35,21 +36,24 @@ export class RUITest{
         this.m_ruilayouter = new RUILayout();
 
 
-        var ui = null;
 
-        ui = new RUIRectangle();
-        ui.position = RUIPosition.Relative;
-        ui.left = 100;
-        ui.right = 100;
-        ui.top = 100;
-        ui.bottom= 100;
+        var ui = new RUIContainer();
+        ui.width = 200;
+        ui.height =100;
+        ui.boxOrientation = RUIOrientation.Horizontal;
+        ui.boxBackground = RUIStyle.Default.border0;
 
-        // var ui = new RUIDebug();
-        // ui.position = RUIPosition.Absolute;
-        // ui.left = 100;
-        // ui.right = 100;
-        // ui.top = 100;
-        // ui.bottom =100;
+        ui.addChild(new RUIRectangle(100,30));
+
+        
+        let c=  new RUIContainer();
+        c.boxOrientation= RUIOrientation.Horizontal;
+        c.boxSideExtens = true;
+       
+        c.boxBackground = RUI.RED;
+        c.addChild(new RUIRectangle(20,40));
+        c.width =70;
+        ui.addChild(c);
 
 
         var root = new RUIRoot(ui,false);
