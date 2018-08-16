@@ -33,8 +33,9 @@ export class RUITest{
 
         //var ui = new RUIDebug();
 
-        var ui = new RUIFlexContainer();
+        var ui = new RUIContainer();
         {
+            ui.width = 200;
             ui.boxBorder = RUIStyle.Default.primary;
             ui.boxOrientation = RUIOrientation.Horizontal;
             //ui.boxSideExtens = true;
@@ -42,11 +43,16 @@ export class RUITest{
 
             let r1 = new RUIRectangle();
             r1.height = 100;
+            r1.width =40;
             r1.flex = 2;
             let r2 = new RUIRectangle();
-            r2.flex= 1;
+            r2.position = RUIPosition.Relative;
+            r2.width = 20;
+            r2.height = 50;
+            r2.bottom = 0;
+
             ui.addChild(r1);
-            ui.addChild(r2);
+            //ui.addChild(r2);
             ui.addChild(new RUIRectangle(70,20));
         }
 

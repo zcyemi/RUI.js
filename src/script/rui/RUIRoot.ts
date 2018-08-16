@@ -152,8 +152,6 @@ export class RUIRoot {
         data.containerWidth = new RUIVal(this.m_rootSizeWidth);
         root.LayoutPost(data);
 
-        console.log(root);
-
         root.isdirty = false;
         this.isdirty = false;
 

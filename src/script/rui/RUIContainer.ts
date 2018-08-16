@@ -386,6 +386,97 @@ export class RUIContainer extends RUIObject {
         }
     }
 
+    public LayoutRelativeUI(container: RUIContainer, children: RUIObject[]) {
+
+        let root = container._root.root;
+
+        let rw = root.rCalWidth;
+        let rh = root.rCalHeight;
+
+        let cw = container.rCalWidth;
+        let ch = container.rCalHeight;
+
+        for (var i = 0, clen = children.length; i < clen; i++) {
+            let c = children[i];
+            if (c.isOnFlow) continue;
+
+            let isrelative = c.position == RUIPosition.Relative;
+
+            let cpw = isrelative ? cw : rw;
+            let cph = isrelative ? ch : rh;
+
+            let cleft = c.left;
+            let cright = c.right;
+            let ctop = c.top;
+            let cbottom = c.bottom;
+
+            let constraintHori = cleft != RUIAuto && cright != RUIAuto;
+            let constraintVert = ctop != RUIAuto && cbottom != RUIAuto;
+
+            let cwidth = 0;
+            let cheight = 0;
+
+            let coffx = cleft;
+            let coffy = ctop;
+
+            c.Layout();
+
+            if (constraintHori) {
+                cwidth = Math.max(0, cpw - cleft - cright);
+            }
+            else {
+                if (c.layoutWidth != RUIVal.Auto) {
+                    cwidth = c.layoutWidth.value;
+                    if (cleft != RUIAuto) {
+
+                    }
+                    else if (cright != RUIAuto) {
+                        coffx = cpw - cright - cwidth;
+                    }
+                    else {
+                        coffx = ROUND((cpw - cwidth) / 2);
+                    }
+                }
+                else {
+                    throw new Error();
+                }
+            }
+
+            if (constraintVert) {
+                cheight = Math.max(0, cph - ctop - cbottom);
+            }
+            else {
+                if (c.layoutHeight != RUIVal.Auto) {
+                    cheight = c.layoutHeight.value;
+                    if (ctop != RUIAuto) {
+                    }
+                    else if (cbottom != RUIAuto) {
+                        coffy = cph - cbottom - cheight;
+                    }
+                    else {
+                        coffy = ROUND((cph - cheight) / 2);
+                    }
+                } else {
+                    throw new Error();
+                }
+            }
+
+            let data = new RUILayoutData();
+            data.flexWidth = cwidth;
+            data.flexHeight = cheight;
+            data.containerWidth = container.layoutWidth;
+            data.containerHeight = container.layoutHeight;
+
+            c.LayoutPost(data);
+            c.rCalWidth = cwidth;
+            c.rCalHeight = cheight;
+            c.rOffx = coffx;
+            c.rOffy = coffy;
+
+        }
+
+    }
+
 
     public onDraw(cmd: RUICmdList) {
 
