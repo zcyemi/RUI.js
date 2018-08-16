@@ -53,7 +53,7 @@ export class RUITabView extends RUIContainer{
             this.boxOrientation = RUIOrientation.Horizontal;
             menu = new RUIButtonGroup(buttons,RUIOrientation.Vertical);
             menu.width = 100;
-            RUIBind(this,"_calheight",(v)=>menu.height = v);
+            //RUIBind(this,"_calheight",(v)=>menu.height = v);
             if(tabpos == RUIConst.LEFT){
                 super.addChild(menu);
                 super.addChild(pagewrap);
@@ -68,8 +68,8 @@ export class RUITabView extends RUIContainer{
         this.m_pageWrap = pagewrap;
 
         //Bind
-        RUIBind(this,"_calheight",(v)=>pagewrap.height = v);
-        RUIBind(this,"_calwidth",(v)=>pagewrap.width=v - 100);
+        // RUIBind(this,"_calheight",(v)=>pagewrap.height = v);
+        // RUIBind(this,"_calwidth",(v)=>pagewrap.width=v - 100);
 
         this.setPageIndex(0);
 

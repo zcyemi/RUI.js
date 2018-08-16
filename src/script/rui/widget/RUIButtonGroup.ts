@@ -25,8 +25,9 @@ export class RUIButtonGroup extends RUIContainer{
         super();
         this.m_buttons = buttons;
         this.boxOrientation = orientation;
-        this.boxBorder = RUIStyle.Default.primary0;
+        this.boxBorder = RUIStyle.Default.border0;
         this.boxClip = RUIContainerClipType.Clip;
+        this.boxSideExtens =true;
         this.padding = [1,1,1,1];
 
 

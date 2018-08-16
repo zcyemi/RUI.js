@@ -582,8 +582,6 @@ export class RUIContainerLayouter implements RUILayouter{
         }
         children = flowChildren;
 
-        console.log('flowchildren:  '+ children.length);
-
         //FixedSize
         if(cui.rWidth != RUIVal.Auto && cui.rHeight != RUIVal.Auto){
             cui.layoutWidth= new RUIVal(cui.width);

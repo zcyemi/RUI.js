@@ -3,12 +3,15 @@ import { RUICanvas } from "./RUICanvas";
 import { RUICmdList } from "./RUICmdList";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIRoot } from "./RUIRoot";
-import { RUIOrientation, RUIPosition } from "./RUIObject";
+import { RUIOrientation, RUIPosition, RUIConst } from "./RUIObject";
 import { RUIContainer } from "./RUIContainer";
 import { RUILayout } from "./RUILayout";
 import { RUIRectangle } from "./RUIRectangle";
 import { RUIDebug } from "./widget/RUIDebug";
 import { RUIStyle } from "./RUIStyle";
+import { RUITabView, RUITabPage } from "./widget/RUITabView";
+import { RUIButtonGroup } from "./widget/RUIButtonGroup";
+import { RUIButton } from "./widget/RUIButton";
 
 
 export class RUITest{
@@ -31,31 +34,12 @@ export class RUITest{
         this.m_ruicmdlist = new RUICmdList();
         this.m_ruilayouter = new RUILayout();
 
-        //var ui = new RUIDebug();
-
-        var ui = new RUIContainer();
-        {
-            // ui.width = 200;
-            // ui.height = 200;
-            ui.boxBorder = RUIStyle.Default.primary;
-            ui.boxOrientation = RUIOrientation.Horizontal;
-            //ui.boxSideExtens = true;
-            
-
-            let r1 = new RUIRectangle();
-            r1.height = 100;
-            r1.width =40;
-            r1.flex = 2;
-            let r2 = new RUIRectangle();
-            r2.position = RUIPosition.Relative;
-            r2.width = 20;
-            r2.height = 50;
-            r2.bottom = 0;
-
-            ui.addChild(r1);
-            ui.addChild(r2);
-            ui.addChild(new RUIRectangle(70,20));
-        }
+        var ui = new RUIDebug();
+        ui.position = RUIPosition.Absolute;
+        ui.left = 100;
+        ui.right = 100;
+        ui.top = 100;
+        ui.bottom =100;
 
 
         var root = new RUIRoot(ui,false);
