@@ -12,6 +12,7 @@ import { RUITabView, RUITabPage } from "./widget/RUITabView";
 import { RUIButtonGroup } from "./widget/RUIButtonGroup";
 import { RUIButton } from "./widget/RUIButton";
 import { RUI } from "./RUI";
+import { RUILabel } from "./widget/RUILabel";
 
 
 export class RUITest{
@@ -47,7 +48,8 @@ export class RUITest{
        
         c.boxBackground = RUI.RED;
         c.addChild(new RUIRectangle(20,40));
-        //c.width =70;
+        c.addChild(new RUILabel('hello world'));
+        c.width =70;
         ui.addChild(c);
 
 
