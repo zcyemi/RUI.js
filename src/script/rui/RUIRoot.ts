@@ -149,8 +149,8 @@ export class RUIRoot {
         if(root.isOnFlow){
             root.Layout();
             var data = new RUILayoutData();
-            data.containerHeight = new RUIVal(this.m_rootSizeHeight);
-            data.containerWidth = new RUIVal(this.m_rootSizeWidth);
+            data.containerHeight = this.m_rootSizeHeight;
+            data.containerWidth = this.m_rootSizeWidth;
             root.LayoutPost(data);
         }
         else{
@@ -164,8 +164,8 @@ export class RUIRoot {
             this.calculateFinalOffset(root);
         }
         else{
-            root._calx = root.rOffx;
-            root._caly = root.rOffy;
+            root.rCalx = root.rOffx;
+            root.rCaly = root.rOffy;
         }
     }
 
@@ -177,8 +177,8 @@ export class RUIRoot {
 
         if(clen > 0){
 
-            let offx = cui._calx;
-            let offy = cui._caly;
+            let offx = cui.rCalx;
+            let offy = cui.rCaly;
 
             let clevel = cui._level + 1;
 
@@ -186,8 +186,8 @@ export class RUIRoot {
                 var c= children[i];
                 c._level = clevel;
 
-                c._calx = offx + c.rOffx;
-                c._caly = offy + c.rOffy;
+                c.rCalx = offx + c.rOffx;
+                c.rCaly = offy + c.rOffy;
 
                 if(c instanceof RUIContainer){
                     this.calculateFinalOffset(c);

@@ -6,7 +6,7 @@ import { RUIContainer } from "./RUIContainer";
 import { RUI, RUILayouter, RUIVal, RUILayoutData } from "./RUI";
 import { RUIDefaultLayouter } from "./RUIDefaultLayouter";
 
-export const RUIAuto: number= -1;
+export const RUIAuto: number= -Infinity;
 
 export type RUIRect = number[];
 export type RUIRectP = number[];
@@ -55,18 +55,15 @@ export enum RUIOrientation{
 
 export class RUIObject{
 
-    private _width: RUISize = RUIAuto;
-    private _height: RUISize = RUIAuto;
-
     public maxwidth: RUISize = RUIAuto;
     public maxheight: RUISize = RUIAuto;
     public minwidth:RUISize = 70;
     public minheight:RUISize = 23;
-    public margin : number[] = [0,0,0,0];
-    // top right bottom left
+    public margin : number[] = [0,0,0,0];    // top right bottom left
     public padding: number[] = [0,0,0,0]; 
 
     public position : RUIPosition = RUIPosition.Default;
+
     public left: RUISize = RUIAuto;
     public right: RUISize = RUIAuto;
     public top: RUISize = RUIAuto;
@@ -74,58 +71,51 @@ export class RUIObject{
 
     public visible: boolean = true;
     public zorder: number = 0;
-    public _level:number = 0;
     public flex?: number;
 
     public parent: RUIObject = null;
-
     public id:string;
     public isdirty: boolean = true;
     public isClip: boolean = true;
     public enabled:boolean = true;
+
     public _enabled:boolean = true;
-
-
-    public _calwidth?: number;
-    public _calheight?:number;
-    public _caloffsetx:number = 0;
-    public _caloffsety:number = 0;
-    public _calx:number = 0;
-    public _caly:number = 0;
-
-    public _flexwidth?:number;
-    public _flexheight?:number;
+    public _level:number = 0;
 
     protected _rect :RUIRect;
     protected _rectclip: RUIRect;
 
     public _root :RUIRoot;
-
     public _resized:boolean = true;
-
     public _debugname:string;
 
-
     /* Refactoring Start*/
-
-    public rWidth:RUIVal = RUIVal.Auto;
-    public rHeight:RUIVal = RUIVal.Auto;
+    public rWidth?:RUIVal =RUIAuto;
+    public rHeight?:RUIVal = RUIAuto;
 
     //Layouter
     public layouter: RUILayouter = RUIDefaultLayouter.Layouter;
-    public layoutWidth: RUIVal;
-    public layoutHeight:RUIVal;
+    public layoutWidth?:RUIVal;
+    public layoutHeight?:RUIVal;
 
     public rCalWidth:number;
     public rCalHeight:number;
     public rOffx:number =0;
     public rOffy:number =0;
 
+    public rCalx:number = 0;
+    public rCaly:number = 0;
+
+
     public Layout(){
         this.layouter.Layout(this);
     }
     public LayoutPost(data:RUILayoutData){
         this.layouter.LayoutPost(this,data);
+    }
+
+    public Update(){
+
     }
 
     //Layouter end
@@ -136,72 +126,25 @@ export class RUIObject{
     }
 
     public set width(val:RUISize){
-        if(val != this._width){
-            this._width = val;
+        if(val != this.rWidth){
+            this.rWidth = val;
             this._resized = true;
-        }
-
-        if(val != this.rWidth.value){
-            this.rWidth = (val == RUIAuto? RUIVal.Auto : new RUIVal(val));
         }
         
     }
 
     public get width():RUISize{
-        return this._width;
+        return this.rWidth;
     }
 
     public set height(val:RUISize){
-        if(val != this._height){
-            this._height = val;
+        if(val != this.rHeight){
+            this.rHeight = val;
             this._resized = true;
-        }
-
-        if(val != this.rHeight.value){
-            this.rHeight = (val == RUIAuto? RUIVal.Auto : new RUIVal(val));
         }
     }
     public get height():RUISize{
-        return this._height;
-    }
-
-    public onLayoutPre(){
-        if(this.enabled != this._enabled){
-            this._enabled = this.enabled;
-            this.setDirty(true);
-        }
-    }
-
-    public onLayout(){
-        if(this._root == null){
-            console.error(this);
-            throw new Error('ui root is null');
-        }
-        let isRoot = this.isRoot;
-        this.isdirty = false;
-
-        if(!this._resized){
-
-            let calw = this._calwidth;
-            let calh = this._calheight;
-            if(calw == null) throw new Error();
-            if(calh == null) throw new Error();
-
-            if(this._flexheight == calh && this._flexwidth == calw){
-                return;
-            }
-        }
-
-        this.fillSize();
-
-        if(this._calheight == RUIAuto) this._calheight = this.minheight;
-
-        this._resized = false;
-    }
-
-
-    public onLayoutPost(){
-
+        return this.rHeight;
     }
 
     public get isRoot():boolean{
@@ -246,65 +189,9 @@ export class RUIObject{
     public onMouseClick(e:RUIMouseEvent){}
     public onMouseDrag(e:RUIMouseDragEvent){}
 
-    protected fillSize(){
-
-
-        this._calwidth= null;
-        this._calheight = null;
-
-        if(this._flexwidth != null) this._calwidth = this._flexwidth;
-        if(this._flexheight != null) this._calheight = this._flexheight;
-
-        let parent = this.parent;
-        let parentWidth = parent.width;
-        if(this._calwidth == null){
-            if(this.width== RUIAuto){
-                if(parent == null){
-                    throw new Error();
-                }
-                else{
-                    if(parentWidth != RUIAuto){
-                        if(parent.padding == null){
-                            this._calwidth = parentWidth;
-                        }
-                        else{
-                            let parentPadding = parent.padding;
-                            this._calwidth = parentWidth - parentPadding[1] - parentPadding[3];
-                        }
-                        
-                    }
-                }
-            }
-            else{
-                this._calwidth= this.width;
-            }
-        }
-        
-        if(this._calheight == null){
-            if(this.height == RUIAuto){
-                if(parent == null){
-                    throw new Error();
-                }
-                else{
-                    this._calheight = RUIAuto;
-                }
-            }
-            else{
-                this._calheight = this.height;
-            }
-        }
-    }
-
-    public fillPositionOffset(){
-        if(this.position == RUIPosition.Offset){
-            this._caloffsetx += this.left == RUIAuto? 0 : this.left;
-            this._caloffsety += this.top == RUIAuto? 0: this.top;
-        }
-    }
-
     public calculateRect(cliprect?:RUIRect):RUIRect{
         //let rect =  [this._calx,this._caly,this._calwidth,this._calheight];
-        let rect = [this._calx,this._caly,this.rCalWidth,this.rCalHeight];
+        let rect = [this.rCalx,this.rCaly,this.rCalWidth,this.rCalHeight];
         if(cliprect != null){
             return RUI.RectClip(rect,cliprect);
         }

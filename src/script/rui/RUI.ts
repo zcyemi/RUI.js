@@ -11,6 +11,7 @@ if(Array.prototype['includes'] == null){
 }
 
 export type RUIColor = number[];
+export type RUIVal = number;
 
 
 export function ROUND(x:number){
@@ -29,36 +30,36 @@ export function SIZE(val:number){
     return Math.max(0,val);
 }
 
-export class RUIVal{
-    private m_val?:number;
+// export class RUIVal{
+//     private m_val?:number;
 
-    public constructor(v:number){
-        this.m_val= v;
-    }
+//     public constructor(v:number){
+//         this.m_val= v;
+//     }
 
-    public get value():number{
-        return this.m_val;
-    }
-    public set value(v:number){
-        this.m_val= v;
-    }
+//     public get value():number{
+//         return this.m_val;
+//     }
+//     public set value(v:number){
+//         this.m_val= v;
+//     }
 
-    private static s_auto: RUIVal = new RUIVal(null);
-    public static get Auto():RUIVal{
-        return this.s_auto;
-    }
+//     private static s_auto: RUIVal = new RUIVal(null);
+//     public static get Auto():RUIVal{
+//         return this.s_auto;
+//     }
 
-    public Equals(size:RUIVal):boolean{
-        if(size === this) return true;
-        if(size.m_val == this.m_val) return true;
-        return false;
-    }
+//     public Equals(size:RUIVal):boolean{
+//         if(size === this) return true;
+//         if(size.m_val == this.m_val) return true;
+//         return false;
+//     }
 
-    public get Clone():RUIVal{
-        if(this === RUIVal.Auto) return RUIVal.Auto;
-        return new RUIVal(this.m_val);
-    }
-}
+//     public get Clone():RUIVal{
+//         if(this === RUIAuto) return RUIAuto;
+//         return new RUIVal(this.m_val);
+//     }
+// }
 
 
 export type RUISizePair = {width:RUIVal,height:RUIVal};

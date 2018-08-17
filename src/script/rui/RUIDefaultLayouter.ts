@@ -12,8 +12,8 @@ export class RUIDefaultLayouter implements RUILayouter {
 
     public Layout(ui: RUIObject) {
 
-        ui.layoutWidth = ui.rWidth.Clone;
-        ui.layoutHeight = ui.rHeight.Clone;
+        ui.layoutWidth = ui.rWidth;
+        ui.layoutHeight = ui.rHeight;
 
     }
 
@@ -23,11 +23,11 @@ export class RUIDefaultLayouter implements RUILayouter {
             ui.rCalWidth = data.flexWidth;
         }
         else {
-            if (ui.layoutWidth === RUIVal.Auto) {
-                ui.rCalWidth = data.containerWidth.value;
+            if (ui.layoutWidth == RUIAuto) {
+                ui.rCalWidth = data.containerWidth;
             }
             else {
-                ui.rCalWidth = ui.layoutWidth.value;
+                ui.rCalWidth = ui.layoutWidth;
             }
         }
 
@@ -35,11 +35,11 @@ export class RUIDefaultLayouter implements RUILayouter {
             ui.rCalHeight = data.flexHeight;
         }
         else {
-            if (ui.layoutHeight === RUIVal.Auto) {
-                ui.rCalHeight = data.containerHeight.value;
+            if (ui.layoutHeight == RUIAuto) {
+                ui.rCalHeight = data.containerHeight;
             }
             else {
-                ui.rCalHeight = ui.layoutHeight.value;
+                ui.rCalHeight = ui.layoutHeight;
             }
         }
 
@@ -68,8 +68,8 @@ export class RUIDefaultLayouter implements RUILayouter {
             cwidth = Math.max(0, cpw - cleft - cright);
         }
         else {
-            if (c.layoutWidth != RUIVal.Auto) {
-                cwidth = c.layoutWidth.value;
+            if (c.layoutWidth != RUIAuto) {
+                cwidth = c.layoutWidth;
                 if (cleft != RUIAuto) {
 
                 }
@@ -89,8 +89,8 @@ export class RUIDefaultLayouter implements RUILayouter {
             cheight = Math.max(0, cph - ctop - cbottom);
         }
         else {
-            if (c.layoutHeight != RUIVal.Auto) {
-                cheight = c.layoutHeight.value;
+            if (c.layoutHeight != RUIAuto) {
+                cheight = c.layoutHeight;
                 if (ctop != RUIAuto) {
                 }
                 else if (cbottom != RUIAuto) {
@@ -107,8 +107,8 @@ export class RUIDefaultLayouter implements RUILayouter {
         let data = new RUILayoutData();
         data.flexWidth = cwidth;
         data.flexHeight = cheight;
-        data.containerWidth = new RUIVal(cpw);
-        data.containerHeight = new RUIVal(cph);
+        data.containerWidth = cpw;
+        data.containerHeight = cph;
 
         c.LayoutPost(data);
         c.rCalWidth = cwidth;

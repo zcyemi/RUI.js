@@ -19,7 +19,7 @@ export class RUIButton extends RUIObject{
         super();
         this.label = label;
         this.clickFunction = f;
-        this.rHeight = new RUIVal(23);
+        this.rHeight = 23;
     }
 
     public onDraw(cmd:RUICmdList){

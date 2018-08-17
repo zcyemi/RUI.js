@@ -5,7 +5,6 @@ import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIRoot } from "./RUIRoot";
 import { RUIOrientation, RUIPosition, RUIConst } from "./RUIObject";
 import { RUIContainer } from "./RUIContainer";
-import { RUILayout } from "./RUILayout";
 import { RUIRectangle } from "./RUIRectangle";
 import { RUIDebug } from "./widget/RUIDebug";
 import { RUIStyle } from "./RUIStyle";
@@ -20,7 +19,6 @@ export class RUITest{
 
 
     private m_ruiroot: RUIRoot;
-    private m_ruilayouter: RUILayout;
     private m_ruicmdlist: RUICmdList;
 
     private m_ruicanvas: RUICanvas;
@@ -33,9 +31,6 @@ export class RUITest{
     private buildUI(){
         
         this.m_ruicmdlist = new RUICmdList();
-        this.m_ruilayouter = new RUILayout();
-
-
 
         var ui = new RUIContainer();
         ui.width = 200;
@@ -52,7 +47,7 @@ export class RUITest{
        
         c.boxBackground = RUI.RED;
         c.addChild(new RUIRectangle(20,40));
-        c.width =70;
+        //c.width =70;
         ui.addChild(c);
 
 
@@ -76,7 +71,6 @@ export class RUITest{
         let renderer= this.m_ruicanvas.renderer;
         if(uiroot.isdirty || renderer.needRedraw){
             let start = Date.now();
-            //this.m_ruilayouter.build(uiroot);
             uiroot.layout();
 
             console.log(uiroot);

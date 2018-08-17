@@ -38,7 +38,7 @@ export class RUIButtonGroup extends RUIContainer{
 
         this.m_isVertical = orientation == RUIOrientation.Vertical;
 
-        this.resizeButtons();
+        //this.resizeButtons();
     }
 
 
@@ -61,115 +61,114 @@ export class RUIButtonGroup extends RUIContainer{
         return this.m_buttons.indexOf(btn);
     }
 
-    public onLayoutPost(){
-        super.onLayoutPost();
+    // public onLayoutPost(){
 
-        if(!this.m_initResized){
-            this.resizeButtons();
-            this.setDirty();
-            this.m_initResized =true;
-        }
-        else{
-            let newisVertical = this.boxOrientation == RUIOrientation.Vertical;
-            if(newisVertical != this.m_isVertical){
-                this.m_isVertical = newisVertical;
-                this.resizeButtons();
-                this.setDirty();
-            }
-        }
+    //     if(!this.m_initResized){
+    //         this.resizeButtons();
+    //         this.setDirty();
+    //         this.m_initResized =true;
+    //     }
+    //     else{
+    //         let newisVertical = this.boxOrientation == RUIOrientation.Vertical;
+    //         if(newisVertical != this.m_isVertical){
+    //             this.m_isVertical = newisVertical;
+    //             this.resizeButtons();
+    //             this.setDirty();
+    //         }
+    //     }
         
-    }
+    // }
 
-    public resizeButtons(){
-        let isvertical = this.m_isVertical;
+    // public resizeButtons(){
+    //     let isvertical = this.m_isVertical;
         
-        if(isvertical)
-        {
-            this.padding[3] = 1;
+    //     if(isvertical)
+    //     {
+    //         this.padding[3] = 1;
 
-            if(this.width != RUIAuto){
-                this.m_buttons.forEach(b => {
-                    b.width = this.width;
-                });
-            }
+    //         if(this.width != RUIAuto){
+    //             this.m_buttons.forEach(b => {
+    //                 b.width = this.width;
+    //             });
+    //         }
 
-            let totalsize= 0;
-            this.m_buttons.forEach(b=>{
-                totalsize += b._calheight;
-            })
+    //         let totalsize= 0;
+    //         this.m_buttons.forEach(b=>{
+    //             totalsize += b._calheight;
+    //         })
 
-            this.m_btnTotalSize = totalsize;
-        }
-        else{
-            this.padding[0] = 1;
+    //         this.m_btnTotalSize = totalsize;
+    //     }
+    //     else{
+    //         this.padding[0] = 1;
 
-            if(this.width == RUIAuto){
-                this.m_buttons.forEach(b=>{
-                    b.width = this.buttonSize;
-                })
+    //         if(this.width == RUIAuto){
+    //             this.m_buttons.forEach(b=>{
+    //                 b.width = this.buttonSize;
+    //             })
 
-                this.m_btnTotalSize = this.m_buttons.length * this.buttonSize;
-            }
-            else{
-                let btnCounts = this.m_buttons.length;
-                let btnPerSize = this._calwidth / btnCounts;
-                if(btnPerSize < this.buttonSize){
-                    btnPerSize = this.buttonSize;
-                }
+    //             this.m_btnTotalSize = this.m_buttons.length * this.buttonSize;
+    //         }
+    //         else{
+    //             let btnCounts = this.m_buttons.length;
+    //             let btnPerSize = this._calwidth / btnCounts;
+    //             if(btnPerSize < this.buttonSize){
+    //                 btnPerSize = this.buttonSize;
+    //             }
 
-                this.m_buttons.forEach(b=>{
-                    b.width = btnPerSize;
-                });
+    //             this.m_buttons.forEach(b=>{
+    //                 b.width = btnPerSize;
+    //             });
 
-                this.m_btnTotalSize = this.m_buttons.length * btnPerSize;
-            }
-        }
-    }
+    //             this.m_btnTotalSize = this.m_buttons.length * btnPerSize;
+    //         }
+    //     }
+    // }
 
-    public onMouseWheel(e:RUIWheelEvent){
-        if(this.m_isVertical){
-            let offset = this.m_btnScrollOffset;
-            if(this.m_btnTotalSize > this._calheight){
-                let maxoffset = this.m_btnTotalSize - this._calheight;
+    // public onMouseWheel(e:RUIWheelEvent){
+    //     if(this.m_isVertical){
+    //         let offset = this.m_btnScrollOffset;
+    //         if(this.m_btnTotalSize > this._calheight){
+    //             let maxoffset = this.m_btnTotalSize - this._calheight;
 
-                offset -= e.delta *0.25;
-                offset = CLAMP(offset,-maxoffset,0);
-                this.m_hasBtnScroll = true;
-            }
-            else{
-                this.m_hasBtnScroll = false;
-                offset = 1;
-            }
+    //             offset -= e.delta *0.25;
+    //             offset = CLAMP(offset,-maxoffset,0);
+    //             this.m_hasBtnScroll = true;
+    //         }
+    //         else{
+    //             this.m_hasBtnScroll = false;
+    //             offset = 1;
+    //         }
 
-            if(offset != this.m_btnScrollOffset){
-                this.m_btnScrollOffset = offset;
-                this.padding[0] = offset;
-                this.setDirty();
-            }
-        }
-        else{
+    //         if(offset != this.m_btnScrollOffset){
+    //             this.m_btnScrollOffset = offset;
+    //             this.padding[0] = offset;
+    //             this.setDirty();
+    //         }
+    //     }
+    //     else{
 
-            let offset = this.m_btnScrollOffset;
-            if(this.m_btnTotalSize > this._calwidth){
-                let maxoffset = this.m_btnTotalSize - this._calwidth;
+    //         let offset = this.m_btnScrollOffset;
+    //         if(this.m_btnTotalSize > this._calwidth){
+    //             let maxoffset = this.m_btnTotalSize - this._calwidth;
 
-                offset -= e.delta *0.25;
-                offset = CLAMP(offset,-maxoffset,0);
-                this.m_hasBtnScroll = true;
-            }
-            else{
-                this.m_hasBtnScroll = false;
-                offset = 1;
-            }
+    //             offset -= e.delta *0.25;
+    //             offset = CLAMP(offset,-maxoffset,0);
+    //             this.m_hasBtnScroll = true;
+    //         }
+    //         else{
+    //             this.m_hasBtnScroll = false;
+    //             offset = 1;
+    //         }
 
-            if(offset != this.m_btnScrollOffset){
-                this.m_btnScrollOffset = offset;
-                this.padding[3] = offset;
-                this.setDirty();
-            }
+    //         if(offset != this.m_btnScrollOffset){
+    //             this.m_btnScrollOffset = offset;
+    //             this.padding[3] = offset;
+    //             this.setDirty();
+    //         }
             
-        }
-    }
+    //     }
+    // }
     
 
 }

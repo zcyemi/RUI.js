@@ -1,7 +1,6 @@
 import { RUIContainer, RUIContainerClipType } from "../RUIContainer";
 import { RUILabel } from "./RUILabel";
 import { RUIButton } from "./RUIButton";
-import { RUICanvas } from "./RUICanvas";
 import { RUIRectangle } from "../RUIRectangle";
 import { RUIPosition, RUIOrientation, RUIAuto, RUIConst } from "../RUIObject";
 import { RUIButtonGroup } from "./RUIButtonGroup";

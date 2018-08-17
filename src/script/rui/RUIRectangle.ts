@@ -23,11 +23,6 @@ export class RUIRectangle extends RUIObject{
     }
 
 
-
-    public onLayout(){
-        super.onLayout();
-    }
-
     public onDraw(cmd:RUICmdList){
 
         let noclip = !this.isClip;
