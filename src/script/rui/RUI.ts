@@ -84,6 +84,7 @@ export class RUILayoutData{
     public containerWidth:RUIVal;
     /** should not be RUIAuto */
     public containerHeight:RUIVal;
+
     public flexWidth?:number;
     public flexHeight?:number;
 

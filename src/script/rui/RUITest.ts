@@ -34,22 +34,9 @@ export class RUITest{
         this.m_ruicmdlist = new RUICmdList();
 
         var ui = new RUIContainer();
-        //RUIDebug.PageBasicResize(ui);
-
-        var container = new RUIContainer();
-        container.boxBackground = RUI.RED;
-        container.padding = RUI.Vector(10);
-        ui.addChild(container);
-        container.addChild(new RUIRectangle(100,100));
-        
-
-        // var container = new RUIContainer();
-        // container._debugname = 'a';
-        // container.boxOrientation=  RUIOrientation.Horizontal;
-        // container.addChild(new RUIButton('>>>'));
-        // container.addChild(new RUIButton('bbb'));
-
-        // ui.addChild(container);
+        ui.padding = [5,-50,5,5];
+        ui.boxBackground = RUI.RED;
+        ui.addChild(new RUIRectangle(100,100));
 
 
 
