@@ -17,7 +17,7 @@ export class RUILabel extends RUIObject{
     public Layout(){
         super.Layout();
         let ftw = RUIFontTexture.ASIICTexture.MeasureTextWith(this.label) + 20;
-        if(ftw != NaN){
+        if(!Number.isNaN(ftw)){
             this.width= ftw;
             this.layoutWidth = ftw;
         }

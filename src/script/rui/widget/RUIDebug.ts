@@ -48,8 +48,8 @@ export class RUIDebug extends RUIContainer {
     private PageBasis() {
         let container = new RUIContainer();
 
-        this.PageBasisAddRemove(container);
-        this.PageBasisToggleEnable(container);
+        RUIDebug.PageBasisAddRemove(container);
+        RUIDebug.PageBasisToggleEnable(container);
 
         return container;
     }
@@ -57,14 +57,14 @@ export class RUIDebug extends RUIContainer {
     private PageContainer() {
         let container = new RUIContainer();
 
-        this.PageContainerRUIContainer(container);
-        this.PageContainerMarginPadding(container);
-        this.PageContainerFlexContainer(container);
+        RUIDebug.PageContainerRUIContainer(container);
+        RUIDebug.PageContainerMarginPadding(container);
+        RUIDebug.PageContainerFlexContainer(container);
 
         return container;
     }
 
-    private PageContainerRUIContainer(parent: RUIContainer) {
+    public static PageContainerRUIContainer(parent: RUIContainer) {
         let collapse = new RUICollapsibleContainer('RUIContainer', true);
         collapse.width = 400;
         parent.addChild(collapse);
@@ -72,53 +72,53 @@ export class RUIDebug extends RUIContainer {
         {
             collapse.addChild(new RUILabel('Vertical'));
 
-            let c = new RUIContainer();
-            c.boxOrientation = RUIOrientation.Vertical;
-            c.boxBorder = RUIStyle.Default.primary;
-            collapse.addChild(c);
+            // let c = new RUIContainer();
+            // c.boxOrientation = RUIOrientation.Vertical;
+            // c.boxBorder = RUIStyle.Default.primary;
+            // collapse.addChild(c);
 
-            c.addChild(new RUIRectangle(50, 30));
-            c.addChild(new RUIRectangle(100, 30));
+            // c.addChild(new RUIRectangle(50, 30));
+            // c.addChild(new RUIRectangle(100, 30));
         }
 
-        {
-            collapse.addChild(new RUILabel('Horizontal'));
+        // {
+        //     collapse.addChild(new RUILabel('Horizontal'));
 
-            let c = new RUIContainer();
-            c.boxBorder = RUIStyle.Default.primary;
-            c.margin = [0, 0, 0, 10];
-            c.boxOrientation = RUIOrientation.Horizontal;
-            collapse.addChild(c);
+        //     let c = new RUIContainer();
+        //     c.boxBorder = RUIStyle.Default.primary;
+        //     c.margin = [0, 0, 0, 10];
+        //     c.boxOrientation = RUIOrientation.Horizontal;
+        //     collapse.addChild(c);
 
-            c.addChild(new RUIRectangle(30, 50));
-            c.addChild(new RUIRectangle(30, 100));
-            c.addChild(new RUIRectangle(30, 70));
-        }
+        //     c.addChild(new RUIRectangle(30, 50));
+        //     c.addChild(new RUIRectangle(30, 100));
+        //     c.addChild(new RUIRectangle(30, 70));
+        // }
 
-        {
-            collapse.addChild(new RUILabel('Nested'));
+        // {
+        //     collapse.addChild(new RUILabel('Nested'));
 
-            let c = new RUIContainer();
-            c.boxBorder = RUIStyle.Default.primary;
-            c.margin = [0, 0, 0, 10];
-            c.boxOrientation = RUIOrientation.Vertical;
-            collapse.addChild(c);
+        //     let c = new RUIContainer();
+        //     c.boxBorder = RUIStyle.Default.primary;
+        //     c.margin = [0, 0, 0, 10];
+        //     c.boxOrientation = RUIOrientation.Vertical;
+        //     collapse.addChild(c);
 
-            c.addChild(new RUIRectangle(50, 30));
-            {
-                let c1 = new RUIContainer();
-                c1.boxOrientation = RUIOrientation.Horizontal;
-                c1.addChild(new RUIRectangle(30, 30));
-                c1.addChild(new RUIRectangle(30, 50));
-                c1.addChild(new RUIRectangle(30, 10));
+        //     c.addChild(new RUIRectangle(50, 30));
+        //     {
+        //         let c1 = new RUIContainer();
+        //         c1.boxOrientation = RUIOrientation.Horizontal;
+        //         c1.addChild(new RUIRectangle(30, 30));
+        //         c1.addChild(new RUIRectangle(30, 50));
+        //         c1.addChild(new RUIRectangle(30, 10));
 
-                c.addChild(c1);
-            }
-            c.addChild(new RUIRectangle(70, 30));
-        }
+        //         c.addChild(c1);
+        //     }
+        //     c.addChild(new RUIRectangle(70, 30));
+        // }
     }
 
-    private PageContainerMarginPadding(parent: RUIContainer) {
+    public static PageContainerMarginPadding(parent: RUIContainer) {
         let collapse = new RUICollapsibleContainer('Margin/Padding', true);
         collapse.width = 400;
         parent.addChild(collapse);
@@ -171,7 +171,7 @@ export class RUIDebug extends RUIContainer {
         }
     }
 
-    private PageContainerFlexContainer(parent: RUIContainer) {
+    public static PageContainerFlexContainer(parent: RUIContainer) {
         let collapse = new RUICollapsibleContainer('FlexContainer', true);
         collapse.width = 400;
         parent.addChild(collapse);
@@ -287,7 +287,7 @@ export class RUIDebug extends RUIContainer {
         }
     }
 
-    private PageBasisAddRemove(parent: RUIContainer) {
+    public static PageBasisAddRemove(parent: RUIContainer) {
         var collapse = new RUICollapsibleContainer('remove/add children', true);
         collapse.width = 400;
         parent.addChild(collapse);
@@ -331,7 +331,7 @@ export class RUIDebug extends RUIContainer {
         }))
     }
 
-    private PageBasisToggleEnable(parent: RUIContainer) {
+    public static PageBasisToggleEnable(parent: RUIContainer) {
         let collapse = new RUICollapsibleContainer('Enable/Disable', true);
         collapse.width = 400;
         parent.addChild(collapse);

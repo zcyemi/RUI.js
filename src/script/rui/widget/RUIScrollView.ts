@@ -152,3 +152,7 @@ export class RUIScrollView extends RUIContainer {
     }
 
 }
+
+export class RUIScrollView1 extends RUIContainer{
+
+}

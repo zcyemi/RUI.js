@@ -18,12 +18,12 @@ export class RUICollapsibleContainer extends RUIContainer{
         this.m_show = show;
         this.boxBorder = RUIStyle.Default.border0;
         this.boxBackground = RUIStyle.Default.background0;
-        this.padding = RUI.Vector(1);
 
         let button = new RUIButton(label,this.onButtonClick.bind(this));
         super.addChild(button);
 
         let container = new RUIContainer();
+        container._debugname ='qqq';
         this.m_container = container;
         if(this.m_show) super.addChild(container);  
     }

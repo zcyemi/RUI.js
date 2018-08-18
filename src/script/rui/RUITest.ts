@@ -13,6 +13,7 @@ import { RUIButtonGroup } from "./widget/RUIButtonGroup";
 import { RUIButton } from "./widget/RUIButton";
 import { RUI } from "./RUI";
 import { RUILabel } from "./widget/RUILabel";
+import { RUICollapsibleContainer } from "./widget/RUICollapsibleContainer";
 
 
 export class RUITest{
@@ -34,10 +35,12 @@ export class RUITest{
         this.m_ruicmdlist = new RUICmdList();
 
         var ui = new RUIContainer();
-        ui.padding = [5,-50,5,5];
-        ui.boxBackground = RUI.RED;
-        ui.addChild(new RUIRectangle(100,100));
-
+        ui.padding = RUI.Vector(20);
+        var c= new RUIContainer();
+        c.boxBackground = RUI.RED;
+        ui.addChild(c);
+        c.padding = [5,5,5,-130];
+        c.addChild(new RUIRectangle(200,100));
 
 
 
