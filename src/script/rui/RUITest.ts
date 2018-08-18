@@ -36,13 +36,11 @@ export class RUITest{
         var ui = new RUIContainer();
         //RUIDebug.PageBasicResize(ui);
 
-        var btngroup = new RUIButtonGroup([
-            new RUIButton('aaa'),
-            new RUIButton('bbb')
-        ],RUIOrientation.Horizontal);
-        ui.addChild(btngroup);
-        btngroup.width = 100;
-        btngroup.height =400;
+        var container = new RUIContainer();
+        container.boxBackground = RUI.RED;
+        container.padding = RUI.Vector(10);
+        ui.addChild(container);
+        container.addChild(new RUIRectangle(100,100));
         
 
         // var container = new RUIContainer();

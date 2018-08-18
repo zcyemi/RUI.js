@@ -4,7 +4,7 @@ import { RUIStyle } from "./RUIStyle";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIRoot } from "./RUIRoot";
 import { RUIWheelEvent } from "./RUIEvent";
-import { RUI, RUILayouter, RUIVal, RUISizePair, RUILayoutData, RUICHECK } from "./RUI";
+import { RUI, RUILayouter, RUIVal, RUISizePair, RUILayoutData, RUICHECK, SIZE } from "./RUI";
 import { RUIDefaultLayouter } from "./RUIDefaultLayouter";
 
 
@@ -322,14 +322,11 @@ export class RUIContainerLayouter implements RUILayouter{
                     }
                 }
             }
-
         }
 
     }
 
     public LayoutPost(ui:RUIObject,data:RUILayoutData){
-
-        if(ui._debugname == 'a') console.log(ui);
 
         if(ui.layoutHeight == null){
             console.error(ui);
@@ -381,25 +378,38 @@ export class RUIContainerLayouter implements RUILayouter{
             }
         }
 
+
+        //padding
+        let padding = cui.padding;
+        var paddingleft = padding[3];
+        var paddingtop = padding[0];
+        let paddingright = padding[1];
+        let paddingbottom = padding[2];
+
+        let paddinghorizontal = paddingleft + paddingright;
+        let paddingvertical = paddingtop + paddingbottom;
+
         //Fixed Size
         if(cui.layoutWidth != RUIAuto && cui.layoutHeight != RUIAuto){
             cui.rCalWidth= cui.layoutWidth;
             cui.rCalHeight = cui.layoutHeight;
 
-            let cdata = new RUILayoutData();
-            cdata.containerWidth = cui.rCalWidth;
-            cdata.containerHeight = cui.rCalHeight;
+            
 
-            var accuSize = 0;
+            let cdata = new RUILayoutData();
+            cdata.containerWidth = SIZE(cui.rCalWidth -paddinghorizontal);
+            cdata.containerHeight =SIZE(cui.rCalHeight - paddingvertical);
+
+            var accuSize = isvertical? paddingtop : paddingleft;
             children.forEach(c=>{
                 c.LayoutPost(cdata);
                 if(isvertical){
-                    c.rOffx = 0;
+                    c.rOffx = paddingleft;
                     c.rOffy = accuSize;
                     accuSize+=c.rCalHeight;
                 }
                 else{
-                    c.rOffy =0;
+                    c.rOffy = paddingtop;
                     c.rOffx = accuSize;
                     accuSize+= c.rCalWidth;
                 }
@@ -414,14 +424,14 @@ export class RUIContainerLayouter implements RUILayouter{
         console.assert((cui.isVertical ? cui.layoutHeight : cui.layoutWidth) == RUIAuto);
         if(cui.isVertical){
             let cdata = new RUILayoutData();
-            cdata.containerWidth = cui.layoutWidth;
-            cdata.containerHeight = data.containerHeight;
+            cdata.containerWidth = SIZE(cui.layoutWidth - paddinghorizontal);
+            cdata.containerHeight = SIZE(data.containerHeight -paddingvertical);
 
             var maxChildWidth = 0;
-            var accuChildHeight = 0;
+            var accuChildHeight = paddingtop;
             children.forEach(c=>{
                 c.LayoutPost(cdata);
-                c.rOffx = 0;
+                c.rOffx = paddingleft;
                 c.rOffy = accuChildHeight;
                 maxChildWidth = Math.max(maxChildWidth,c.rCalWidth);
                 accuChildHeight += c.rCalHeight;
@@ -437,16 +447,16 @@ export class RUIContainerLayouter implements RUILayouter{
                         cui.rCalWidth = data.containerWidth;
                     }
                     else{
-                        cui.rCalWidth = maxChildWidth;
+                        cui.rCalWidth = maxChildWidth + paddinghorizontal;
                     }
                 }
                 else{
-                    cui.rCalWidth = maxChildWidth;
+                    cui.rCalWidth = maxChildWidth + paddinghorizontal;
                 }
             }
 
             
-            cui.rCalHeight = accuChildHeight;
+            cui.rCalHeight = accuChildHeight + paddingbottom;
         }
         else{
             let cdata =new RUILayoutData();
@@ -454,10 +464,10 @@ export class RUIContainerLayouter implements RUILayouter{
             cdata.containerHeight =cui.layoutHeight;
 
             var maxChildHeight =0;
-            var accuChildWidth = 0;
+            var accuChildWidth = paddingleft;
             children.forEach(c=>{
                 c.LayoutPost(cdata);
-                c.rOffy =0;
+                c.rOffy =paddingtop;
                 c.rOffx = accuChildWidth;
                 maxChildHeight = Math.max(maxChildHeight,c.rCalHeight);
                 accuChildWidth += c.rCalWidth;
@@ -472,14 +482,14 @@ export class RUIContainerLayouter implements RUILayouter{
                         cui.rCalHeight = data.containerHeight;
                     }
                     else{
-                        cui.rCalHeight = data.containerHeight;
+                        cui.rCalHeight = maxChildHeight + paddingvertical;
                     }
                 }else{
-                    cui.rCalHeight = maxChildHeight;
+                    cui.rCalHeight = maxChildHeight + paddingvertical;
                 }
             }
 
-            cui.rCalWidth= accuChildWidth;
+            cui.rCalWidth= accuChildWidth + paddingright;
         }
 
         cui.LayoutRelativeUI(cui,cui.children);
