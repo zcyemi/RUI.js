@@ -35,12 +35,26 @@ export class RUITest{
 
         var ui = new RUIContainer();
         //RUIDebug.PageBasicResize(ui);
-        ui.boxBackground = RUI.RED;
 
-        var btn  =new RUIButton('>>>>');
-        btn.width =100;
-        ui.addChild(btn);
-        ui.addChild(new RUIRectangle(200,30));
+        var btngroup = new RUIButtonGroup([
+            new RUIButton('aaa'),
+            new RUIButton('bbb')
+        ],RUIOrientation.Horizontal);
+        ui.addChild(btngroup);
+        btngroup.width = 100;
+        btngroup.height =400;
+        
+
+        // var container = new RUIContainer();
+        // container._debugname = 'a';
+        // container.boxOrientation=  RUIOrientation.Horizontal;
+        // container.addChild(new RUIButton('>>>'));
+        // container.addChild(new RUIButton('bbb'));
+
+        // ui.addChild(container);
+
+
+
 
         var root = new RUIRoot(ui,false);
         root.root = ui;
@@ -63,13 +77,11 @@ export class RUITest{
         if(uiroot.isdirty || renderer.needRedraw){
             let start = Date.now();
             uiroot.layout();
+            //console.log(uiroot.root);
             console.log('> ' + (Date.now() - start));
             this.m_ruicmdlist.draw(uiroot);
             renderer.DrawCmdList(this.m_ruicmdlist);
-
-            
         }
-
         
     }
 }

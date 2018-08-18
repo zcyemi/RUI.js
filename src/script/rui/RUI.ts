@@ -80,7 +80,9 @@ export interface RUILayouter{
 
 export class RUILayoutData{
 
+    /** should not be RUIAuto */
     public containerWidth:RUIVal;
+    /** should not be RUIAuto */
     public containerHeight:RUIVal;
     public flexWidth?:number;
     public flexHeight?:number;
@@ -88,6 +90,7 @@ export class RUILayoutData{
     public verify(){
         if(Number.isNaN(this.containerWidth)) throw new Error('container width is NaN');
         if(Number.isNaN(this.containerHeight)) throw new Error('container height is NaN');
+        if(this.containerWidth == RUIAuto || this.containerHeight == RUIAuto) throw new Error('coantiner size can not be RUIAuto'); 
     }
 }
 

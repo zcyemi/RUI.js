@@ -329,6 +329,8 @@ export class RUIContainerLayouter implements RUILayouter{
 
     public LayoutPost(ui:RUIObject,data:RUILayoutData){
 
+        if(ui._debugname == 'a') console.log(ui);
+
         if(ui.layoutHeight == null){
             console.error(ui);
             throw new Error();
@@ -448,7 +450,7 @@ export class RUIContainerLayouter implements RUILayouter{
         }
         else{
             let cdata =new RUILayoutData();
-            cdata.containerWidth = cui.layoutWidth;
+            cdata.containerWidth = data.containerWidth;
             cdata.containerHeight =cui.layoutHeight;
 
             var maxChildHeight =0;
