@@ -34,8 +34,13 @@ export class RUITest{
         this.m_ruicmdlist = new RUICmdList();
 
         var ui = new RUIContainer();
-        RUIDebug.PageBasicResize(ui);
+        //RUIDebug.PageBasicResize(ui);
+        ui.boxBackground = RUI.RED;
 
+        var btn  =new RUIButton('>>>>');
+        btn.width =100;
+        ui.addChild(btn);
+        ui.addChild(new RUIRectangle(200,30));
 
         var root = new RUIRoot(ui,false);
         root.root = ui;

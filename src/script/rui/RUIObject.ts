@@ -109,8 +109,13 @@ export class RUIObject{
 
     public Layout(){
         this.layouter.Layout(this);
+        if(Number.isNaN(this.layoutWidth) || Number.isNaN(this.layoutHeight)){
+            throw new Error('layout data is NaN');
+        }
     }
     public LayoutPost(data:RUILayoutData){
+        if(data == null) throw new Error('layout data is null!');
+        data.verify();
         this.layouter.LayoutPost(this,data);
     }
 

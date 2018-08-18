@@ -84,6 +84,11 @@ export class RUILayoutData{
     public containerHeight:RUIVal;
     public flexWidth?:number;
     public flexHeight?:number;
+
+    public verify(){
+        if(Number.isNaN(this.containerWidth)) throw new Error('container width is NaN');
+        if(Number.isNaN(this.containerHeight)) throw new Error('container height is NaN');
+    }
 }
 
 export class RUI{

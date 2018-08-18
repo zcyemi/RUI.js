@@ -21,7 +21,6 @@ export class RUIButton extends RUIObject{
         this.label = label;
         this.clickFunction = f;
         this.height = 23;
-        this.width =100;
     }
 
 

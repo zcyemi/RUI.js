@@ -258,13 +258,13 @@ export class RUIContainerLayouter implements RUILayouter{
         if(isvertical && cui.rWidth == RUIAuto){
             f = (c)=>{
                 c.Layout();
-                if(c.layoutWidth != RUIAuto) maxsize = Math.max(maxsize,c.layoutWidth.value);
+                if(c.layoutWidth != RUIAuto) maxsize = Math.max(maxsize,c.layoutWidth);
             }
         }
         else if(!isvertical && cui.rHeight == RUIAuto){
             f = (c)=>{
                 c.Layout();
-                if(c.layoutHeight != RUIAuto) maxsize = Math.max(maxsize,c.layoutHeight.value);
+                if(c.layoutHeight != RUIAuto) maxsize = Math.max(maxsize,c.layoutHeight);
             }
         }
 
@@ -410,7 +410,6 @@ export class RUIContainerLayouter implements RUILayouter{
 
         //orientation auto
         console.assert((cui.isVertical ? cui.layoutHeight : cui.layoutWidth) == RUIAuto);
-
         if(cui.isVertical){
             let cdata = new RUILayoutData();
             cdata.containerWidth = cui.layoutWidth;
