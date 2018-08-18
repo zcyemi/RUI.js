@@ -1,8 +1,9 @@
-import { RUIObject } from "../RUIObject";
+import { RUIObject, RUIAuto } from "../RUIObject";
 import { RUICmdList } from "../RUICmdList";
 import { RUIStyle } from "../RUIStyle";
 import { RUIMouseEvent } from "../RUIEvent";
 import { RUI, RUIVal } from "../RUI";
+import { RUIFontTexture } from "../RUIFontTexture";
 
 export type RUIButtonFunc = (btn:RUIButton)=>void;
 
@@ -19,8 +20,10 @@ export class RUIButton extends RUIObject{
         super();
         this.label = label;
         this.clickFunction = f;
-        this.rHeight = 23;
+        this.height = 23;
+        this.width =100;
     }
+
 
     public onDraw(cmd:RUICmdList){
         let rect= this.calculateRect();

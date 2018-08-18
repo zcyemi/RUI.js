@@ -10,6 +10,10 @@ if(Array.prototype['includes'] == null){
     }
 }
 
+export function RUICHECK(ui:RUIObject,name:string){
+    if(ui._debugname === name) console.error(ui);
+}
+
 export type RUIColor = number[];
 export type RUIVal = number;
 

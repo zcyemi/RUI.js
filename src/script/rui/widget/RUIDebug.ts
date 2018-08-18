@@ -311,6 +311,26 @@ export class RUIDebug extends RUIContainer {
 
     }
 
+    public static PageBasicResize(parent:RUIContainer){
+        var container = new RUIContainer();
+        container.boxBackground = RUI.RED;
+        container.width = 200;
+        parent.addChild(container);
+
+
+        var c = new RUIContainer();
+        c.boxBorder = RUI.WHITE;
+        container.addChild(c);
+        var rect= new RUIRectangle(100,100);
+        c.addChild(rect);
+        c.addChild(new RUIButton("+",b=>{
+            rect.width += 10;
+        }));
+        c.addChild(new RUIButton("-",b=>{
+            rect.width -=10;
+        }))
+    }
+
     private PageBasisToggleEnable(parent: RUIContainer) {
         let collapse = new RUICollapsibleContainer('Enable/Disable', true);
         collapse.width = 400;

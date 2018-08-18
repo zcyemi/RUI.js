@@ -4,7 +4,7 @@ import { RUIStyle } from "./RUIStyle";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIRoot } from "./RUIRoot";
 import { RUIWheelEvent } from "./RUIEvent";
-import { RUI, RUILayouter, RUIVal, RUISizePair, RUILayoutData } from "./RUI";
+import { RUI, RUILayouter, RUIVal, RUISizePair, RUILayoutData, RUICHECK } from "./RUI";
 import { RUIDefaultLayouter } from "./RUIDefaultLayouter";
 
 
@@ -276,6 +276,8 @@ export class RUIContainerLayouter implements RUILayouter{
         let parent = cui.parent;
         let exten = cui.boxSideExtens && (parent == null ||(parent != null && (<RUIContainer>parent).boxOrientation == cui.boxOrientation ));
 
+
+
         //width
         if(cui.rWidth != RUIAuto){
             cui.layoutWidth = cui.rWidth;
@@ -322,6 +324,7 @@ export class RUIContainerLayouter implements RUILayouter{
             }
 
         }
+
     }
 
     public LayoutPost(ui:RUIObject,data:RUILayoutData){
@@ -336,11 +339,6 @@ export class RUIContainerLayouter implements RUILayouter{
         }
 
         let cui = <RUIContainer>ui;
-
-        if(cui._debugname != null){
-            console.log(cui.layoutWidth + ' '+ cui.layoutHeight);
-        }
-
         let children = cui.children;
         let clen = children.length;
         let flowChildren = [];
@@ -369,11 +367,7 @@ export class RUIContainerLayouter implements RUILayouter{
         //Fill auto
 
         var isvertical = cui.isVertical;
-
-
         
-
-
         if(isvertical){
             if(cui.layoutWidth == RUIAuto){
                 cui.layoutWidth = data.containerWidth;
@@ -386,8 +380,6 @@ export class RUIContainerLayouter implements RUILayouter{
         }
 
         //Fixed Size
-
-
         if(cui.layoutWidth != RUIAuto && cui.layoutHeight != RUIAuto){
             cui.rCalWidth= cui.layoutWidth;
             cui.rCalHeight = cui.layoutHeight;
@@ -395,7 +387,6 @@ export class RUIContainerLayouter implements RUILayouter{
             let cdata = new RUILayoutData();
             cdata.containerWidth = cui.rCalWidth;
             cdata.containerHeight = cui.rCalHeight;
-
 
             var accuSize = 0;
             children.forEach(c=>{
@@ -417,8 +408,8 @@ export class RUIContainerLayouter implements RUILayouter{
             return;
         }
 
-        //Side auto
-
+        //orientation auto
+        console.assert((cui.isVertical ? cui.layoutHeight : cui.layoutWidth) == RUIAuto);
 
         if(cui.isVertical){
             let cdata = new RUILayoutData();
@@ -435,19 +426,25 @@ export class RUIContainerLayouter implements RUILayouter{
                 accuChildHeight += c.rCalHeight;
             });
 
-
-            if(cui.boxSideExtens){
+            if(cui.layoutWidth == cui.width){
+                cui.rCalWidth = cui.layoutWidth;
+            }
+            else{
+                if(cui.boxSideExtens){
                 
-                if(maxChildWidth < data.containerWidth){
-                    cui.rCalWidth = data.containerWidth;
+                    if(maxChildWidth < data.containerWidth){
+                        cui.rCalWidth = data.containerWidth;
+                    }
+                    else{
+                        cui.rCalWidth = maxChildWidth;
+                    }
                 }
                 else{
                     cui.rCalWidth = maxChildWidth;
                 }
             }
-            else{
-                cui.rCalWidth = maxChildWidth;
-            }
+
+            
             cui.rCalHeight = accuChildHeight;
         }
         else{
@@ -465,16 +462,22 @@ export class RUIContainerLayouter implements RUILayouter{
                 accuChildWidth += c.rCalWidth;
             });
 
-            if(cui.boxSideExtens){
-                if(maxChildHeight < data.containerHeight){
-                    cui.rCalHeight = data.containerHeight;
-                }
-                else{
-                    cui.rCalHeight = data.containerHeight;
-                }
-            }else{
-                cui.rCalHeight = maxChildHeight;
+            if(cui.layoutHeight == cui.height){
+                cui.rHeight = cui.height;
             }
+            else{
+                if(cui.boxSideExtens){
+                    if(maxChildHeight < data.containerHeight){
+                        cui.rCalHeight = data.containerHeight;
+                    }
+                    else{
+                        cui.rCalHeight = data.containerHeight;
+                    }
+                }else{
+                    cui.rCalHeight = maxChildHeight;
+                }
+            }
+
             cui.rCalWidth= accuChildWidth;
         }
 

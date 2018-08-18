@@ -34,23 +34,7 @@ export class RUITest{
         this.m_ruicmdlist = new RUICmdList();
 
         var ui = new RUIContainer();
-        ui.width = 200;
-        ui.height =100;
-        ui.boxOrientation = RUIOrientation.Horizontal;
-        ui.boxBackground = RUIStyle.Default.border0;
-
-        ui.addChild(new RUIRectangle(100,30));
-
-        
-        let c=  new RUIContainer();
-        c.boxOrientation= RUIOrientation.Horizontal;
-        c.boxSideExtens = true;
-       
-        c.boxBackground = RUI.RED;
-        c.addChild(new RUIRectangle(20,40));
-        c.addChild(new RUILabel('hello world'));
-        c.width =70;
-        ui.addChild(c);
+        RUIDebug.PageBasicResize(ui);
 
 
         var root = new RUIRoot(ui,false);
@@ -74,8 +58,6 @@ export class RUITest{
         if(uiroot.isdirty || renderer.needRedraw){
             let start = Date.now();
             uiroot.layout();
-
-            console.log(uiroot);
             console.log('> ' + (Date.now() - start));
             this.m_ruicmdlist.draw(uiroot);
             renderer.DrawCmdList(this.m_ruicmdlist);
