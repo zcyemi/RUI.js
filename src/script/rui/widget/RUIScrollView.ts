@@ -156,35 +156,109 @@ export class RUIScrollView extends RUIContainer {
 
 
 
-export class ScrollView extends RUIFlexContainer {
+export class ScrollView extends RUIContainer {
 
 
     public scrollVertical: boolean = true;
     public scrollHorizontal: boolean = true;
 
     private m_contentWrap: RUIContainer;
-    private m_sliderMain: ScrollBar;
+    private m_sliderVertical: ScrollBar;
+    private m_sliderHorizontal: ScrollBar;
+
+    private m_scrollbarVShow:boolean = true;
+    private m_scrollbarHShow:boolean = true;
 
     public constructor() {
         super();
-        this.boxOrientation = RUIOrientation.Horizontal;
+        this.boxOrientation = RUIOrientation.Vertical;
         this.boxSideExtens = true;
         this.boxBackground = RUI.GREY;
+        //this.padding = [0,10,10,0];
 
         let contentWrap = new RUIContainer();
-        contentWrap.boxBackground = RUI.YELLOW;
+        contentWrap.boxBackground = RUI.GREEN;
+        contentWrap.boxSideExtens = true;
         contentWrap.flex = 1;
         this.m_contentWrap = contentWrap;
         super.addChild(contentWrap);
 
-        this.m_sliderMain = new ScrollBar(RUIOrientation.Vertical);
-        this.m_sliderMain.sizeVal = 0.5;
-        super.addChild(this.m_sliderMain);
+        let scrollbar = new ScrollBar(RUIOrientation.Vertical);
+        scrollbar.sizeVal = 0.5;
+        scrollbar.position = RUIPosition.Relative;
+        scrollbar.right = 0;
+        scrollbar.top =0;
+        scrollbar.bottom = 0;
+        this.m_sliderVertical = scrollbar;
+        super.addChild(scrollbar);
+
+
+        let scrollbarh = new ScrollBar(RUIOrientation.Horizontal);
+        scrollbarh.position = RUIPosition.Relative;
+        scrollbarh.sizeVal = 0.5;
+        scrollbarh.left =0;
+        scrollbarh.right = 10;
+        scrollbarh.bottom =0;
+        scrollbarh.height = 10;
+        this.m_sliderHorizontal = scrollbarh;
+        super.addChild(scrollbarh);
     }
 
 
     public addChild(ui:RUIObject){
-        //this.m_contentWrap.addChild(ui);
+        this.m_contentWrap.addChild(ui);
+    }
+
+    public scrollBarShowV(show:boolean){
+        if(show  == this.m_scrollbarVShow) return;
+        this.m_scrollbarVShow = show;
+        if(show){
+            super.addChild(this.m_sliderVertical);
+            if(this.m_scrollbarHShow){
+                this.padding = [0,10,10,0];
+                this.m_sliderHorizontal.right = 10;
+            }
+            else{
+                this.padding = [0,10,0,0];
+            }
+        }
+        else{
+            super.removeChild(this.m_sliderVertical);
+            if(this.m_scrollbarHShow){
+                this.padding = [0,0,10,0];
+                this.m_sliderHorizontal.right = 0;
+            }
+            else{
+                this.padding = [0,0,0,0];
+            }
+        }
+        this.setDirty(true);
+    }
+
+    public scrollBarShowH(show:boolean){
+        if(show == this.m_scrollbarHShow) return;
+        this.m_scrollbarHShow = show;
+        let vshow = this.m_scrollbarVShow;
+        if(show){
+            super.addChild(this.m_sliderHorizontal);
+            if(vshow){
+                this.padding = [0,10,10,0];
+                this.m_sliderHorizontal.right = 10;
+            }
+            else{
+                this.padding = [0,0,10,0];
+                this.m_sliderHorizontal.right = 0;
+            }
+        }
+        else{
+            super.removeChild(this.m_sliderHorizontal);
+            if(vshow){
+                this.padding = [0,10,0,0];
+            }
+            else{
+                this.padding = [0,0,0,0];
+            }
+        }
     }
 
 

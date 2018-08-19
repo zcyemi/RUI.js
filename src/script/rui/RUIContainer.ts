@@ -175,7 +175,8 @@ export class RUIContainer extends RUIObject {
         this._rect = rect;
         if(this.boxBackground != null) cmd.DrawRectWithColor(rect,this.boxBackground);
         if(this.boxBorder != null) cmd.DrawBorder(rect, this.boxBorder);
-        let paddingrect = this.RectMinusePadding(rect, this.padding);
+        // clip paddingrect/rect
+        let paddingrect = rect;// this.RectMinusePadding(rect, this.padding);
 
         let cliprect = RUI.RectClip(paddingrect,cmd.clipRect);
         this._rectclip = cliprect;

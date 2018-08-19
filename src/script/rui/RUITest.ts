@@ -63,13 +63,24 @@ export class RUITest{
 
 
         var sv = new ScrollView();
-        sv.height = 300;
-        sv.width = 400;
+        sv.height = 250;
+        sv.width = 350;
 
         sv.position = RUIPosition.Offset;
         sv.left = 400;
 
         sv.addChild(new RUIRectangle(100,50));
+
+        var show = true;
+        var showh = true;
+        sv.addChild(new RUIButton('toggleV',b=>{
+            sv.scrollBarShowV(show);
+            show = !show;
+        }));
+        sv.addChild(new RUIButton('toggleH',b=>{
+            sv.scrollBarShowH(showh);
+            showh = !showh;
+        }));
         ui.addChild(sv);
 
         var f = new RUIFlexContainer();
