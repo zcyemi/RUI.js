@@ -3,7 +3,7 @@ import { RUICanvas } from "./RUICanvas";
 import { RUICmdList } from "./RUICmdList";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIRoot } from "./RUIRoot";
-import { RUIOrientation, RUIPosition, RUIConst } from "./RUIObject";
+import { RUIOrientation, RUIPosition, RUIConst, RUIAuto } from "./RUIObject";
 import { RUIContainer } from "./RUIContainer";
 import { RUIRectangle } from "./RUIRectangle";
 import { RUIDebug } from "./widget/RUIDebug";
@@ -14,6 +14,7 @@ import { RUIButton } from "./widget/RUIButton";
 import { RUI } from "./RUI";
 import { RUILabel } from "./widget/RUILabel";
 import { RUICollapsibleContainer } from "./widget/RUICollapsibleContainer";
+import { RUIScrollBar, ScrollBar } from "./widget/RUIScrollBar";
 
 
 export class RUITest{
@@ -34,17 +35,59 @@ export class RUITest{
         
         this.m_ruicmdlist = new RUICmdList();
 
+        // var ui = new RUIContainer();
+
+        // var cc = new RUICollapsibleContainer('aaa',true);
+        // cc.width = 150;
+        // cc.addChild(new RUIContainer());
+
+        // ui.addChild(cc);
+        // ui.addChild(new RUIRectangle(50,100));
+
         var ui = new RUIContainer();
-        ui.padding = RUI.Vector(20);
-        var c= new RUIContainer();
-        c.boxBackground = RUI.RED;
-        ui.addChild(c);
-        c.padding = [5,5,5,-130];
-        c.addChild(new RUIRectangle(200,100));
+        ui.boxBackground = RUI.RED;
+        ui.padding = RUI.Vector(10);
+        
+        var sb = new ScrollBar(RUIOrientation.Horizontal);
+        sb.sizeVal = 0.5;
+        sb.scrollPosVal = 0.3;
+        ui.addChild(sb);
+
+        ui.addChild(new RUIRectangle(100,100));
+
+        ui.addChild(new RUIButton('+',b=>{
+            sb.sizeVal +=0.1;
+        }));
+
+        ui.addChild(new RUIButton('-',b=>{
+            sb.sizeVal -=0.1;
+        }));
+
+        ui.addChild(new RUIButton('+p',b=>{
+            sb.scrollPosVal +=0.1;
+        }));
+
+        ui.addChild(new RUIButton('-p',b=>{
+            sb.scrollPosVal -=0.1;
+        }));
+
+        ui.addChild(new RUIButton('c',b=>{
+
+            if(sb.scrollOrientation == RUIOrientation.Vertical){
+                sb.scrollOrientation = RUIOrientation.Horizontal;
+                sb.width = 200;
+            }
+            else{
+                sb.scrollOrientation = RUIOrientation.Vertical;
+                sb.height = 200;
+            }
+        }));
 
 
 
         var root = new RUIRoot(ui,false);
+
+
         root.root = ui;
 
         root.resizeRoot(this.m_ruicanvas.m_width,this.m_ruicanvas.m_height);
