@@ -162,6 +162,21 @@ export class RUIObject{
         return (pos == RUIPosition.Default || pos == RUIPosition.Offset);
     }
 
+    public get isPositionOffset():boolean{
+        return this.position == RUIPosition.Offset;
+    }
+
+    public get positionOffsetX():number{
+        let coffx = this.left;
+        if(coffx == RUIAuto) return 0;
+        return coffx;
+    }
+    public get positionOffsetY():number{
+        let coffy = this.top;
+        if(coffy == RUIAuto)return 0;
+        return coffy;
+    }
+
     public setRoot(root:RUIRoot){
         this._root = root;
     }

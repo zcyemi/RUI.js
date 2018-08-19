@@ -412,6 +412,11 @@ export class RUIContainerLayouter implements RUILayouter{
                     c.rOffx = accuSize;
                     accuSize+= c.rCalWidth;
                 }
+                
+                if(c.isPositionOffset){
+                    c.rOffx += c.positionOffsetX;
+                    c.rOffy += c.positionOffsetY;
+                }
             });
 
             cui.LayoutRelativeUI(cui,cui.children);
@@ -434,6 +439,11 @@ export class RUIContainerLayouter implements RUILayouter{
                 c.rOffy = accuChildHeight;
                 maxChildWidth = Math.max(maxChildWidth,c.rCalWidth);
                 accuChildHeight += c.rCalHeight;
+
+                if(c.isPositionOffset){
+                    c.rOffx += c.positionOffsetX;
+                    c.rOffy += c.positionOffsetY;
+                }
             });
 
             if(cui.layoutWidth == cui.width){
@@ -471,10 +481,15 @@ export class RUIContainerLayouter implements RUILayouter{
                 c.rOffx = accuChildWidth;
                 maxChildHeight = Math.max(maxChildHeight,c.rCalHeight);
                 accuChildWidth += c.rCalWidth;
+
+                if(c.isPositionOffset){
+                    c.rOffx += c.positionOffsetX;
+                    c.rOffy += c.positionOffsetY;
+                }
             });
 
             if(cui.layoutHeight == cui.height){
-                cui.rHeight = cui.height;
+                cui.rCalHeight = cui.height;
             }
             else{
 

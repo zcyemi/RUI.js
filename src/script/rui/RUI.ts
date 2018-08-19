@@ -102,6 +102,9 @@ export class RUI{
     public static readonly RED:RUIColor = [1,0,0,1];
     public static readonly BLACK:RUIColor =[0,0,0,1];
     public static readonly WHITE:RUIColor = [1,1,1,1];
+    public static readonly GREEN:RUIColor = [0,1,0,1];
+    public static readonly BLUE:RUIColor = [0,0,1,1];
+    public static readonly YELLOW:RUIColor = [1,1,0,1];
     public static readonly GREY:RUIColor = RUI.ColorUNorm(200,200,200,255);
 
     public static RectClip(content:RUIRect,clip:RUIRect) : RUIRect | null{
