@@ -11,6 +11,7 @@ export const RUIAuto: number= -Infinity;
 export type RUIRect = number[];
 export type RUIRectP = number[];
 export const RUICLIP_MAX = [0,0,5000,5000];
+export const RUICLIP_NULL = null;
 
 
 export function ROUND(x:number){

@@ -1,5 +1,5 @@
 import { RUIObject, RUIOrientation, CLAMP, RUIPosition, RUIAuto } from "../RUIObject";
-import { RUIContainer } from "../RUIContainer";
+import { RUIContainer, RUIContainerClipType } from "../RUIContainer";
 import { RUICmdList } from "../RUICmdList";
 import { RUIStyle } from "../RUIStyle";
 import { RUIRectangle } from "../RUIRectangle";
@@ -280,6 +280,26 @@ export class ScrollBarThumb extends RUIRectangle{
         }
     }
 
+    public onDraw(cmd:RUICmdList){
+
+        let noclip = !this.isClip;
+
+        let rect = this.calculateRect();
+        if(noclip){
+            cmd.PushClip(rect,null, RUIContainerClipType.NoClip);
+        }
+        else{
+            if(cmd.isSkipDraw) return;
+        }
+        
+        this._rectclip = RUI.RectClip(rect,cmd.clipRect);
+        this._rect = this._rectclip;
+        cmd.DrawRectWithColor(rect,this.m_debugColor);
+
+        if(noclip) cmd.PopClipRect();
+    }
+
+
     public onMouseDrag(e:RUIMouseDragEvent){
         let isvertical = this.m_scrollbar.isVerticalScroll;
         if(e.stage == RUIMouseDragStage.Begin){
@@ -353,6 +373,8 @@ export class ScrollBar extends RUIContainer{
             this.layoutHeight =10;
         }
     }
+    
+
 
 
     public LayoutPost(data:RUILayoutData){

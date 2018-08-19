@@ -144,6 +144,12 @@ export class RUI{
         return [rect[0],rect[1],rect[2]- rect[0],rect[3]-rect[1]];
     }
 
+    public static toRectP(rect:RUIRect): RUIRectP{
+        let x1 = rect[0];
+        let y1 = rect[1];
+        return [x1,y1,rect[2]+x1,rect[3]+y1];
+    }
+
     public static Vector(v:number):number[]{
         return [v,v,v,v];
     }

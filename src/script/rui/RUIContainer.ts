@@ -164,6 +164,12 @@ export class RUIContainer extends RUIObject {
 
     public onDrawPre(cmd: RUICmdList) {
 
+        let boxclip = this.boxClip;
+
+
+        if(boxclip == RUIContainerClipType.Clip){
+            if(cmd.isSkipDraw) return;
+        }
 
         let rect = this.calculateRect()
         this._rect = rect;
@@ -174,10 +180,12 @@ export class RUIContainer extends RUIObject {
         let cliprect = RUI.RectClip(paddingrect,cmd.clipRect);
         this._rectclip = cliprect;
 
-        let boxclip = this.boxClip;
 
         if (boxclip != RUIContainerClipType.NoClip) {
-            cmd.PushClipRect(boxclip == RUIContainerClipType.Clip ? cliprect : paddingrect, false);
+            cmd.PushClip(paddingrect,cliprect,boxclip);
+        }
+        else{
+            cmd.PushClip(rect,cliprect,boxclip);   
         }
     }
 

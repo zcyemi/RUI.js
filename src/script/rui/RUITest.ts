@@ -65,6 +65,10 @@ export class RUITest{
         var sv = new ScrollView();
         sv.height = 300;
         sv.width = 400;
+
+        sv.position = RUIPosition.Offset;
+        sv.left = 400;
+
         sv.addChild(new RUIRectangle(100,50));
         ui.addChild(sv);
 

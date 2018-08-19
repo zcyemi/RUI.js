@@ -3,6 +3,7 @@ import { RUICmdList } from "./RUICmdList";
 import { RUIStyle } from "./RUIStyle";
 import { RUIMouseEvent, RUIMouseDragEvent } from "./RUIEvent";
 import { RUI } from "./RUI";
+import { RUIContainerClipType } from "./RUIContainer";
 
 export class RUIRectangle extends RUIObject{
 
@@ -27,9 +28,14 @@ export class RUIRectangle extends RUIObject{
 
         let noclip = !this.isClip;
 
-        if(noclip) cmd.PushClipRect();
-        
         let rect = this.calculateRect();
+        if(noclip) {
+            cmd.PushClip(rect,null, RUIContainerClipType.NoClip);
+        }
+        else{
+            if(cmd.isSkipDraw) return;
+        }
+        
         this._rectclip = RUI.RectClip(rect,cmd.clipRect);
         this._rect = this._rectclip;
         cmd.DrawRectWithColor(rect,this.m_debugColor);
