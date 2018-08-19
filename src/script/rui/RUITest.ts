@@ -15,6 +15,7 @@ import { RUI } from "./RUI";
 import { RUILabel } from "./widget/RUILabel";
 import { RUICollapsibleContainer } from "./widget/RUICollapsibleContainer";
 import { RUIScrollBar, ScrollBar } from "./widget/RUIScrollBar";
+import { ScrollView } from "./widget/RUIScrollView";
 
 
 export class RUITest{
@@ -45,45 +46,41 @@ export class RUITest{
         // ui.addChild(new RUIRectangle(50,100));
 
         var ui = new RUIContainer();
-        ui.boxBackground = RUI.RED;
-        ui.padding = RUI.Vector(10);
-        
-        var sb = new ScrollBar(RUIOrientation.Horizontal);
-        sb.sizeVal = 0.5;
-        sb.scrollPosVal = 0.3;
-        ui.addChild(sb);
 
-        ui.addChild(new RUIRectangle(100,100));
+        ui.width = 800;
+        ui.height = 800;
+        ui.boxBackground = RUI.BLACK;
 
-        ui.addChild(new RUIButton('+',b=>{
-            sb.sizeVal +=0.1;
-        }));
+        // var sb = new ScrollBar(RUIOrientation.Horizontal);
+        // sb.sizeVal = 0.5;
 
-        ui.addChild(new RUIButton('-',b=>{
-            sb.sizeVal -=0.1;
-        }));
+        // var sb1 = new ScrollBar(RUIOrientation.Vertical);
+        // sb1.sizeVal = 0.5;
+        // sb1.height = 100;
 
-        ui.addChild(new RUIButton('+p',b=>{
-            sb.scrollPosVal +=0.1;
-        }));
-
-        ui.addChild(new RUIButton('-p',b=>{
-            sb.scrollPosVal -=0.1;
-        }));
-
-        ui.addChild(new RUIButton('c',b=>{
-
-            if(sb.scrollOrientation == RUIOrientation.Vertical){
-                sb.scrollOrientation = RUIOrientation.Horizontal;
-                sb.width = 200;
-            }
-            else{
-                sb.scrollOrientation = RUIOrientation.Vertical;
-                sb.height = 200;
-            }
-        }));
+        // ui.addChild(sb);
+        // ui.addChild(sb1);
 
 
+        var sv = new ScrollView();
+        sv.height = 300;
+        sv.width = 400;
+        sv.addChild(new RUIRectangle(100,50));
+        ui.addChild(sv);
+
+        var f = new RUIFlexContainer();
+        f.boxBackground = RUI.RED;
+        f.boxOrientation= RUIOrientation.Horizontal;
+
+
+        var c= new RUIContainer();
+        c.addChild(new RUIRectangle(50,50));
+        c.flex = 1;
+        f.addChild(c);
+
+        f.addChild(new RUIRectangle(100,100));
+
+        ui.addChild(f);
 
         var root = new RUIRoot(ui,false);
 

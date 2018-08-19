@@ -1,9 +1,10 @@
 import { RUIContainer } from "../RUIContainer";
-import { RUIScrollType, RUIScrollBar } from "./RUIScrollBar";
+import { RUIScrollType, RUIScrollBar, ScrollBar } from "./RUIScrollBar";
 import { RUIOrientation, RUIPosition, RUIObject, ROUND } from "../RUIObject";
 import { RUIStyle } from "../RUIStyle";
 import { RUI } from "../RUI";
 import { RUIEvent } from "../RUIEvent";
+import { RUIFlexContainer } from "../RUIFlexContainer";
 
 
 export class RUIScrollView extends RUIContainer {
@@ -24,7 +25,7 @@ export class RUIScrollView extends RUIContainer {
         super();
 
         this.boxBorder = RUIStyle.Default.border0;
-        this.padding = [1,11,11,1];
+        this.padding = [1, 11, 11, 1];
 
         let content = new RUIContainer();
         content.position = RUIPosition.Offset;
@@ -75,19 +76,19 @@ export class RUIScrollView extends RUIContainer {
     }
 
     private onBarScrollVertical(e: RUIEvent<number>) {
-       // this.m_content.top = -ROUND(e.object * (this.m_content._calheight));
+        // this.m_content.top = -ROUND(e.object * (this.m_content._calheight));
     }
 
     private onBarScrollHorizontal(e: RUIEvent<number>) {
-       // this.m_content.left = -ROUND(e.object * (this.m_content._calwidth));
+        // this.m_content.left = -ROUND(e.object * (this.m_content._calwidth));
     }
 
-    public setScrollPosition(h?:number,v?:number){
-        if(h != null) this.m_scrollbarH.scrollPos = 0;
-        if(v != null) this.m_scrollbarV.scrollPos = 0;
+    public setScrollPosition(h?: number, v?: number) {
+        if (h != null) this.m_scrollbarH.scrollPos = 0;
+        if (v != null) this.m_scrollbarV.scrollPos = 0;
     }
 
-    private updateScrollBarVertical(){
+    private updateScrollBarVertical() {
         // let content = this.m_content;
         // //Vertical
         // let contenth = content._calheight;
@@ -104,7 +105,7 @@ export class RUIScrollView extends RUIContainer {
         // }
     }
 
-    private updateScrollBarHorizontal(){
+    private updateScrollBarHorizontal() {
         // let content = this.m_content;
         // //Horizontal
         // let contentw = content._calwidth;
@@ -121,16 +122,16 @@ export class RUIScrollView extends RUIContainer {
         // }
     }
 
-    public onLayoutPost(){
+    public onLayoutPost() {
         this.updateScrollBarVertical();
         this.updateScrollBarHorizontal();
     }
 
-    private FixHorizontalBarSize(){
-        if(this.m_scrollbarV.enabled){
+    private FixHorizontalBarSize() {
+        if (this.m_scrollbarV.enabled) {
             this.m_scrollbarH.right = RUIScrollBar.BAR_SIZE;
         }
-        else{
+        else {
             this.m_scrollbarH.right = 0;
         }
     }
@@ -153,6 +154,39 @@ export class RUIScrollView extends RUIContainer {
 
 }
 
-export class RUIScrollView1 extends RUIContainer{
+
+
+export class ScrollView extends RUIFlexContainer {
+
+
+    public scrollVertical: boolean = true;
+    public scrollHorizontal: boolean = true;
+
+    private m_contentWrap: RUIContainer;
+    private m_sliderMain: ScrollBar;
+
+    public constructor() {
+        super();
+        this.boxOrientation = RUIOrientation.Horizontal;
+        this.boxSideExtens = true;
+        this.boxBackground = RUI.GREY;
+
+        let contentWrap = new RUIContainer();
+        contentWrap.boxBackground = RUI.YELLOW;
+        contentWrap.flex = 1;
+        this.m_contentWrap = contentWrap;
+        super.addChild(contentWrap);
+
+        this.m_sliderMain = new ScrollBar(RUIOrientation.Vertical);
+        this.m_sliderMain.sizeVal = 0.5;
+        super.addChild(this.m_sliderMain);
+    }
+
+
+    public addChild(ui:RUIObject){
+        //this.m_contentWrap.addChild(ui);
+    }
+
+
 
 }

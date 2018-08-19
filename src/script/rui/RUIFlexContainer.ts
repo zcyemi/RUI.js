@@ -116,6 +116,7 @@ export class RUIFlexLayouter implements RUILayouter {
                 return;
             }
         }
+
     }
 
     public LayoutPost(ui: RUIObject, data: RUILayoutData) {
@@ -151,22 +152,27 @@ export class RUIFlexLayouter implements RUILayouter {
             sizePerFlex = (cui.layoutWidth - cui.layoutFixedAccu) / cui.layoutFlexAccu;
         }
 
-        var cdata = new RUILayoutData();
 
-        cdata.containerHeight = cui.layoutHeight;
-        cdata.containerWidth = cui.layoutWidth;
+
+        var containerHeight = cui.layoutHeight;
+        var containerWidth = cui.layoutWidth;
 
         cui.rCalWidth = cui.layoutWidth;
         cui.rCalHeight = cui.layoutHeight;
 
         if (cui.boxSideExtens) {
             if (isvertical) {
-                cdata.containerWidth = data.containerWidth;
-                cui.rCalWidth = cdata.containerWidth;
+                if(cui.width == RUIAuto){
+                    containerWidth = data.containerWidth;
+                    cui.rCalWidth = containerWidth;
+                }
             }
             else {
-                cdata.containerHeight = data.containerHeight;
-                cui.rCalHeight = cdata.containerHeight;
+                if(cui.height == RUIAuto){
+                    containerHeight = data.containerHeight;
+                    cui.rCalHeight = containerHeight;
+                }
+                
             }
         }
 
@@ -175,11 +181,16 @@ export class RUIFlexLayouter implements RUILayouter {
         children.forEach(c => {
             if(!c.isOnFlow) return;
             let csize = 0;
+
             if (c.flex != null) {
                 csize = ROUND(c.flex * sizePerFlex);
             } else {
                 csize = isvertical ? c.layoutHeight : c.layoutWidth;
             }
+
+            let cdata = new RUILayoutData();
+            cdata.containerWidth = containerWidth;
+            cdata.containerHeight = containerHeight;
 
             if (isvertical) {
                 cdata.flexWidth = null;

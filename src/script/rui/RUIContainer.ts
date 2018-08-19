@@ -354,12 +354,18 @@ export class RUIContainerLayouter implements RUILayouter{
             throw new Error();
         }
 
+        let isFlexWidth = false;
+        let isFlexHeight = false;
+        
+
         //Fill flex
         if(data.flexWidth != null){
             cui.layoutWidth =data.flexWidth;
+            isFlexWidth = true;
         }
         if(data.flexHeight != null){
             cui.layoutHeight = data.flexHeight;
+            isFlexHeight = true;
         }
 
         //Fill auto
@@ -446,27 +452,37 @@ export class RUIContainerLayouter implements RUILayouter{
                 }
             });
 
-            if(cui.layoutWidth == cui.width){
-                cui.rCalWidth = cui.layoutWidth;
-            }
-            else{
-
-                let paddinghorizontalFixed = SIZE(paddingleft) + SIZE(paddingright);
-
-                if(cui.boxSideExtens){
-                
-                    if(maxChildWidth < data.containerWidth){
-                        cui.rCalWidth = data.containerWidth;
+            if(!isFlexWidth){
+                if(cui.layoutWidth == cui.width){
+                    cui.rCalWidth = cui.layoutWidth;
+                }
+                else{
+    
+                    let paddinghorizontalFixed = SIZE(paddingleft) + SIZE(paddingright);
+    
+                    if(cui.boxSideExtens){
+                    
+                        if(maxChildWidth < data.containerWidth){
+                            cui.rCalWidth = data.containerWidth;
+                        }
+                        else{
+                            cui.rCalWidth = maxChildWidth + paddinghorizontalFixed;
+                        }
                     }
                     else{
                         cui.rCalWidth = maxChildWidth + paddinghorizontalFixed;
                     }
                 }
-                else{
-                    cui.rCalWidth = maxChildWidth + paddinghorizontalFixed;
-                }
             }
-            cui.rCalHeight = accuChildHeight - paddingtop + SIZE(paddingtop) + SIZE(paddingbottom);
+            else{
+                cui.rCalWidth = cui.layoutWidth;
+            }
+            if(!isFlexHeight){
+                cui.rCalHeight = accuChildHeight - paddingtop + SIZE(paddingtop) + SIZE(paddingbottom);
+            }
+            else{
+                cui.rCalHeight = cui.layoutHeight;
+            }
         }
         else{
             let cdata =new RUILayoutData();
@@ -488,25 +504,36 @@ export class RUIContainerLayouter implements RUILayouter{
                 }
             });
 
-            if(cui.layoutHeight == cui.height){
-                cui.rCalHeight = cui.height;
-            }
-            else{
-
-                let paddingverticalFix = SIZE(paddingtop) + SIZE(paddingbottom)
-                if(cui.boxSideExtens){
-                    if(maxChildHeight < data.containerHeight){
-                        cui.rCalHeight = data.containerHeight;
-                    }
-                    else{
+            if(!isFlexHeight){
+                if(cui.layoutHeight == cui.height){
+                    cui.rCalHeight = cui.height;
+                }
+                else{
+    
+                    let paddingverticalFix = SIZE(paddingtop) + SIZE(paddingbottom)
+                    if(cui.boxSideExtens){
+                        if(maxChildHeight < data.containerHeight){
+                            cui.rCalHeight = data.containerHeight;
+                        }
+                        else{
+                            cui.rCalHeight = maxChildHeight + paddingverticalFix;
+                        }
+                    }else{
                         cui.rCalHeight = maxChildHeight + paddingverticalFix;
                     }
-                }else{
-                    cui.rCalHeight = maxChildHeight + paddingverticalFix;
                 }
             }
+            else{
+                cui.rCalHeight = cui.layoutHeight;
+            }
+            
+            if(!isFlexWidth) {
+                cui.rCalWidth= accuChildWidth - paddingtop +SIZE(paddingtop) + SIZE(paddingright);
+            }
+            else{
+                cui.rCalWidth = cui.layoutWidth;
+            }
 
-            cui.rCalWidth= accuChildWidth - paddingtop +SIZE(paddingtop) + SIZE(paddingright);
         }
 
         cui.LayoutRelativeUI(cui,cui.children);
