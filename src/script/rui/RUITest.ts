@@ -45,68 +45,33 @@ export class RUITest{
         // ui.addChild(cc);
         // ui.addChild(new RUIRectangle(50,100));
 
-        var ui = new RUIContainer();
+        var ui = new RUIFlexContainer();
+        
+        ui.boxOrientation = RUIOrientation.Horizontal;
 
         ui.width = 800;
-        ui.height = 800;
+        ui.height = 150;
         ui.boxBackground = RUI.BLACK;
 
-        // var sb = new ScrollBar(RUIOrientation.Horizontal);
-        // sb.sizeVal = 0.5;
-
-        // var sb1 = new ScrollBar(RUIOrientation.Vertical);
-        // sb1.sizeVal = 0.5;
-        // sb1.height = 100;
-
-        // ui.addChild(sb);
-        // ui.addChild(sb1);
-
+        ui.addChild(new RUIRectangle(100,100));
 
         var sv = new ScrollView();
+        sv.boxBorder = RUI.RED;
+        sv.addChild(new RUIRectangle(100,200));
 
-        sv.addChild(new RUIRectangle(100,50));
+        sv.flex = 1;
 
-        var show = true;
-        var showh = true;
-
-        var r = new RUIRectangle(20,10);
-
-        sv.addChild(new RUIButton('v+',b=>{
-            r.height +=50;
-            r.setDirty(true);
-        }));
-        sv.addChild(new RUIButton('v-',b=>{
-            r.height -=50;
-            r.setDirty(true);
-        }));
-
-        sv.addChild(new RUIButton('h+',b=>{
-            r.width +=50;
-            r.setDirty(true);
-        }));
-        sv.addChild(new RUIButton('h-',b=>{
-            r.width -=50;
-            r.setDirty(true);
-        }));
-        sv.addChild(r);
-        sv.addChild(new RUIRectangle(10,10));
-        sv.height = 300;
 
         ui.addChild(sv);
 
-        var f = new RUIFlexContainer();
-        f.boxBackground = RUI.RED;
-        f.boxOrientation= RUIOrientation.Horizontal;
 
+        var tv = new RUIContainer();
+        tv.boxBackground = RUI.BLUE;
+        tv.boxSideExtens = true;
+        tv.addChild(new RUIRectangle(10,10));
+        tv.flex = 1;
+        ui.addChild(tv);
 
-        var c= new RUIContainer();
-        c.addChild(new RUIRectangle(50,50));
-        c.flex = 1;
-        f.addChild(c);
-
-        f.addChild(new RUIRectangle(100,100));
-
-        ui.addChild(f);
 
         var root = new RUIRoot(ui,false);
 

@@ -122,8 +122,6 @@ export class RUIFlexLayouter implements RUILayouter {
     public LayoutPost(ui: RUIObject, data: RUILayoutData) {
         if (!(ui instanceof RUIFlexContainer)) throw new Error();
 
-
-
         var cui = <RUIFlexContainer>ui;
         let children = cui.children;
         var isvertical = cui.isVertical;
