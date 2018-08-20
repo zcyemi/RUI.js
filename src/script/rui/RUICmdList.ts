@@ -134,6 +134,7 @@ export class RUICmdList{
 
     public DrawBorder(rect: number[], color: number[]) {
         if(this.m_clipRectP == RUICLIP_NULL) return;
+        if(rect == null) throw new Error();
 
         let cmd = RUIDrawCmd.CmdBorder(rect, color);
         cmd.clip = this.m_clipRectP;

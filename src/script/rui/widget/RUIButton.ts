@@ -4,6 +4,7 @@ import { RUIStyle } from "../RUIStyle";
 import { RUIMouseEvent } from "../RUIEvent";
 import { RUI, RUIVal } from "../RUI";
 import { RUIFontTexture } from "../RUIFontTexture";
+import { RUIContainerClipType } from "../RUIContainer";
 
 export type RUIButtonFunc = (btn:RUIButton)=>void;
 
@@ -26,11 +27,22 @@ export class RUIButton extends RUIObject{
 
     public onDraw(cmd:RUICmdList){
         let rect= this.calculateRect();
+
+        let noclip = !this.isClip;
+        if(noclip){
+            cmd.PushClip(rect,null,RUIContainerClipType.NoClip);
+        }
+        else{
+            if(cmd.isSkipDraw) return;
+        }
+
         this._rectclip = RUI.RectClip(rect,cmd.clipRect);
         this._rect= this._rectclip;
         
         cmd.DrawRectWithColor(rect,this.m_color);
         cmd.DrawText(this.label,rect);
+
+        if(noclip) cmd.PopClipRect();
     }
 
     public onMouseEnter(){

@@ -6,7 +6,7 @@ import { RUIRoot } from "./RUIRoot";
 import { RUIOrientation, RUIPosition, RUIConst, RUIAuto } from "./RUIObject";
 import { RUIContainer } from "./RUIContainer";
 import { RUIRectangle } from "./RUIRectangle";
-import { RUIDebug } from "./widget/RUIDebug";
+import { RUIDebug, RUIPageBasis, RUIPageCompoundWiget, RUIPageWidget, RUIPageLayout, RUIPageContainer } from "./widget/RUIDebug";
 import { RUIStyle } from "./RUIStyle";
 import { RUITabView, RUITabPage } from "./widget/RUITabView";
 import { RUIButtonGroup } from "./widget/RUIButtonGroup";
@@ -37,33 +37,13 @@ export class RUITest{
         this.m_ruicmdlist = new RUICmdList();
 
 
-        var ui = new RUIFlexContainer();
-        
-        ui.boxOrientation = RUIOrientation.Horizontal;
-
+    
+        var ui = new RUIContainer();
         ui.width = 800;
-        ui.boxBackground = RUI.BLACK;
-
-        ui.addChild(new RUIRectangle(100,300));
-
-        var sv = new RUIScrollView();
-        sv.addChild(new RUIRectangle(100,500));
-        sv.addChild(new RUIRectangle(500,20));
-
-        sv.flex = 1;
+        ui.height = 600;
 
 
-        ui.addChild(sv);
-
-
-        var tv = new RUITabView([
-            {label:'aa',ui:new RUIRectangle(100,100)},
-            {label:'bb',ui:new RUIRectangle(500,500)},
-        ],RUIConst.LEFT);
-        tv.flex = 1;
-
-        ui.addChild(tv);
-
+        ui.addChild(new RUIDebug());
 
         var root = new RUIRoot(ui,false);
 

@@ -1,4 +1,4 @@
-import { RUIObject, RUIOverflow, RUIOrientation, RUIConst, RUIAuto, RUIPosition, ROUND, RUIRect } from "./RUIObject";
+import { RUIObject, RUIOverflow, RUIOrientation, RUIConst, RUIAuto, RUIPosition, ROUND, RUIRect, RUICLIP_NULL } from "./RUIObject";
 import { RUICmdList } from "./RUICmdList";
 import { RUIStyle } from "./RUIStyle";
 import { RUIFlexContainer } from "./RUIFlexContainer";
@@ -176,28 +176,37 @@ export class RUIContainer extends RUIObject {
             if(cmd.isSkipDraw) return;
         }
 
-        let rect = this.calculateRect()
+        let rect = this.calculateRect();
         this._rect = rect;
         if(this.boxBackground != null) cmd.DrawRectWithColor(rect,this.boxBackground);
         
         // clip paddingrect/rect
         let paddingrect = rect;// this.RectMinusePadding(rect, this.padding);
 
-        let cliprect = RUI.RectClip(paddingrect,cmd.clipRect);
+        let cliprect =  cmd.clipRect == RUICLIP_NULL? RUICLIP_NULL: RUI.RectClip(paddingrect,cmd.clipRect);
         this._rectclip = cliprect;
+        cmd.PushClip(rect,cliprect,boxclip);
 
+        // if(boxclip == RUIContainerClipType.NoClip){
+            
+        // }
+        // else{
 
-        if (boxclip != RUIContainerClipType.NoClip) {
-            cmd.PushClip(paddingrect,cliprect,boxclip);
-        }
-        else{
-            cmd.PushClip(rect,cliprect,boxclip);   
-        }
+        //     let cliprect = RUI.RectClip(paddingrect,cmd.clipRect);
+        //     this._rectclip = cliprect;
+        //     cmd.PushClip(paddingrect,cliprect,boxclip);
+        // }
     }
 
     public onDrawPost(cmd: RUICmdList) {
-        if (this.boxClip != RUIContainerClipType.NoClip) cmd.PopClipRect();
-        if(this.boxBorder != null) cmd.DrawBorder(this._rect, this.boxBorder);
+        if (this.boxClip != RUIContainerClipType.NoClip){
+            cmd.PopClipRect();
+        }
+
+        let rect = this._rect;
+
+        if(this.boxBorder != null && rect != RUICLIP_NULL) cmd.DrawBorder(rect, this.boxBorder);
+
     }
 
     protected RectMinusePadding(recta: RUIRect, offset: number[]): RUIRect {
