@@ -14,8 +14,8 @@ import { RUIButton } from "./widget/RUIButton";
 import { RUI } from "./RUI";
 import { RUILabel } from "./widget/RUILabel";
 import { RUICollapsibleContainer } from "./widget/RUICollapsibleContainer";
-import { RUIScrollBar, ScrollBar } from "./widget/RUIScrollBar";
-import { ScrollView } from "./widget/RUIScrollView";
+import { RUIScrollBar } from "./widget/RUIScrollBar";
+import { RUIScrollView } from "./widget/RUIScrollView";
 
 
 export class RUITest{
@@ -36,14 +36,6 @@ export class RUITest{
         
         this.m_ruicmdlist = new RUICmdList();
 
-        // var ui = new RUIContainer();
-
-        // var cc = new RUICollapsibleContainer('aaa',true);
-        // cc.width = 150;
-        // cc.addChild(new RUIContainer());
-
-        // ui.addChild(cc);
-        // ui.addChild(new RUIRectangle(50,100));
 
         var ui = new RUIFlexContainer();
         
@@ -54,7 +46,7 @@ export class RUITest{
 
         ui.addChild(new RUIRectangle(100,300));
 
-        var sv = new ScrollView();
+        var sv = new RUIScrollView();
         sv.addChild(new RUIRectangle(100,500));
         sv.addChild(new RUIRectangle(500,20));
 

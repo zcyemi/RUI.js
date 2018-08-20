@@ -9,7 +9,7 @@ import { RUIRenderer } from "../RUIRenderer";
 import { RUIFlexContainer } from "../RUIFlexContainer";
 import { RUI } from "../RUI";
 import { RUITabView, RUITabPage } from "./RUITabView";
-import { RUIScrollBar, RUIScrollType } from "./RUIScrollBar";
+import { RUIScrollBar } from "./RUIScrollBar";
 import { RUIScrollView } from "./RUIScrollView";
 import { RUICollapsibleContainer } from "./RUICollapsibleContainer";
 
@@ -690,28 +690,28 @@ export class RUIDebug extends RUIContainer {
             c.boxOrientation = RUIOrientation.Horizontal;
             collapse.addChild(c);
 
-            var sbarHorizontal = new RUIScrollBar(RUIOrientation.Horizontal, RUIScrollType.Always);
+            var sbarHorizontal = new RUIScrollBar();
             sbarHorizontal.width = 500;
             collapse.addChild(sbarHorizontal);
 
             let btnszInc = new RUIButton('szInc', (b) => {
-                sbarHorizontal.scrollSize += 0.1;
+                sbarHorizontal.sizeVal += 0.1;
             });
             btnszInc.width = 50;
             c.addChild(btnszInc);
             let btnszDec = new RUIButton('szDec', (b) => {
-                sbarHorizontal.scrollSize -= 0.1;
+                sbarHorizontal.sizeVal -= 0.1;
             });
             btnszDec.width = 50;
             c.addChild(btnszDec);
 
             let btnposInc = new RUIButton('posInc', (b) => {
-                sbarHorizontal.scrollPos += 0.1;
+                sbarHorizontal.scrollPosVal += 0.1;
             });
             btnposInc.width = 50;
             c.addChild(btnposInc);
             let btnposDec = new RUIButton('posDec', (b) => {
-                sbarHorizontal.scrollPos -= 0.1;
+                sbarHorizontal.scrollPosVal -= 0.1;
             });
             btnposDec.width = 50;
             c.addChild(btnposDec);
@@ -724,13 +724,13 @@ export class RUIDebug extends RUIContainer {
             c2.margin = [10, 0, 0, 0];
             collapse.addChild(c2);
 
-            let sbarVertical = new RUIScrollBar(RUIOrientation.Vertical, RUIScrollType.Enabled);
+            let sbarVertical = new RUIScrollBar();
             sbarVertical.height = 120;
             c2.addChild(sbarVertical);
 
 
             {
-                var sv = new RUIScrollView(RUIScrollType.Always, RUIScrollType.Always);
+                var sv = new RUIScrollView();
                 sv.margin = [0, 0, 0, 10];
                 sv.width = 150;
                 sv.height = 150;

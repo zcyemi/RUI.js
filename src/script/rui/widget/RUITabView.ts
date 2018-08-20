@@ -4,7 +4,7 @@ import { RUIButtonGroup } from "./RUIButtonGroup";
 import { RUIButton } from "./RUIButton";
 import { RUIStyle } from "../RUIStyle";
 import { RUIBind } from "../RUIBinder";
-import { RUIScrollView, ScrollView } from "./RUIScrollView";
+import { RUIScrollView } from "./RUIScrollView";
 import { RUIFlexContainer } from "../RUIFlexContainer";
 import { RUI } from "../RUI";
 
@@ -18,7 +18,7 @@ export class RUITabView extends RUIFlexContainer{
 
     private m_pages : RUITabPage[];
     private m_menu :RUIButtonGroup;
-    private m_pageWrap: ScrollView;
+    private m_pageWrap: RUIScrollView;
     private m_pageIndex?: number;
     public constructor(pages?:RUITabPage[],tabpos:number = RUIConst.TOP){
         super();
@@ -35,7 +35,7 @@ export class RUITabView extends RUIFlexContainer{
             });
         }
 
-        let pagewrap = new ScrollView();
+        let pagewrap = new RUIScrollView();
         pagewrap.flex =1;
         pagewrap.boxBorder= null;
         var menu:RUIButtonGroup;

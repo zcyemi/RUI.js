@@ -6,249 +6,16 @@ import { RUIRectangle } from "../RUIRectangle";
 import { RUIMouseEvent, RUIMouseDragEvent, RUIMouseDragStage, RUIEventEmitter } from "../RUIEvent";
 import { RUI, RUIColor, SATURATE, RUILayoutData } from "../RUI";
 
-export enum RUIScrollType{
-    Enabled,
-    Disabled,
-    Always
-}
+export class RUIScrollBarThumb extends RUIRectangle {
+    private m_hoverColor: RUIColor = RUIStyle.Default.primary0;
+    private m_defaultColor: RUIColor = RUIStyle.Default.background3;
 
-class RUIScrollBarThumb extends RUIRectangle{
+    private m_scrollbar: RUIScrollBar;
+    private m_dragStartOffset: number;
+    private m_onDrag: boolean = false;
+    private m_onHover: boolean = false;
 
-    private m_scrollbar:RUIScrollBar = null;
-
-    private m_dragStartOffset:number;
-
-    private m_onHover:boolean = false;
-    private m_onDrag:boolean = false;
-
-    public constructor(scrollbar:RUIScrollBar){
-        super();
-        this.m_scrollbar = scrollbar;
-        this.m_debugColor = RUIStyle.Default.background2;
-    }
-
-
-    public onMouseDrag(e:RUIMouseDragEvent){
-
-        // let isvertical = this.m_scrollbar.isVertical;
-        // if(e.stage == RUIMouseDragStage.Begin){
-        //     this.m_dragStartOffset = (isvertical ? e.mousey - this.top: e.mousex - this.left);
-        //     this.m_onDrag = true;
-        // }
-        // else if(e.stage == RUIMouseDragStage.Update){
-        //     let pos = (isvertical ? e.mousey : e.mousex) - this.m_dragStartOffset;
-        //     let bar = this.m_scrollbar;
-        //     let barsize = isvertical ? bar._calheight : bar._calwidth;
-        //     let off = isvertical? this.top : this.left;
-        //     pos = CLAMP(pos,0,barsize - (isvertical? this._calheight :this._calwidth));
-        //     if(off == pos) return;
-        //     pos = pos / barsize;
-        //     bar.onThumbDrag(pos);
-        //     this.m_onDrag = true;
-        // }
-        // else{
-        //     this.m_onDrag = false;
-        // }
-        // this.setDirty();
-    }
-
-    public onMouseEnter(){
-        this.m_onHover= true;
-        this.setDirty();
-    }
-
-    public onMouseLeave(){
-        this.m_onHover = false;
-        this.setDirty();
-    }
-
-    public onLayoutPost(){
-        if(this.m_onDrag){
-            this.m_debugColor = RUIStyle.Default.primary0;
-        }
-        else if(this.m_onHover){
-            this.m_debugColor = RUIStyle.Default.primary;
-        }
-        else{
-            this.m_debugColor = RUIStyle.Default.background3;
-        }
-        
-    }
-}
-
-export class RUIScrollBar extends RUIContainer{
-
-    public static readonly BAR_SIZE:number = 10;
-
-    private m_scrolltype :RUIScrollType;
-
-    private m_size: number;
-    private m_position:number;
-    private m_show:boolean = true;
-
-    private m_thumb :RUIScrollBarThumb;
-
-    public EventOnScroll: RUIEventEmitter<number> = new RUIEventEmitter();
-
-    public constructor(orit:RUIOrientation = RUIOrientation.Horizontal,type:RUIScrollType = RUIScrollType.Enabled){
-        super();
-        this.boxOrientation = orit;
-        this.m_scrolltype = type;
-
-        this.m_size = 0.5;
-        this.m_position = 0.0;
-
-
-        let thumb = new RUIScrollBarThumb(this);
-        thumb.width =10;
-        thumb.height = 10;
-        thumb.position = RUIPosition.Offset;
-        this.m_thumb = thumb;
-        this.addChild(thumb);
-
-        this.setOrientation(this.boxOrientation);
-
-        this.scrollSize = 0.5;
-    }
-
-    public get scrollSize():number{
-        return this.m_size;
-    }
-
-    public get scrollPos():number{
-        return this.m_position;
-    }
-
-    public set scrollSize(val:number){
-        let v = CLAMP(val,0,1.0);
-        
-        if(this.m_size != v){
-            this.m_show = true;
-            if(v == 0 || v == 1.0){
-                this.scrollPos = 0;
-                this.EventOnScroll.emitRaw(0);
-
-                if(!this.isAlwayShow){
-                    this.m_show = false;
-                }
-            }
-            this.m_size = v;
-            this.setDirty(true);
-        }
-    }
-
-    private get isAlwayShow():boolean{
-        return this.m_scrolltype == RUIScrollType.Always;
-    }
-
-    public set scrollPos(val:number){
-        let v = CLAMP(val,0,1.0 - this.m_size);
-        if(this.m_position != v){
-            this.m_position = v;
-            this.setDirty();
-        }
-    }
-
-    public onThumbDrag(val:number){
-        this.scrollPos = val;
-        this.EventOnScroll.emitRaw(val);
-    }
-
-    public onScrollBarClick(val:number){
-        this.scrollPos = val;
-        this.EventOnScroll.emitRaw(val);
-    }
-
-
-    public onLayoutPost(){
-        // let isvertical = this.isVertical;
-        // let barsize = (isvertical? this._calheight : this._calwidth) ;
-        // let thumbsize = barsize * this.m_size;
-        // let thumbpos = barsize * this.m_position;
-
-        // let thumb =this.m_thumb;
-        // if(isvertical){
-        //     if(thumb.height != thumbsize){
-        //         thumb.height = thumbsize;
-        //         thumb.setDirty(true);
-        //     }
-
-        //     if(thumb.top != thumbpos){
-        //         thumb.top = thumbpos;
-        //         thumb.setDirty();
-        //     }
-        // }
-        // else{
-        //     if(thumb.width != thumbsize){
-        //         thumb.width = thumbsize;
-        //         thumb.setDirty(true);
-        //     }
-
-        //     if(thumb.left != thumbpos){
-        //         thumb.left = thumbpos;
-        //         thumb.setDirty();
-        //     }
-        // }
-    }
-
-    public onMouseDown(e:RUIMouseEvent){
-        // if(this.scrollSize == 0) return;
-        // let isvertical = this.isVertical;
-        // if(isvertical){
-        //     let pos = (e.mousey - this.rCaly) / this._calheight;
-        //     if(pos < this.m_position){
-        //         this.onScrollBarClick(pos);
-        //     }
-        //     else{
-        //         let posend = this.scrollPos + this.scrollSize;
-        //         if(pos > posend){
-        //             this.onScrollBarClick( pos - this.scrollSize);
-        //         }
-        //     }
-        // }
-        // else{
-        //     let pos = (e.mousex - this.rCalx) / this._calwidth;
-        //     if(pos < this.m_position){
-        //         this.onScrollBarClick(pos);
-        //     }
-        //     else{
-        //         let posend = this.scrollPos + this.scrollSize;
-        //         if(pos> posend){
-        //             this.onScrollBarClick(pos - this.scrollSize);
-        //         }
-        //     }
-        // }
-    }
-
-    private setOrientation(orit:RUIOrientation){
-        if(this.isVertical){
-            this.width = RUIScrollBar.BAR_SIZE;
-        }
-        else{
-            this.height = RUIScrollBar.BAR_SIZE;
-        }
-    }
-
-    public onDrawPre(cmd:RUICmdList){
-        super.onDrawPre(cmd);
-        if(this.m_show)
-        {
-            cmd.DrawRectWithColor(this._rect,RUIStyle.Default.background0);
-        }
-    }
-}
-
-export class ScrollBarThumb extends RUIRectangle{
-
-    private m_hoverColor:RUIColor = RUIStyle.Default.primary0;
-    private m_defaultColor:RUIColor = RUIStyle.Default.background3;
-
-    private m_scrollbar:ScrollBar;
-    private m_dragStartOffset:number;
-    private m_onDrag:boolean = false;
-    private m_onHover:boolean = false;
-
-    public constructor(scrollbar:ScrollBar){
+    public constructor(scrollbar: RUIScrollBar) {
         super();
         this.m_scrollbar = scrollbar;
         this.m_debugColor = this.m_defaultColor;
@@ -260,128 +27,110 @@ export class ScrollBarThumb extends RUIRectangle{
         this.height = 10;
     }
 
-    public onMouseEnter(){
+    public onMouseEnter() {
         this.m_onHover = true;
         this.setDirty();
     }
 
-    public onMouseLeave(){
+    public onMouseLeave() {
         this.m_onHover = false;
         this.setDirty();
     }
 
-    public Layout(){
+    public Layout() {
         super.Layout();
-        if(this.m_onHover || this.m_onDrag){
+        if (this.m_onHover || this.m_onDrag) {
             this.m_debugColor = this.m_hoverColor;
         }
-        else{
+        else {
             this.m_debugColor = this.m_defaultColor;
         }
     }
 
-    public onDraw(cmd:RUICmdList){
+    public onDraw(cmd: RUICmdList) {
 
         let noclip = !this.isClip;
 
         let rect = this.calculateRect();
-        if(noclip){
-            cmd.PushClip(rect,null, RUIContainerClipType.NoClip);
+        if (noclip) {
+            cmd.PushClip(rect, null, RUIContainerClipType.NoClip);
         }
-        else{
-            if(cmd.isSkipDraw) return;
+        else {
+            if (cmd.isSkipDraw) return;
         }
-        
-        this._rectclip = RUI.RectClip(rect,cmd.clipRect);
-        this._rect = this._rectclip;
-        cmd.DrawRectWithColor(rect,this.m_debugColor);
 
-        if(noclip) cmd.PopClipRect();
+        this._rectclip = RUI.RectClip(rect, cmd.clipRect);
+        this._rect = this._rectclip;
+        cmd.DrawRectWithColor(rect, this.m_debugColor);
+
+        if (noclip) cmd.PopClipRect();
     }
 
-
-    public onMouseDrag(e:RUIMouseDragEvent){
+    public onMouseDrag(e: RUIMouseDragEvent) {
         let isvertical = this.m_scrollbar.isVerticalScroll;
-        if(e.stage == RUIMouseDragStage.Begin){
-            this.m_dragStartOffset = (isvertical ? e.mousey - this.top: e.mousex - this.left);
+        if (e.stage == RUIMouseDragStage.Begin) {
+            this.m_dragStartOffset = (isvertical ? e.mousey - this.top : e.mousex - this.left);
             this.m_onDrag = true;
         }
-        else if(e.stage == RUIMouseDragStage.Update){
+        else if (e.stage == RUIMouseDragStage.Update) {
             let pos = (isvertical ? e.mousey : e.mousex) - this.m_dragStartOffset;
             let bar = this.m_scrollbar;
-            let off = isvertical? this.top : this.left;
-            if(pos == off) return;
+            let off = isvertical ? this.top : this.left;
+            if (pos == off) return;
             bar.onThumbDrag(pos);
             this.m_onDrag = true;
         }
-        else{
+        else {
             this.m_onDrag = false;
         }
-
         e.Use();
     }
-
-    
 }
 
-export class ScrollBar extends RUIContainer{
-
-    private m_thumb: ScrollBarThumb;
-
-    private m_scrollPosVal:number = 0;
-    private m_sizeVal:number =0;
-
-    private m_size:number;
-
+export class RUIScrollBar extends RUIContainer {
+    private m_thumb: RUIScrollBarThumb;
+    private m_scrollPosVal: number = 0;
+    private m_sizeVal: number = 0;
+    private m_size: number;
     private m_scrollOrientation: RUIOrientation;
-
 
     public EventOnScroll: RUIEventEmitter<number> = new RUIEventEmitter();
 
-
-    public constructor(orientation:RUIOrientation = RUIOrientation.Horizontal){
+    public constructor(orientation: RUIOrientation = RUIOrientation.Horizontal) {
         super();
 
-        let thumb = new ScrollBarThumb(this);
+        let thumb = new RUIScrollBarThumb(this);
         this.addChild(thumb);
-        
         this.m_thumb = thumb;
-
         this.m_scrollOrientation = orientation;
-        this.boxOrientation = this.isVerticalScroll? RUIOrientation.Horizontal : RUIOrientation.Vertical;
+        this.boxOrientation = this.isVerticalScroll ? RUIOrientation.Horizontal : RUIOrientation.Vertical;
         this.boxBackground = RUIStyle.Default.background1;
-        this.boxSideExtens =true;
+        this.boxSideExtens = true;
 
-
-        if(orientation == RUIOrientation.Horizontal){
+        if (orientation == RUIOrientation.Horizontal) {
             thumb.height = 10;
         }
-        else{
+        else {
             thumb.width = 10;
         }
     }
 
-    public get isVerticalScroll():boolean{
+    public get isVerticalScroll(): boolean {
         return this.m_scrollOrientation == RUIOrientation.Vertical;
     }
 
-
-    public Layout(){
+    public Layout() {
         super.Layout();
 
-        if(this.isVerticalScroll){
+        if (this.isVerticalScroll) {
             this.layoutWidth = 10;
         }
-        else{
-            this.layoutHeight =10;
+        else {
+            this.layoutHeight = 10;
         }
     }
-    
 
-
-
-    public LayoutPost(data:RUILayoutData){
-        
+    public LayoutPost(data: RUILayoutData) {
         super.LayoutPost(data);
         let size = this.isVerticalScroll ? this.rCalHeight : this.rCalWidth;
         this.m_size = size;
@@ -389,15 +138,15 @@ export class ScrollBar extends RUIContainer{
         let thumbsize = this.m_sizeVal * size;
 
         let thumb = this.m_thumb;
-        if(this.isVerticalScroll){
+        if (this.isVerticalScroll) {
             thumb.rCalWidth = this.rCalWidth;
             thumb.rCalHeight = thumbsize;
             thumb.rOffx = 0;
             thumb.rOffy = this.m_scrollPosVal * size;
-            thumb.left =0;
+            thumb.left = 0;
             thumb.top = thumb.rOffy;
         }
-        else{
+        else {
             thumb.rCalWidth = thumbsize;
             thumb.rCalHeight = this.rCalHeight;
             thumb.rOffx = this.m_scrollPosVal * size;
@@ -407,51 +156,46 @@ export class ScrollBar extends RUIContainer{
         }
         thumb.width = thumb.rCalWidth;
         thumb.height = thumb.rCalHeight;
-
-
     }
 
-    public set scrollPosVal(val:number){
-        if(val === NaN) return;
-        val = CLAMP(val,0,1.0 - this.m_sizeVal);
-        if(val == this.m_scrollPosVal) return;
+    public set scrollPosVal(val: number) {
+        if (val === NaN) return;
+        val = CLAMP(val, 0, 1.0 - this.m_sizeVal);
+        if (val == this.m_scrollPosVal) return;
         this.m_scrollPosVal = val;
         this.setDirty();
     }
 
-    public get scrollPosVal():number{
+    public get scrollPosVal(): number {
         return this.m_scrollPosVal;
     }
 
-    public set sizeVal(val:number){
-        if(val === NaN) return;
+    public set sizeVal(val: number) {
+        if (val === NaN) return;
         val = SATURATE(val);
-        if(val ==  this.sizeVal) return;
+        if (val == this.sizeVal) return;
         this.m_sizeVal = val;
         this.setDirty();
     }
 
-    public get sizeVal():number{
+    public get sizeVal(): number {
         return this.m_sizeVal;
     }
 
-    public onThumbDrag(pos:number){
-        this.scrollPosVal = pos/ this.m_size;
+    public onThumbDrag(pos: number) {
+        this.scrollPosVal = pos / this.m_size;
         this.EventOnScroll.emitRaw(this.m_scrollPosVal);
     }
 
-    public get scrollOrientation():RUIOrientation{
+    public get scrollOrientation(): RUIOrientation {
         return this.m_scrollOrientation;
     }
 
-    public set scrollOrientation(orientation:RUIOrientation){
-        if(this.m_scrollOrientation == orientation){
+    public set scrollOrientation(orientation: RUIOrientation) {
+        if (this.m_scrollOrientation == orientation) {
             return;
         }
-
-        this.m_scrollOrientation= orientation;
+        this.m_scrollOrientation = orientation;
         this.setDirty(true);
     }
-
-
 }
