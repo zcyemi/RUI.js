@@ -146,6 +146,9 @@ export class RUIRoot {
 
         let root = this.root;
 
+        root.isdirty = false;
+        this.isdirty = false;
+
         if(root.isOnFlow){
             root.Layout();
             var data = new RUILayoutData();
@@ -156,9 +159,7 @@ export class RUIRoot {
         else{
             RUIDefaultLayouter.LayoutRelative(root,this.m_rootSizeWidth,this.m_rootSizeHeight);
         }
-
-        root.isdirty = false;
-        this.isdirty = false;
+        
 
         if(root instanceof RUIContainer){
             this.calculateFinalOffset(root);

@@ -63,24 +63,35 @@ export class RUITest{
 
 
         var sv = new ScrollView();
-        sv.height = 250;
-        sv.width = 350;
-
-        sv.position = RUIPosition.Offset;
-        sv.left = 400;
 
         sv.addChild(new RUIRectangle(100,50));
 
         var show = true;
         var showh = true;
-        sv.addChild(new RUIButton('toggleV',b=>{
-            sv.scrollBarShowV(show);
-            show = !show;
+
+        var r = new RUIRectangle(20,10);
+
+        sv.addChild(new RUIButton('v+',b=>{
+            r.height +=50;
+            r.setDirty(true);
         }));
-        sv.addChild(new RUIButton('toggleH',b=>{
-            sv.scrollBarShowH(showh);
-            showh = !showh;
+        sv.addChild(new RUIButton('v-',b=>{
+            r.height -=50;
+            r.setDirty(true);
         }));
+
+        sv.addChild(new RUIButton('h+',b=>{
+            r.width +=50;
+            r.setDirty(true);
+        }));
+        sv.addChild(new RUIButton('h-',b=>{
+            r.width -=50;
+            r.setDirty(true);
+        }));
+        sv.addChild(r);
+        sv.addChild(new RUIRectangle(10,10));
+        sv.height = 300;
+
         ui.addChild(sv);
 
         var f = new RUIFlexContainer();

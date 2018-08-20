@@ -29,7 +29,12 @@ export class RUIContainer extends RUIObject {
     public boxBackground?:number[] = null;
     public boxSideExtens:boolean = false;
 
+    public boxMatchWidth:boolean = false;
+    public boxMatchHeight:boolean = false;
+
     public children: RUIObject[] = [];
+
+    public layoutSideChildMax?:number;
 
     /** mark execute for children ui of @function traversal */
     public skipChildTraversal: boolean = false;
@@ -262,6 +267,8 @@ export class RUIContainerLayouter implements RUILayouter{
         clen = children.length;
         let isvertical = cui.isVertical;
 
+        cui.layoutSideChildMax = null;
+
         let f = (c)=>c.Layout();
         var maxsize = -1;
         if(isvertical && cui.rWidth == RUIAuto){
@@ -282,6 +289,8 @@ export class RUIContainerLayouter implements RUILayouter{
             let c = children[i];
             f(c);
         }
+
+        cui.layoutSideChildMax = maxsize;
 
         let parent = cui.parent;
         let exten = cui.boxSideExtens && (parent == null ||(parent != null && (<RUIContainer>parent).boxOrientation == cui.boxOrientation ));
@@ -462,7 +471,7 @@ export class RUIContainerLayouter implements RUILayouter{
             });
 
             if(!isFlexWidth){
-                if(cui.layoutWidth == cui.width){
+                if(cui.layoutWidth == cui.width || cui.boxMatchWidth){
                     cui.rCalWidth = cui.layoutWidth;
                 }
                 else{
@@ -514,7 +523,7 @@ export class RUIContainerLayouter implements RUILayouter{
             });
 
             if(!isFlexHeight){
-                if(cui.layoutHeight == cui.height){
+                if(cui.layoutHeight == cui.height || cui.boxMatchHeight){
                     cui.rCalHeight = cui.height;
                 }
                 else{

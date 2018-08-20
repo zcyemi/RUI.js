@@ -1,8 +1,8 @@
 import { RUIContainer } from "../RUIContainer";
 import { RUIScrollType, RUIScrollBar, ScrollBar } from "./RUIScrollBar";
-import { RUIOrientation, RUIPosition, RUIObject, ROUND } from "../RUIObject";
+import { RUIOrientation, RUIPosition, RUIObject, ROUND, RUIAuto, RUIConst } from "../RUIObject";
 import { RUIStyle } from "../RUIStyle";
-import { RUI } from "../RUI";
+import { RUI, RUILayoutData } from "../RUI";
 import { RUIEvent } from "../RUIEvent";
 import { RUIFlexContainer } from "../RUIFlexContainer";
 
@@ -19,6 +19,8 @@ export class RUIScrollView extends RUIContainer {
     private m_content: RUIContainer;
     private m_contentvalH?: number;
     private m_contentvalV?: number;
+
+
 
 
     public constructor(scrollH: RUIScrollType = RUIScrollType.Enabled, scrollV: RUIScrollType = RUIScrollType.Enabled) {
@@ -166,14 +168,18 @@ export class ScrollView extends RUIContainer {
     private m_sliderVertical: ScrollBar;
     private m_sliderHorizontal: ScrollBar;
 
-    private m_scrollbarVShow:boolean = true;
-    private m_scrollbarHShow:boolean = true;
+    private m_scrollbarVShow:boolean = false;
+    private m_scrollbarHShow:boolean = false;
+
+    private m_overflowH:boolean = false;
+    private m_overflowV:boolean = false;
 
     public constructor() {
         super();
         this.boxOrientation = RUIOrientation.Vertical;
         this.boxSideExtens = true;
         this.boxBackground = RUI.GREY;
+        this.boxMatchWidth = true;
         //this.padding = [0,10,10,0];
 
         let contentWrap = new RUIContainer();
@@ -190,8 +196,6 @@ export class ScrollView extends RUIContainer {
         scrollbar.top =0;
         scrollbar.bottom = 0;
         this.m_sliderVertical = scrollbar;
-        super.addChild(scrollbar);
-
 
         let scrollbarh = new ScrollBar(RUIOrientation.Horizontal);
         scrollbarh.position = RUIPosition.Relative;
@@ -201,7 +205,27 @@ export class ScrollView extends RUIContainer {
         scrollbarh.bottom =0;
         scrollbarh.height = 10;
         this.m_sliderHorizontal = scrollbarh;
-        super.addChild(scrollbarh);
+    }
+
+    public Layout(){
+        super.Layout();
+    }
+
+    public LayoutPost(data:RUILayoutData){
+        super.LayoutPost(data);
+
+        let contentw = this.m_contentWrap.rCalWidth;
+        let contenth = this.m_contentWrap.rCalHeight;
+
+
+        let overflowH = this.rCalWidth - this.padding[RUIConst.RIGHT] < contentw;
+        this.m_overflowH = overflowH;
+        this.scrollBarShowH(overflowH);
+        
+        let overflowV = this.rCalHeight - this.padding[RUIConst.BOTTOM] < contenth;
+        this.m_overflowV = overflowV;
+        this.scrollBarShowV(overflowV);
+
     }
 
 
