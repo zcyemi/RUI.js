@@ -35,10 +35,18 @@ export class RUIRectangle extends RUIObject{
         else{
             if(cmd.isSkipDraw) return;
         }
-        
-        this._rectclip = RUI.RectClip(rect,cmd.clipRect);
-        this._rect = this._rectclip;
-        cmd.DrawRectWithColor(rect,this.m_debugColor);
+
+
+        let cr = RUI.RectClip(rect,cmd.clipRect);
+        this._rectclip = cr;
+        this._rect = cr;
+
+        // if(this._debugname == 'x'){
+        //     console.log('>x ' + cr +'- '+ cmd.clipRect);
+        // }
+
+        if(cr != null)
+            cmd.DrawRectWithColor(cr,this.m_debugColor);
 
         if(noclip) cmd.PopClipRect();
     }

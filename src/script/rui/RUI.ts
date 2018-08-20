@@ -145,6 +145,7 @@ export class RUI{
     }
 
     public static toRectP(rect:RUIRect): RUIRectP{
+        if(rect == null) return null;
         let x1 = rect[0];
         let y1 = rect[1];
         return [x1,y1,rect[2]+x1,rect[3]+y1];

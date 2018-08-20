@@ -79,6 +79,11 @@ export class RUICmdList{
         return this.m_clipRect;
     }
 
+    public clipRectLayered(layer:number = 0): RUIRect{
+        let stack = this.m_clipStack;
+        return RUI.toRect(stack[stack.length-layer]);
+    }
+
     public get isSkipDraw():boolean{
         return this.m_skipdraw;
     }
@@ -162,8 +167,8 @@ export class RUICmdList{
 
         let clipp = null;
         if(type == RUIContainerClipType.NoClip){
-            clipp = RUICLIP_MAX;
-            this.m_clipRect = RUICLIP_MAX;
+            clipp = RUI.toRectP(this.clipRectLayered(1)) ;//RUICLIP_MAX;
+            this.m_clipRect = clipp;
         }
         else if(type == RUIContainerClipType.ClipSelf){
             clipp = RUI.toRectP(rect);

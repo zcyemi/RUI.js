@@ -53,6 +53,7 @@ export class RUIScrollView extends RUIContainer {
         scrollbar.right = 0;
         scrollbar.top = 0;
         scrollbar.bottom = 0;
+        scrollbar.isClip = false;
         scrollbar
             .EventOnScroll
             .on(this.onScrollVertical.bind(this));
@@ -65,6 +66,7 @@ export class RUIScrollView extends RUIContainer {
         scrollbarh.right = 10;
         scrollbarh.bottom = 0;
         scrollbarh.height = 10;
+        scrollbarh.isClip = false;
         scrollbarh
             .EventOnScroll
             .on(this.onScrollHorizontal.bind(this));

@@ -434,6 +434,7 @@ export class RUIPageContainer extends RUIContainer {
             c4.padding = [1, 1, 1, 20];
             c.addChild(c4);
             let r = new RUIRectangle(50, 30);
+            r._debugname = 'x';
             r.isClip = false;
             c4.addChild(r);
         }

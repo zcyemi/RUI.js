@@ -3,8 +3,8 @@ import { RUICanvas } from "./RUICanvas";
 import { RUICmdList } from "./RUICmdList";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIRoot } from "./RUIRoot";
-import { RUIOrientation, RUIPosition, RUIConst, RUIAuto } from "./RUIObject";
-import { RUIContainer } from "./RUIContainer";
+import { RUIOrientation, RUIPosition, RUIConst, RUIAuto, RUICLIP_MAX } from "./RUIObject";
+import { RUIContainer, RUIContainerClipType } from "./RUIContainer";
 import { RUIRectangle } from "./RUIRectangle";
 import { RUIDebug, RUIPageBasis, RUIPageCompoundWiget, RUIPageWidget, RUIPageLayout, RUIPageContainer } from "./widget/RUIDebug";
 import { RUIStyle } from "./RUIStyle";
@@ -38,6 +38,8 @@ export class RUITest{
         var ui = new RUIContainer();
         ui.width = 800;
         ui.height = 600;
+
+      
 
         ui.addChild(new RUIDebug());
 

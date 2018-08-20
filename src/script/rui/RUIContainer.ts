@@ -35,7 +35,7 @@ export class RUIContainer extends RUIObject {
     public children: RUIObject[] = [];
 
     public layoutSideChildMax?:number;
-    public drawPushClipRect:boolean = false;
+    public drawPushClipRectCount:number = 0;
 
     /** mark execute for children ui of @function traversal */
     public skipChildTraversal: boolean = false;
@@ -169,12 +169,21 @@ export class RUIContainer extends RUIObject {
     public onDrawPre(cmd: RUICmdList) {
 
         let boxclip = this.boxClip;
+        this.drawPushClipRectCount = 0;
+
 
         let rect = this.calculateRect();
         this._rect = rect;
 
-        this.drawPushClipRect = false;
+        //self clip
+        let noSelfClipped = !this.isClip;
+        if(noSelfClipped){
+            cmd.PushClip(rect,null,RUIContainerClipType.NoClip);
+            this.drawPushClipRectCount++;
+        }
 
+
+        //children clip
         if(boxclip == RUIContainerClipType.Clip){
             if(cmd.isSkipDraw) return;
         }
@@ -182,17 +191,19 @@ export class RUIContainer extends RUIObject {
         if(this.boxBackground != null) cmd.DrawRectWithColor(rect,this.boxBackground);
         
         // clip paddingrect/rect
-        let paddingrect = rect;// this.RectMinusePadding(rect, this.padding);
+        let paddingrect = this.RectMinusePadding(rect, this.padding);
 
         let cliprect =  cmd.clipRect == RUICLIP_NULL? RUICLIP_NULL: RUI.RectClip(paddingrect,cmd.clipRect);
         this._rectclip = cliprect;
         cmd.PushClip(rect,cliprect,boxclip);
-        this.drawPushClipRect = true;
+        this.drawPushClipRectCount++;
 
     }
 
     public onDrawPost(cmd: RUICmdList) {
-        if(this.drawPushClipRect){
+        let clipCount = this.drawPushClipRectCount;
+        while(clipCount> 0){
+            clipCount--;
             cmd.PopClipRect();
         }
 
