@@ -1,10 +1,11 @@
-import { RUIObject, RUIOverflow, RUIOrientation, RUIConst, RUIAuto, RUIPosition, ROUND, RUIRect } from "./RUIObject";
+import { RUIObject, RUIOverflow, RUIOrientation, RUIConst, RUIAuto, RUIPosition, ROUND, RUIRect, RUICLIP_NULL } from "./RUIObject";
 import { RUICmdList } from "./RUICmdList";
 import { RUIStyle } from "./RUIStyle";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIRoot } from "./RUIRoot";
 import { RUIWheelEvent } from "./RUIEvent";
-import { RUI } from "./RUI";
+import { RUI, RUILayouter, RUIVal, RUISizePair, RUILayoutData, RUICHECK, SIZE } from "./RUI";
+import { RUIDefaultLayouter } from "./RUIDefaultLayouter";
 
 
 export enum RUIContainerUpdateMode{
@@ -26,11 +27,23 @@ export class RUIContainer extends RUIObject {
     public boxOrientation: RUIOrientation = RUIOrientation.Vertical;
     public boxBorder?: number[] = null;
     public boxBackground?:number[] = null;
+    public boxSideExtens:boolean = false;
+
+    public boxMatchWidth:boolean = false;
+    public boxMatchHeight:boolean = false;
 
     public children: RUIObject[] = [];
 
+    public layoutSideChildMax?:number;
+    public drawPushClipRect:boolean = false;
+
     /** mark execute for children ui of @function traversal */
     public skipChildTraversal: boolean = false;
+
+    public constructor(){
+        super();
+        this.layouter= RUIContainerLayouter.Layouter;
+    }
 
     public onBuild(){
 
@@ -111,279 +124,36 @@ export class RUIContainer extends RUIObject {
         return RUIContainerUpdateMode.LayoutFull;
     }
 
-    public onLayout() {
-        let isVertical = this.boxOrientation == RUIOrientation.Vertical;
 
-        let children = this.children;
-        let clen = children.length;
+    public LayoutRelativeUI(container: RUIContainer, children: RUIObject[]) {
 
-        //check for dirty
-        let updateMode = this.containerUpdateCheck();
+        let root = container._root.root;
 
-        if(updateMode == RUIContainerUpdateMode.None) return;
+        let rw = root.rCalWidth;
+        let rh = root.rCalHeight;
 
-        //onLayoutPre
-        for(var i=0;i<clen;i++){
-            children[i].onLayoutPre();
-        }
+        let cw = container.rCalWidth;
+        let ch = container.rCalHeight;
 
-        if(updateMode == RUIContainerUpdateMode.LayoutUpdate){
-            for(var i=0;i<clen;i++){
-                let c = children[i];
-                if(!c._enabled) continue;
-                c.onLayout();
-            }
-            return;
-        }
-        
-        let isRelative = (this.position == RUIPosition.Relative || this.position == RUIPosition.Absolute);
-        //fillsize
+        let layoutRelative =RUIDefaultLayouter.LayoutRelative;
 
-        let offset = 0;
-        let maxsize = 0;
-
-        let offsetside = 0;
-
-        //padding
-        let padding = this.padding;
-        offset += padding[isVertical ? RUIConst.TOP : RUIConst.LEFT];
-        offsetside = padding[isVertical ? RUIConst.LEFT : RUIConst.TOP];
-
-        //margin
-        let marginLast = 0;
-
-        let relativeChildren: RUIObject[] = [];
-
-        if (children.length != 0) {
-
-            for (var i = 0, len = children.length; i < len; i++) {
-                let c = children[i];
-
-                if(!c._enabled) continue;
-
-                if (c.isOnFlow == false) {
-                    relativeChildren.push(c);
-                    continue;
-                }
-
-                c._flexwidth = null;
-                c._flexheight = null;
-                c.onLayout();
-
-                let cw = c._calwidth;
-                let ch = c._calheight;
-                if (cw == null){
-                    console.error(c);
-                    throw new Error("children width is null");
-                }
-                if (ch == null){
-                    console.error(c);
-                    throw new Error("children height is null");
-                }
-
-                let cmargin = c.margin;
-                if (isVertical) {
-                    marginLast = Math.max(marginLast, cmargin[RUIConst.TOP]);
-
-                    c._caloffsety = offset + marginLast;
-                    c._caloffsetx = offsetside + cmargin[RUIConst.LEFT];
-                    offset += ch + marginLast;
-                    marginLast = cmargin[RUIConst.BOTTOM];
-                    maxsize = Math.max(maxsize, cw + cmargin[RUIConst.LEFT] + cmargin[RUIConst.RIGHT]);
-                }
-                else {
-                    marginLast = Math.max(marginLast, cmargin[RUIConst.LEFT]);
-
-                    c._caloffsetx = offset + marginLast;
-                    c._caloffsety = offsetside + cmargin[RUIConst.TOP];
-                    offset += cw + marginLast;
-                    marginLast = cmargin[RUIConst.RIGHT];
-                    maxsize = Math.max(maxsize, ch + cmargin[RUIConst.TOP] + cmargin[RUIConst.BOTTOM]);
-                }
-
-                c.fillPositionOffset();
-            }
-
-            offset += marginLast;
-        }
-        else {
-        }
-
-        
-
-        if(!isRelative){
-            if (isVertical) {
-                this._calwidth = maxsize + padding[RUIConst.RIGHT] + padding[RUIConst.LEFT];
-                this._calheight = offset + padding[RUIConst.BOTTOM];
-            }
-            else {
-                this._calheight = maxsize + padding[RUIConst.BOTTOM] + padding[RUIConst.TOP];
-                this._calwidth = offset + padding[RUIConst.RIGHT];
-            }
-    
-            if (this.width != RUIAuto) this._calwidth = this.width;
-            if (this.height != RUIAuto) this._calheight = this.height;
-        }
-        else{
-
-            if(this._root.root == this){
-                let cleft = this.left;
-                let cright = this.right;
-                let ctop = this.top;
-                let cbottom = this.bottom;
-                
-                let constraintH = cleft != RUIAuto && cright != RUIAuto;
-                let constraintV = ctop != RUIAuto && cbottom != RUIAuto;
-
-                let cwidth = this.width;
-                let cheight = this.height;
-
-                let rrect = this._root.rootRect;
-                if(rrect == null){
-                    console.error(this._root);
-                    throw new Error();
-                }
-                let rwidth = rrect[2];
-                let rheight = rrect[3];
-                if(constraintH){
-                    this._calwidth = rwidth - cleft - cright;
-                    this._caloffsetx = cleft;
-                }
-                else{
-                    if(cwidth != RUIAuto){
-                        this._calwidth = cwidth;
-                        if(cleft != RUIAuto){
-                            this._caloffsetx = cleft;
-                        }
-                        else if(cright != RUIAuto){
-                            this._caloffsetx = rwidth - cwidth - cright;
-                        }
-                        else{
-                            this._caloffsetx = ROUND((rwidth - cwidth)/2.0);
-                        }
-                    }
-                    else{
-                        throw new Error();
-                    }
-                }
-
-                if(constraintV){
-                    this._calheight = rheight - ctop - cbottom;
-                    this._caloffsety = ctop;
-                }
-                else{
-                    if(cheight != RUIAuto){
-                        this._calwidth = cwidth;
-                        if(ctop != RUIAuto){
-                            this._caloffsety = ctop;
-                        }
-                        else if(cbottom != RUIAuto){
-                            this._caloffsety = rheight - cheight - cbottom;
-                        }
-                        else{
-                            this._caloffsety = ROUND((rheight - cheight) / 2.0);
-                        }
-                    }
-                    else{
-                        throw new Error();
-                    }
-                }
-            }
-        }
-
-        //process relative children
-        this.onLayoutRelativeUI(relativeChildren);
-
-        this.isdirty = false;
-        this._resized = false;
-    }
-
-    protected onLayoutRelativeUI(ui: RUIObject[]) {
-        if (ui.length == 0) return;
-        let pWdith = this._calwidth;
-        let pHeight = this._calheight;
-
-        let root = this._root.root;
-
-        let rWidth = root._calwidth;
-        let rHeight = root._calheight;
-
-        for (var i = 0, clen = ui.length; i < clen; i++) {
-
-            let c = ui[i];
+        for (var i = 0, clen = children.length; i < clen; i++) {
+            let c = children[i];
+            if (c.isOnFlow) continue;
 
             let isrelative = c.position == RUIPosition.Relative;
-            let cpw = isrelative ? pWdith : rWidth;
-            let cph = isrelative ? pHeight : rHeight;
-
-            let cleft = c.left;
-            let cright = c.right;
-            let ctop = c.top;
-            let cbottom = c.bottom;
-            
-            let cwidth = c.width;
-            let cheight = c.height;
-
-            let constraintHori = cleft != RUIAuto && c.right != RUIAuto;
-            let constraintVert = ctop != RUIAuto && c.bottom != RUIAuto;
-
-            if (constraintHori) {
-                c._caloffsetx = cleft;
-                c._calwidth = cpw - cleft - cright;
+            if(isrelative){
+                layoutRelative(c,cw,ch);
             }
-            else {
-                if (cwidth != RUIAuto) {
-                    c._calwidth = cwidth;
-                    if (cleft != RUIAuto) {
-                        c._caloffsetx = cleft;
-                    }
-                    else if (cright != RUIAuto) {
-                        c._caloffsetx = cpw - cright - cwidth;
-                    }
-                    else {
-                        c._caloffsetx = ROUND((cpw - c._calwidth) / 2);
-                    }
-                }
-                else {
-                    console.error(c);
-                    throw new Error("relative ui have invalid horizontal constraint.");
-                }
+            else{
+                layoutRelative(c,rw,rh);
             }
-
-            if (constraintVert) {
-                c._caloffsety = ctop;
-                c._calheight = cph - ctop - cbottom;
-            }
-            else {
-                
-                if (c.height != RUIAuto) {
-                    c._calheight = cheight;
-                    if (ctop != RUIAuto) {
-                        c._caloffsety = ctop;
-                    }
-                    else if (cbottom != RUIAuto) {
-                        c._caloffsety = cph - cbottom - cheight;
-                    }
-                    else {
-                        c._caloffsety = ROUND((cph - c._calheight) / 2);
-                    }
-                } else {
-                    throw new Error("relative ui have invalid vertical constraint.");
-                }
-            }
-
-        
-
-            c.onLayout();
-
-            c.fillPositionOffset();
         }
+
     }
 
 
     public onDraw(cmd: RUICmdList) {
-
-
         this.onDrawPre(cmd);
 
         let children = this.children;
@@ -398,25 +168,36 @@ export class RUIContainer extends RUIObject {
 
     public onDrawPre(cmd: RUICmdList) {
 
-
-        let rect = this.calculateRect()
-        this._rect = rect;
-        if(this.boxBackground != null) cmd.DrawRectWithColor(rect,this.boxBackground);
-        if(this.boxBorder != null) cmd.DrawBorder(rect, this.boxBorder);
-        let paddingrect = this.RectMinusePadding(rect, this.padding);
-
-        let cliprect = RUI.RectClip(paddingrect,cmd.clipRect);
-        this._rectclip = cliprect;
-
         let boxclip = this.boxClip;
 
-        if (boxclip != RUIContainerClipType.NoClip) {
-            cmd.PushClipRect(boxclip == RUIContainerClipType.Clip ? cliprect : paddingrect, false);
+        let rect = this.calculateRect();
+        this._rect = rect;
+
+        this.drawPushClipRect = false;
+
+        if(boxclip == RUIContainerClipType.Clip){
+            if(cmd.isSkipDraw) return;
         }
+
+        if(this.boxBackground != null) cmd.DrawRectWithColor(rect,this.boxBackground);
+        
+        // clip paddingrect/rect
+        let paddingrect = rect;// this.RectMinusePadding(rect, this.padding);
+
+        let cliprect =  cmd.clipRect == RUICLIP_NULL? RUICLIP_NULL: RUI.RectClip(paddingrect,cmd.clipRect);
+        this._rectclip = cliprect;
+        cmd.PushClip(rect,cliprect,boxclip);
+        this.drawPushClipRect = true;
+
     }
 
     public onDrawPost(cmd: RUICmdList) {
-        if (this.boxClip != RUIContainerClipType.NoClip) cmd.PopClipRect();
+        if(this.drawPushClipRect){
+            cmd.PopClipRect();
+        }
+
+        let rect = this._rect;
+        if(this.boxBorder != null && rect != RUICLIP_NULL) cmd.DrawBorder(rect, this.boxBorder);
     }
 
     protected RectMinusePadding(recta: RUIRect, offset: number[]): RUIRect {
@@ -464,4 +245,334 @@ export class RUIContainer extends RUIObject {
             }
         }
     }
+}
+
+
+export class RUIContainerLayouter implements RUILayouter{
+
+    private static s_layouter = new RUIContainerLayouter();
+    public static get Layouter():RUIContainerLayouter{
+        return this.s_layouter;
+    }
+
+    public Layout(ui:RUIObject){
+        let cui = <RUIContainer> ui;
+        let children = cui.children;
+        let clen = children.length;
+        let flowChildren = [];
+        for(var i=0;i<clen;i++){
+            let c=  children[i];
+            if(c.isOnFlow) flowChildren.push(c);
+        }
+        children = flowChildren;
+        clen = children.length;
+        let isvertical = cui.isVertical;
+
+        cui.layoutSideChildMax = null;
+
+        let f = (c)=>c.Layout();
+        var maxsize = -1;
+        if(isvertical && cui.rWidth == RUIAuto){
+            f = (c)=>{
+                c.Layout();
+                let clayoutwidth = c.layoutWidth;
+                if(clayoutwidth != RUIAuto) maxsize = Math.max(maxsize,clayoutwidth);
+            }
+        }
+        else if(!isvertical && cui.rHeight == RUIAuto){
+            f = (c)=>{
+                c.Layout();
+                if(c.layoutHeight != RUIAuto) maxsize = Math.max(maxsize,c.layoutHeight);
+            }
+        }
+
+        for(var i=0;i<clen;i++){
+            let c = children[i];
+            f(c);
+        }
+
+        cui.layoutSideChildMax = maxsize;
+
+        let parent = cui.parent;
+        let exten = cui.boxSideExtens && (parent == null ||(parent != null && (<RUIContainer>parent).boxOrientation == cui.boxOrientation ));
+
+        //width
+        if(cui.rWidth != RUIAuto){
+            cui.layoutWidth = cui.rWidth;
+        }
+        else{
+            //exten
+            if(isvertical){
+                if(exten){
+                    cui.layoutWidth = RUIAuto;
+                }
+                else{
+                    if(maxsize != -1){
+                        cui.layoutWidth = maxsize;
+                    }
+                    else{
+                        cui.layoutWidth = RUIAuto;
+                    }
+                }
+            }
+            else{
+                cui.layoutWidth = RUIAuto;
+            }
+        }
+        //height
+        if(cui.rHeight != RUIAuto){
+            cui.layoutHeight = cui.rHeight;
+        }
+        else{
+            //exten
+            if(isvertical){
+                cui.layoutHeight = RUIAuto;
+            }
+            else{
+                if(exten){
+                    cui.layoutHeight = RUIAuto;
+                }
+                else{
+                    if(maxsize !=-1){
+                        cui.layoutHeight = maxsize;
+                    }else{
+                        cui.layoutHeight = RUIAuto;
+                    }
+                }
+            }
+        }
+
+    }
+
+    public LayoutPost(ui:RUIObject,data:RUILayoutData){
+
+        if(ui.layoutHeight == null){
+            console.error(ui);
+            throw new Error();
+        }
+
+        if(ui.layoutWidth == null){
+            throw new Error();
+        }
+
+        let cui = <RUIContainer>ui;
+        let children = cui.children;
+        let clen = children.length;
+        let flowChildren = [];
+        for(var i=0;i<clen;i++){
+            let c=  children[i];
+            if(c.isOnFlow) flowChildren.push(c);
+        }
+        children = flowChildren;
+
+
+        if(data.containerHeight == null){
+            throw new Error();
+        }
+        if(data.containerWidth == null){
+            throw new Error();
+        }
+
+        let isFlexWidth = false;
+        let isFlexHeight = false;
+        let isFlexChild = false;
+        
+
+        //Fill flex
+        if(data.flexWidth != null){
+            cui.layoutWidth =data.flexWidth;
+            isFlexWidth = true;
+            isFlexChild = true;
+        }
+        if(data.flexHeight != null){
+            cui.layoutHeight = data.flexHeight;
+            isFlexHeight = true;
+            isFlexChild = true;
+        }
+
+        //Fill auto
+
+        var isvertical = cui.isVertical;
+        
+        if(isvertical){
+            if(cui.layoutWidth == RUIAuto){
+                cui.layoutWidth = data.containerWidth;
+            }
+        }
+        else{
+            if(cui.layoutHeight == RUIAuto){
+                cui.layoutHeight = data.containerHeight;
+            }
+        }
+
+
+        //padding
+        let padding = cui.padding;
+        var paddingleft = padding[3];
+        var paddingtop = padding[0];
+        let paddingright = padding[1];
+        let paddingbottom = padding[2];
+
+        let paddinghorizontal = paddingleft + paddingright;
+        let paddingvertical = paddingtop + paddingbottom;
+
+        //Fixed Size
+        if(cui.layoutWidth != RUIAuto && cui.layoutHeight != RUIAuto){
+            cui.rCalWidth= cui.layoutWidth;
+            cui.rCalHeight = cui.layoutHeight;
+
+            
+
+            let cdata = new RUILayoutData();
+            cdata.containerWidth = SIZE(cui.rCalWidth - paddinghorizontal);
+            cdata.containerHeight =SIZE(cui.rCalHeight - paddingvertical);
+
+            var accuSize = isvertical? paddingtop : paddingleft;
+            children.forEach(c=>{
+                c.LayoutPost(cdata);
+                if(isvertical){
+                    c.rOffx = paddingleft;
+                    c.rOffy = accuSize;
+                    accuSize+=c.rCalHeight;
+                }
+                else{
+                    c.rOffy = paddingtop;
+                    c.rOffx = accuSize;
+                    accuSize+= c.rCalWidth;
+                }
+                
+                if(c.isPositionOffset){
+                    c.rOffx += c.positionOffsetX;
+                    c.rOffy += c.positionOffsetY;
+                }
+            });
+
+            cui.LayoutRelativeUI(cui,cui.children);
+
+            return;
+        }
+
+
+
+        //orientation auto
+        console.assert((cui.isVertical ? cui.layoutHeight : cui.layoutWidth) == RUIAuto);
+        if(cui.isVertical){
+            let cdata = new RUILayoutData();
+            cdata.containerWidth = SIZE(cui.layoutWidth - paddinghorizontal);
+            cdata.containerHeight = SIZE(data.containerHeight -paddingvertical);
+
+            var maxChildWidth = 0;
+            var accuChildHeight = paddingtop;
+            children.forEach(c=>{
+                c.LayoutPost(cdata);
+                c.rOffx = paddingleft;
+                c.rOffy = accuChildHeight;
+                maxChildWidth = Math.max(maxChildWidth,c.rCalWidth);
+                accuChildHeight += c.rCalHeight;
+
+                if(c.isPositionOffset){
+                    c.rOffx += c.positionOffsetX;
+                    c.rOffy += c.positionOffsetY;
+                }
+            });
+
+            if(!isFlexWidth){
+                if(cui.layoutWidth == cui.width || cui.boxMatchWidth){
+                    cui.rCalWidth = cui.layoutWidth;
+                }
+                else{
+    
+                    let paddinghorizontalFixed = SIZE(paddingleft) + SIZE(paddingright);
+    
+                    if(cui.boxSideExtens){
+                    
+                        if(maxChildWidth < data.containerWidth){
+                            cui.rCalWidth = data.containerWidth;
+                        }
+                        else{
+                            cui.rCalWidth = maxChildWidth + paddinghorizontalFixed;
+                        }
+                    }
+                    else{
+                        cui.rCalWidth = maxChildWidth + paddinghorizontalFixed;
+                    }
+                }
+            }
+            else{
+                cui.rCalWidth = cui.layoutWidth;
+            }
+
+            if(!isFlexHeight){
+                if(cui.boxMatchHeight){
+                    cui.rCalHeight = data.containerHeight;
+                }
+                else{
+                    cui.rCalHeight = accuChildHeight - paddingtop + SIZE(paddingtop) + SIZE(paddingbottom);
+                }
+            }
+            else{
+                cui.rCalHeight = cui.layoutHeight;
+            }
+        }
+        else{
+            let cdata =new RUILayoutData();
+            cdata.containerWidth = data.containerWidth;
+            cdata.containerHeight =cui.layoutHeight;
+
+            var maxChildHeight =0;
+            var accuChildWidth = paddingleft;
+            children.forEach(c=>{
+                c.LayoutPost(cdata);
+                c.rOffy =paddingtop;
+                c.rOffx = accuChildWidth;
+                maxChildHeight = Math.max(maxChildHeight,c.rCalHeight);
+                accuChildWidth += c.rCalWidth;
+
+                if(c.isPositionOffset){
+                    c.rOffx += c.positionOffsetX;
+                    c.rOffy += c.positionOffsetY;
+                }
+            });
+
+            if(!isFlexHeight){
+                if(cui.layoutHeight == cui.height || cui.boxMatchHeight){
+                    cui.rCalHeight = cui.height;
+                }
+                else{
+    
+                    let paddingverticalFix = SIZE(paddingtop) + SIZE(paddingbottom)
+                    if(cui.boxSideExtens){
+                        if(maxChildHeight < data.containerHeight){
+                            cui.rCalHeight = data.containerHeight;
+                        }
+                        else{
+                            cui.rCalHeight = maxChildHeight + paddingverticalFix;
+                        }
+                    }else{
+                        cui.rCalHeight = maxChildHeight + paddingverticalFix;
+                    }
+                }
+            }
+            else{
+                cui.rCalHeight = cui.layoutHeight;
+            }
+            
+            if(!isFlexWidth) {
+                if(cui.boxMatchWidth){
+                    cui.rCalWidth = data.containerHeight;
+                }
+                else{
+                    cui.rCalWidth= accuChildWidth - paddingtop +SIZE(paddingtop) + SIZE(paddingright);
+                }
+            }
+            else{
+                cui.rCalWidth = cui.layoutWidth;
+            }
+
+        }
+
+        cui.LayoutRelativeUI(cui,cui.children);
+        return;
+    }
+
 }

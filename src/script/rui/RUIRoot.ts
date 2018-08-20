@@ -1,7 +1,9 @@
-import { RUIObject, RUIRect } from "./RUIObject";
+import { RUIObject, RUIRect, RUIOrientation } from "./RUIObject";
 import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIMouseDragEvent, RUIMouseDragStage, RUIWheelEvent } from "./RUIEvent";
 import { RUIContainer } from "./RUIContainer";
 import { RUIEventType } from "./RUIInput";
+import { RUILayoutData, RUIVal } from "./RUI";
+import { RUIDefaultLayouter } from "./RUIDefaultLayouter";
 
 export class RUIRoot {
 
@@ -136,11 +138,65 @@ export class RUIRoot {
                     }
                     break;
             }
-
-
         }
     }
 
+
+    public layout(){
+
+        let root = this.root;
+
+        root.isdirty = false;
+        this.isdirty = false;
+
+        if(root.isOnFlow){
+            root.Layout();
+            var data = new RUILayoutData();
+            data.containerHeight = this.m_rootSizeHeight;
+            data.containerWidth = this.m_rootSizeWidth;
+            root.LayoutPost(data);
+        }
+        else{
+            RUIDefaultLayouter.LayoutRelative(root,this.m_rootSizeWidth,this.m_rootSizeHeight);
+        }
+        
+
+        if(root instanceof RUIContainer){
+            this.calculateFinalOffset(root);
+        }
+        else{
+            root.rCalx = root.rOffx;
+            root.rCaly = root.rOffy;
+        }
+    }
+
+    private calculateFinalOffset(cui:RUIContainer){
+        let children = cui.children;
+        let clen = children.length;
+
+        let isVertical = cui.boxOrientation == RUIOrientation.Vertical;
+
+        if(clen > 0){
+
+            let offx = cui.rCalx;
+            let offy = cui.rCaly;
+
+            let clevel = cui._level + 1;
+
+            for(var i=0;i<clen;i++){
+                var c= children[i];
+                c._level = clevel;
+
+                c.rCalx = offx + c.rOffx;
+                c.rCaly = offy + c.rOffy;
+
+                if(c instanceof RUIContainer){
+                    this.calculateFinalOffset(c);
+                }
+                //c.onLayoutPost();
+            }
+        }
+    }
 
     private dispatchMouseMove(x: number, y: number) {
         let newList = this.traversalAll(x, y);

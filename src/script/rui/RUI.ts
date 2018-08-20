@@ -1,4 +1,4 @@
-import { RUIRect, RUIRectP } from "./RUIObject";
+import { RUIRect, RUIRectP, RUIObject, RUIAuto } from "./RUIObject";
 
 
 if(Array.prototype['includes'] == null){
@@ -10,7 +10,12 @@ if(Array.prototype['includes'] == null){
     }
 }
 
+export function RUICHECK(ui:RUIObject,name:string){
+    if(ui._debugname === name) console.error(ui);
+}
+
 export type RUIColor = number[];
+export type RUIVal = number;
 
 
 export function ROUND(x:number){
@@ -29,11 +34,77 @@ export function SIZE(val:number){
     return Math.max(0,val);
 }
 
+// export class RUIVal{
+//     private m_val?:number;
+
+//     public constructor(v:number){
+//         this.m_val= v;
+//     }
+
+//     public get value():number{
+//         return this.m_val;
+//     }
+//     public set value(v:number){
+//         this.m_val= v;
+//     }
+
+//     private static s_auto: RUIVal = new RUIVal(null);
+//     public static get Auto():RUIVal{
+//         return this.s_auto;
+//     }
+
+//     public Equals(size:RUIVal):boolean{
+//         if(size === this) return true;
+//         if(size.m_val == this.m_val) return true;
+//         return false;
+//     }
+
+//     public get Clone():RUIVal{
+//         if(this === RUIAuto) return RUIAuto;
+//         return new RUIVal(this.m_val);
+//     }
+// }
+
+
+export type RUISizePair = {width:RUIVal,height:RUIVal};
+
+export interface RUILayouter{
+
+    /**
+     * calculate ui.LayoutWidth ui.LayoutHeight
+     * @param ui Target UI object.
+     */
+    Layout(ui:RUIObject);
+    LayoutPost(ui:RUIObject,data:RUILayoutData);
+}
+
+export class RUILayoutData{
+
+    /** should not be RUIAuto */
+    public containerWidth:RUIVal;
+    /** should not be RUIAuto */
+    public containerHeight:RUIVal;
+    public containerPadding: number[];
+
+
+    public flexWidth?:number;
+    public flexHeight?:number;
+
+    public verify(){
+        if(Number.isNaN(this.containerWidth)) throw new Error('container width is NaN');
+        if(Number.isNaN(this.containerHeight)) throw new Error('container height is NaN');
+        if(this.containerWidth == RUIAuto || this.containerHeight == RUIAuto) throw new Error('coantiner size can not be RUIAuto'); 
+    }
+}
+
 export class RUI{
 
     public static readonly RED:RUIColor = [1,0,0,1];
     public static readonly BLACK:RUIColor =[0,0,0,1];
     public static readonly WHITE:RUIColor = [1,1,1,1];
+    public static readonly GREEN:RUIColor = [0,1,0,1];
+    public static readonly BLUE:RUIColor = [0,0,1,1];
+    public static readonly YELLOW:RUIColor = [1,1,0,1];
     public static readonly GREY:RUIColor = RUI.ColorUNorm(200,200,200,255);
 
     public static RectClip(content:RUIRect,clip:RUIRect) : RUIRect | null{
@@ -71,6 +142,12 @@ export class RUI{
 
     public static toRect(rect:RUIRectP):RUIRect{
         return [rect[0],rect[1],rect[2]- rect[0],rect[3]-rect[1]];
+    }
+
+    public static toRectP(rect:RUIRect): RUIRectP{
+        let x1 = rect[0];
+        let y1 = rect[1];
+        return [x1,y1,rect[2]+x1,rect[3]+y1];
     }
 
     public static Vector(v:number):number[]{

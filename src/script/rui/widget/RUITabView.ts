@@ -5,6 +5,8 @@ import { RUIButton } from "./RUIButton";
 import { RUIStyle } from "../RUIStyle";
 import { RUIBind } from "../RUIBinder";
 import { RUIScrollView } from "./RUIScrollView";
+import { RUIFlexContainer } from "../RUIFlexContainer";
+import { RUI } from "../RUI";
 
 
 export interface RUITabPage{
@@ -12,7 +14,7 @@ export interface RUITabPage{
     ui:RUIObject
 }
 
-export class RUITabView extends RUIContainer{
+export class RUITabView extends RUIFlexContainer{
 
     private m_pages : RUITabPage[];
     private m_menu :RUIButtonGroup;
@@ -20,7 +22,7 @@ export class RUITabView extends RUIContainer{
     private m_pageIndex?: number;
     public constructor(pages?:RUITabPage[],tabpos:number = RUIConst.TOP){
         super();
-        this.boxBorder = RUIStyle.Default.primary;
+        this.boxBorder = RUIStyle.Default.border0;
 
         var self = this;
         this.m_pages = pages;
@@ -34,11 +36,14 @@ export class RUITabView extends RUIContainer{
         }
 
         let pagewrap = new RUIScrollView();
+        pagewrap.flex =1;
         pagewrap.boxBorder= null;
         var menu:RUIButtonGroup;
         if(tabpos == RUIConst.TOP || tabpos == RUIConst.BOTTOM){
             
             this.boxOrientation = RUIOrientation.Vertical;
+            pagewrap.boxMatchWidth = true;
+            menu.height = 23;
             menu = new RUIButtonGroup(buttons,RUIOrientation.Horizontal);
             if(tabpos == RUIConst.TOP){
                 super.addChild(menu);
@@ -51,9 +56,9 @@ export class RUITabView extends RUIContainer{
         }
         else{
             this.boxOrientation = RUIOrientation.Horizontal;
+            pagewrap.boxMatchHeight = true;
             menu = new RUIButtonGroup(buttons,RUIOrientation.Vertical);
             menu.width = 100;
-            RUIBind(this,"_calheight",(v)=>menu.height = v);
             if(tabpos == RUIConst.LEFT){
                 super.addChild(menu);
                 super.addChild(pagewrap);
@@ -66,10 +71,6 @@ export class RUITabView extends RUIContainer{
 
         this.m_menu = menu;
         this.m_pageWrap = pagewrap;
-
-        //Bind
-        RUIBind(this,"_calheight",(v)=>pagewrap.height = v);
-        RUIBind(this,"_calwidth",(v)=>pagewrap.width=v - 100);
 
         this.setPageIndex(0);
 
@@ -85,7 +86,7 @@ export class RUITabView extends RUIContainer{
         let ui = this.m_pages[index].ui;
         if(ui != null){
             let wrap = this.m_pageWrap;
-            wrap.setScrollPosition(0,0);
+            //wrap.setScrollPosition(0,0);
             wrap.removeChildByIndex(0);
             wrap.addChild(ui);
             this.m_pageIndex = index;
@@ -93,9 +94,7 @@ export class RUITabView extends RUIContainer{
     }
 
     public addChild(ui:RUIObject){
-
     }
     public removeChild(ui:RUIObject){
-
     }
 }

@@ -3,11 +3,19 @@ import { RUICanvas } from "./RUICanvas";
 import { RUICmdList } from "./RUICmdList";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIRoot } from "./RUIRoot";
-import { RUIOrientation, RUIPosition } from "./RUIObject";
+import { RUIOrientation, RUIPosition, RUIConst, RUIAuto } from "./RUIObject";
 import { RUIContainer } from "./RUIContainer";
-import { RUILayouter } from "./RUILayouter";
 import { RUIRectangle } from "./RUIRectangle";
-import { RUIDebug } from "./widget/RUIDebug";
+import { RUIDebug, RUIPageBasis, RUIPageCompoundWiget, RUIPageWidget, RUIPageLayout, RUIPageContainer } from "./widget/RUIDebug";
+import { RUIStyle } from "./RUIStyle";
+import { RUITabView, RUITabPage } from "./widget/RUITabView";
+import { RUIButtonGroup } from "./widget/RUIButtonGroup";
+import { RUIButton } from "./widget/RUIButton";
+import { RUI } from "./RUI";
+import { RUILabel } from "./widget/RUILabel";
+import { RUICollapsibleContainer } from "./widget/RUICollapsibleContainer";
+import { RUIScrollBar } from "./widget/RUIScrollBar";
+import { RUIScrollView } from "./widget/RUIScrollView";
 
 
 export class RUITest{
@@ -15,7 +23,6 @@ export class RUITest{
 
 
     private m_ruiroot: RUIRoot;
-    private m_ruilayouter: RUILayouter;
     private m_ruicmdlist: RUICmdList;
 
     private m_ruicanvas: RUICanvas;
@@ -26,11 +33,13 @@ export class RUITest{
     }
 
     private buildUI(){
-        
         this.m_ruicmdlist = new RUICmdList();
-        this.m_ruilayouter = new RUILayouter();
 
-        var ui = new RUIDebug();
+        var ui = new RUIContainer();
+        ui.width = 800;
+        ui.height = 600;
+
+        ui.addChild(new RUIDebug());
 
         var root = new RUIRoot(ui,false);
         root.root = ui;
@@ -40,7 +49,6 @@ export class RUITest{
             root.resizeRoot(e.object.width,e.object.height);
         });
         
-
         this.m_ruicanvas.EventOnUIEvent.on((e)=>root.dispatchEvent(e));
 
         this.m_ruiroot = root;
@@ -52,14 +60,12 @@ export class RUITest{
         let renderer= this.m_ruicanvas.renderer;
         if(uiroot.isdirty || renderer.needRedraw){
             let start = Date.now();
-            this.m_ruilayouter.build(uiroot);
+            uiroot.layout();
+            //console.log(uiroot.root);
             console.log('> ' + (Date.now() - start));
             this.m_ruicmdlist.draw(uiroot);
             renderer.DrawCmdList(this.m_ruicmdlist);
-
-            
         }
-
         
     }
 }

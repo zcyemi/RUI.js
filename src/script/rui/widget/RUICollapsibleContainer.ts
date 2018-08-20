@@ -5,46 +5,42 @@ import { RUI } from "../RUI";
 import { RUIRectangle } from "../RUIRectangle";
 import { RUIStyle } from "../RUIStyle";
 
+export class RUICollapsibleContainer extends RUIContainer {
+    private m_show: boolean;
+    private m_button: RUIButton;
+    private m_container: RUIContainer;
 
-export class RUICollapsibleContainer extends RUIContainer{
-
-    private m_show:boolean;
-
-    private m_button:RUIButton;
-    private m_container:RUIContainer;
-
-    public constructor(label:string,show:boolean){
+    public constructor(label: string, show: boolean) {
         super();
         this.m_show = show;
         this.boxBorder = RUIStyle.Default.border0;
         this.boxBackground = RUIStyle.Default.background0;
-        this.padding = RUI.Vector(1);
 
-        let button = new RUIButton(label,this.onButtonClick.bind(this));
+        let button = new RUIButton(label, this.onButtonClick.bind(this));
         super.addChild(button);
 
         let container = new RUIContainer();
+        container.boxSideExtens = true;
         this.m_container = container;
-        if(this.m_show) super.addChild(container);  
-        console.log(this.m_container); 
+        if (this.m_show) super.addChild(container);
     }
 
-    private onButtonClick(b:RUIButton){
-        if(this.m_show){
+    private onButtonClick(b: RUIButton) {
+        if (this.m_show) {
             super.removeChild(this.m_container);
-            this.m_show =false;
+            this.m_show = false;
         }
-        else{
+        else {
             super.addChild(this.m_container);
             this.m_show = true;
         }
     }
 
-    public addChild(ui:RUIObject){
+    public addChild(ui: RUIObject) {
         this.m_container.addChild(ui);
     }
 
-    public removeChild(ui:RUIObject){
+    public removeChild(ui: RUIObject) {
         this.m_container.removeChild(ui);
     }
 }

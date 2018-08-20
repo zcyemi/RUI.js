@@ -2,39 +2,50 @@ import { RUIObject } from "../RUIObject";
 import { RUICmdList } from "../RUICmdList";
 import { RUI } from "../RUI";
 import { RUIFontTexture } from "../RUIFontTexture";
+import { RUIContainerClipType } from "../RUIContainer";
 
 export class RUILabel extends RUIObject{
 
     public label:string;
 
-    private m_textwidth:number = NaN;
-
     public constructor(label:string){
         super();
         this.label= label;
         this.width = 100;
+        this.height = 23;
 
-    }
+    }   
 
-    public onLayoutPost(){
-        if(this.m_textwidth == NaN){
-            let ftw = RUIFontTexture.ASIICTexture.MeasureTextWith(this.label) + 20;
-            if(ftw != NaN){
-                this.m_textwidth = ftw;
-                this.width= ftw;
-                this.setDirty(true);
-            }
+    public Layout(){
+        super.Layout();
+        let ftw = RUIFontTexture.ASIICTexture.MeasureTextWith(this.label) + 20;
+        if(!Number.isNaN(ftw)){
+            this.width= ftw;
+            this.layoutWidth = ftw;
         }
     }
 
+    
     public onDraw(cmd:RUICmdList){
+        let noclip = !this.isClip;
+        
         let rect = this.calculateRect();
         this._rect = rect;
-        this._rectclip = RUI.RectClip(rect,cmd.clipRect);
 
         let label = this.label;
-        if(label == null || label === '')return;
+        if(label == null || label === ''){
+            return;
+        }
 
+        if(noclip) {
+            cmd.PushClip(rect,null, RUIContainerClipType.NoClip);
+        }
+        else{
+            if(cmd.isSkipDraw) return;
+        }
+        this._rectclip = RUI.RectClip(rect,cmd.clipRect);
         cmd.DrawText(this.label,rect);
+
+        if(noclip) cmd.PopClipRect();
     }
 }
