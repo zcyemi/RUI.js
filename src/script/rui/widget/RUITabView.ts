@@ -22,7 +22,7 @@ export class RUITabView extends RUIFlexContainer{
     private m_pageIndex?: number;
     public constructor(pages?:RUITabPage[],tabpos:number = RUIConst.TOP){
         super();
-        this.boxBorder = RUIStyle.Default.primary;
+        this.boxBorder = RUIStyle.Default.border0;
 
         var self = this;
         this.m_pages = pages;
@@ -37,12 +37,12 @@ export class RUITabView extends RUIFlexContainer{
 
         let pagewrap = new ScrollView();
         pagewrap.flex =1;
-        pagewrap.boxBackground = RUI.GREEN;
         pagewrap.boxBorder= null;
         var menu:RUIButtonGroup;
         if(tabpos == RUIConst.TOP || tabpos == RUIConst.BOTTOM){
             
             this.boxOrientation = RUIOrientation.Vertical;
+            pagewrap.boxMatchWidth = true;
             menu.height = 23;
             menu = new RUIButtonGroup(buttons,RUIOrientation.Horizontal);
             if(tabpos == RUIConst.TOP){
@@ -56,6 +56,7 @@ export class RUITabView extends RUIFlexContainer{
         }
         else{
             this.boxOrientation = RUIOrientation.Horizontal;
+            pagewrap.boxMatchHeight = true;
             menu = new RUIButtonGroup(buttons,RUIOrientation.Vertical);
             menu.width = 100;
             if(tabpos == RUIConst.LEFT){
@@ -71,7 +72,7 @@ export class RUITabView extends RUIFlexContainer{
         this.m_menu = menu;
         this.m_pageWrap = pagewrap;
 
-        //this.setPageIndex(0);
+        this.setPageIndex(0);
 
     }
 

@@ -178,12 +178,10 @@ export class ScrollView extends RUIContainer {
         super();
         this.boxOrientation = RUIOrientation.Vertical;
         this.boxSideExtens = true;
-        this.boxBackground = RUI.GREY;
         this.boxMatchWidth = true;
-        //this.padding = [0,10,10,0];
+        this.boxMatchHeight = true;
 
         let contentWrap = new RUIContainer();
-        contentWrap.boxBackground = RUI.GREEN;
         contentWrap.boxSideExtens = true;
         contentWrap.position = RUIPosition.Offset;
         contentWrap.left = 0;
@@ -259,6 +257,14 @@ export class ScrollView extends RUIContainer {
 
     public addChild(ui: RUIObject) {
         this.m_contentWrap.addChild(ui);
+    }
+
+    public removeChild(ui:RUIObject){
+        this.m_contentWrap.removeChild(ui);
+    }
+
+    public removeChildByIndex(index:number):RUIObject{
+        return this.m_contentWrap.removeChildByIndex(index);
     }
 
     public scrollBarShowV(show: boolean) {

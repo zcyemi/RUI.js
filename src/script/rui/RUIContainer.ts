@@ -179,7 +179,7 @@ export class RUIContainer extends RUIObject {
         let rect = this.calculateRect()
         this._rect = rect;
         if(this.boxBackground != null) cmd.DrawRectWithColor(rect,this.boxBackground);
-        if(this.boxBorder != null) cmd.DrawBorder(rect, this.boxBorder);
+        
         // clip paddingrect/rect
         let paddingrect = rect;// this.RectMinusePadding(rect, this.padding);
 
@@ -197,6 +197,7 @@ export class RUIContainer extends RUIObject {
 
     public onDrawPost(cmd: RUICmdList) {
         if (this.boxClip != RUIContainerClipType.NoClip) cmd.PopClipRect();
+        if(this.boxBorder != null) cmd.DrawBorder(this._rect, this.boxBorder);
     }
 
     protected RectMinusePadding(recta: RUIRect, offset: number[]): RUIRect {
@@ -374,16 +375,19 @@ export class RUIContainerLayouter implements RUILayouter{
 
         let isFlexWidth = false;
         let isFlexHeight = false;
+        let isFlexChild = false;
         
 
         //Fill flex
         if(data.flexWidth != null){
             cui.layoutWidth =data.flexWidth;
             isFlexWidth = true;
+            isFlexChild = true;
         }
         if(data.flexHeight != null){
             cui.layoutHeight = data.flexHeight;
             isFlexHeight = true;
+            isFlexChild = true;
         }
 
         //Fill auto
@@ -448,6 +452,8 @@ export class RUIContainerLayouter implements RUILayouter{
             return;
         }
 
+
+
         //orientation auto
         console.assert((cui.isVertical ? cui.layoutHeight : cui.layoutWidth) == RUIAuto);
         if(cui.isVertical){
@@ -495,8 +501,14 @@ export class RUIContainerLayouter implements RUILayouter{
             else{
                 cui.rCalWidth = cui.layoutWidth;
             }
+
             if(!isFlexHeight){
-                cui.rCalHeight = accuChildHeight - paddingtop + SIZE(paddingtop) + SIZE(paddingbottom);
+                if(cui.boxMatchHeight){
+                    cui.rCalHeight = data.containerHeight;
+                }
+                else{
+                    cui.rCalHeight = accuChildHeight - paddingtop + SIZE(paddingtop) + SIZE(paddingbottom);
+                }
             }
             else{
                 cui.rCalHeight = cui.layoutHeight;
@@ -546,7 +558,12 @@ export class RUIContainerLayouter implements RUILayouter{
             }
             
             if(!isFlexWidth) {
-                cui.rCalWidth= accuChildWidth - paddingtop +SIZE(paddingtop) + SIZE(paddingright);
+                if(cui.boxMatchWidth){
+                    cui.rCalWidth = data.containerHeight;
+                }
+                else{
+                    cui.rCalWidth= accuChildWidth - paddingtop +SIZE(paddingtop) + SIZE(paddingright);
+                }
             }
             else{
                 cui.rCalWidth = cui.layoutWidth;

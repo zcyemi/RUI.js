@@ -50,14 +50,13 @@ export class RUITest{
         ui.boxOrientation = RUIOrientation.Horizontal;
 
         ui.width = 800;
-        ui.height = 150;
         ui.boxBackground = RUI.BLACK;
 
-        ui.addChild(new RUIRectangle(100,100));
+        ui.addChild(new RUIRectangle(100,300));
 
         var sv = new ScrollView();
-        sv.boxBorder = RUI.RED;
-        sv.addChild(new RUIRectangle(100,200));
+        sv.addChild(new RUIRectangle(100,500));
+        sv.addChild(new RUIRectangle(500,20));
 
         sv.flex = 1;
 
@@ -65,11 +64,12 @@ export class RUITest{
         ui.addChild(sv);
 
 
-        var tv = new RUIContainer();
-        tv.boxBackground = RUI.BLUE;
-        tv.boxSideExtens = true;
-        tv.addChild(new RUIRectangle(10,10));
+        var tv = new RUITabView([
+            {label:'aa',ui:new RUIRectangle(100,100)},
+            {label:'bb',ui:new RUIRectangle(500,500)},
+        ],RUIConst.LEFT);
         tv.flex = 1;
+
         ui.addChild(tv);
 
 

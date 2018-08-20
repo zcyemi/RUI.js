@@ -240,7 +240,7 @@ export class RUIScrollBar extends RUIContainer{
 
 export class ScrollBarThumb extends RUIRectangle{
 
-    private m_hoverColor:RUIColor = RUI.YELLOW;
+    private m_hoverColor:RUIColor = RUIStyle.Default.primary0;
     private m_defaultColor:RUIColor = RUIStyle.Default.background3;
 
     private m_scrollbar:ScrollBar;

@@ -201,6 +201,7 @@ export class RUIFlexLayouter implements RUILayouter {
 
             c.LayoutPost(cdata);
 
+
             if (isvertical) {
                 c.rOffx = 0;
                 c.rOffy = offset;
