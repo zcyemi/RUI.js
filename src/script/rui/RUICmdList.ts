@@ -180,9 +180,11 @@ export class RUICmdList{
     }
 
     public PopClipRect(): RUIRect{
-        this.m_clipRectP = this.m_clipStack.pop();
-        this.m_skipdraw = this.m_clipRectP == RUICLIP_NULL;
-        this.m_clipRect = RUI.toRect(this.m_clipRectP);
+
+        let clipp = this.m_clipStack.pop();;
+        this.m_clipRectP = clipp;
+        this.m_skipdraw = clipp == RUICLIP_NULL;
+        this.m_clipRect = clipp == RUICLIP_NULL? RUICLIP_NULL: RUI.toRect(clipp);
         return this.m_clipRectP;
     }
 }
