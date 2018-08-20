@@ -153,10 +153,7 @@ export class RUIScrollView extends RUIContainer {
     public hasChild(ui: RUIObject): boolean {
         return this.m_content.hasChild(ui);
     }
-
 }
-
-
 
 export class ScrollView extends RUIContainer {
 
@@ -168,11 +165,14 @@ export class ScrollView extends RUIContainer {
     private m_sliderVertical: ScrollBar;
     private m_sliderHorizontal: ScrollBar;
 
-    private m_scrollbarVShow:boolean = false;
-    private m_scrollbarHShow:boolean = false;
+    private m_scrollbarVShow: boolean = false;
+    private m_scrollbarHShow: boolean = false;
 
-    private m_overflowH:boolean = false;
-    private m_overflowV:boolean = false;
+    private m_overflowH: boolean = false;
+    private m_overflowV: boolean = false;
+
+    private m_contentH: number = 0;
+    private m_contentV: number = 0;
 
     public constructor() {
         super();
@@ -185,7 +185,9 @@ export class ScrollView extends RUIContainer {
         let contentWrap = new RUIContainer();
         contentWrap.boxBackground = RUI.GREEN;
         contentWrap.boxSideExtens = true;
-        contentWrap.flex = 1;
+        contentWrap.position = RUIPosition.Offset;
+        contentWrap.left = 0;
+        contentWrap.top = 0;
         this.m_contentWrap = contentWrap;
         super.addChild(contentWrap);
 
@@ -193,94 +195,120 @@ export class ScrollView extends RUIContainer {
         scrollbar.sizeVal = 0.5;
         scrollbar.position = RUIPosition.Relative;
         scrollbar.right = 0;
-        scrollbar.top =0;
+        scrollbar.top = 0;
         scrollbar.bottom = 0;
+        scrollbar.EventOnScroll.on(this.onScrollVertical.bind(this));
         this.m_sliderVertical = scrollbar;
 
         let scrollbarh = new ScrollBar(RUIOrientation.Horizontal);
         scrollbarh.position = RUIPosition.Relative;
         scrollbarh.sizeVal = 0.5;
-        scrollbarh.left =0;
+        scrollbarh.left = 0;
         scrollbarh.right = 10;
-        scrollbarh.bottom =0;
+        scrollbarh.bottom = 0;
         scrollbarh.height = 10;
+        scrollbarh.EventOnScroll.on(this.onScrollHorizontal.bind(this));
         this.m_sliderHorizontal = scrollbarh;
     }
 
-    public Layout(){
+    private onScrollHorizontal(e: RUIEvent<number>) {
+        this.m_contentWrap.left = -e.object * this.m_contentH;
+    }
+
+    private onScrollVertical(e: RUIEvent<number>) {
+        this.m_contentWrap.top = - e.object * this.m_contentV;
+    }
+
+    public Layout() {
         super.Layout();
     }
 
-    public LayoutPost(data:RUILayoutData){
+    public LayoutPost(data: RUILayoutData) {
         super.LayoutPost(data);
 
-        let contentw = this.m_contentWrap.rCalWidth;
-        let contenth = this.m_contentWrap.rCalHeight;
+        let contentH = this.m_contentWrap.rCalWidth;
+        let contentV = this.m_contentWrap.rCalHeight;
+
+        this.m_contentH = contentH;
+        this.m_contentV = contentV;
 
 
-        let overflowH = this.rCalWidth - this.padding[RUIConst.RIGHT] < contentw;
+        let viewH = this.rCalWidth - this.padding[RUIConst.RIGHT];
+        let overflowH = viewH < contentH;
         this.m_overflowH = overflowH;
         this.scrollBarShowH(overflowH);
-        
-        let overflowV = this.rCalHeight - this.padding[RUIConst.BOTTOM] < contenth;
+        if (overflowH) {
+            this.m_sliderHorizontal.sizeVal = viewH / contentH;
+        }
+        else{
+            this.m_contentWrap.left = 0;
+        }
+
+        let viewV = this.rCalHeight - this.padding[RUIConst.BOTTOM];
+        let overflowV = viewV < contentV;
         this.m_overflowV = overflowV;
         this.scrollBarShowV(overflowV);
-
+        if (overflowV) {
+            this.m_sliderVertical.sizeVal = viewV / contentV;
+        }
+        else{
+            this.m_contentWrap.top = 0;
+        }
     }
 
 
-    public addChild(ui:RUIObject){
+    public addChild(ui: RUIObject) {
         this.m_contentWrap.addChild(ui);
     }
 
-    public scrollBarShowV(show:boolean){
-        if(show  == this.m_scrollbarVShow) return;
+    public scrollBarShowV(show: boolean) {
+        if (show == this.m_scrollbarVShow) return;
         this.m_scrollbarVShow = show;
-        if(show){
+        if (show) {
             super.addChild(this.m_sliderVertical);
-            if(this.m_scrollbarHShow){
-                this.padding = [0,10,10,0];
+            if (this.m_scrollbarHShow) {
+                this.padding = [0, 10, 10, 0];
                 this.m_sliderHorizontal.right = 10;
             }
-            else{
-                this.padding = [0,10,0,0];
+            else {
+                this.padding = [0, 10, 0, 0];
             }
         }
-        else{
+        else {
             super.removeChild(this.m_sliderVertical);
-            if(this.m_scrollbarHShow){
-                this.padding = [0,0,10,0];
+            if (this.m_scrollbarHShow) {
+                this.padding = [0, 0, 10, 0];
                 this.m_sliderHorizontal.right = 0;
             }
-            else{
-                this.padding = [0,0,0,0];
+            else {
+                this.padding = [0, 0, 0, 0];
             }
         }
         this.setDirty(true);
     }
 
-    public scrollBarShowH(show:boolean){
-        if(show == this.m_scrollbarHShow) return;
+    public scrollBarShowH(show: boolean) {
+        if (show == this.m_scrollbarHShow) return;
         this.m_scrollbarHShow = show;
         let vshow = this.m_scrollbarVShow;
-        if(show){
+        if (show) {
             super.addChild(this.m_sliderHorizontal);
-            if(vshow){
-                this.padding = [0,10,10,0];
+            if (vshow) {
+                this.padding = [0, 10, 10, 0];
                 this.m_sliderHorizontal.right = 10;
             }
-            else{
-                this.padding = [0,0,10,0];
+            else {
+                this.padding = [0, 0, 10, 0];
                 this.m_sliderHorizontal.right = 0;
             }
         }
-        else{
+        else {
             super.removeChild(this.m_sliderHorizontal);
-            if(vshow){
-                this.padding = [0,10,0,0];
+            if (vshow) {
+                this.padding = [0, 10, 0, 0];
             }
-            else{
-                this.padding = [0,0,0,0];
+            else {
+                this.padding = [0, 0, 0, 0];
             }
         }
     }

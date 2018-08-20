@@ -336,6 +336,9 @@ export class ScrollBar extends RUIContainer{
     private m_scrollOrientation: RUIOrientation;
 
 
+    public EventOnScroll: RUIEventEmitter<number> = new RUIEventEmitter();
+
+
     public constructor(orientation:RUIOrientation = RUIOrientation.Horizontal){
         super();
 
@@ -434,6 +437,7 @@ export class ScrollBar extends RUIContainer{
 
     public onThumbDrag(pos:number){
         this.scrollPosVal = pos/ this.m_size;
+        this.EventOnScroll.emitRaw(this.m_scrollPosVal);
     }
 
     public get scrollOrientation():RUIOrientation{
