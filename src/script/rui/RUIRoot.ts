@@ -210,6 +210,10 @@ export class RUIRoot {
             }
         }
 
+        curList.sort((x,y)=>{
+            return y._level - x._level;
+        });
+
         for (var i = 0, len = newList.length; i < len; i++) {
             let c = newList[i];
             if (curList.indexOf(c) >= 0) continue;

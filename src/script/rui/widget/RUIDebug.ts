@@ -331,7 +331,7 @@ export class RUIPageContainer extends RUIContainer {
 
         this.PageContainerRUIContainer(this);
         this.PageContainerFlexContainer(this);
-        //this.PageContainerMarginPadding(this);
+        this.PageContainerMarginPadding(this);
     }
 
     public PageContainerRUIContainer(parent : RUIContainer) {
@@ -389,7 +389,6 @@ export class RUIPageContainer extends RUIContainer {
 
     public PageContainerMarginPadding(parent : RUIContainer) {
         let collapse = new RUICollapsibleContainer('Margin/Padding', true);
-        collapse.width = 400;
         parent.addChild(collapse);
 
         let c = new RUIContainer();
@@ -442,7 +441,6 @@ export class RUIPageContainer extends RUIContainer {
 
     public PageContainerFlexContainer(parent : RUIContainer) {
         let collapse = new RUICollapsibleContainer('FlexContainer', true);
-        collapse.width = 400;
         parent.addChild(collapse);
 
         let fc = new RUIContainer();
@@ -569,7 +567,6 @@ export class RUIPageCompoundWiget extends RUIContainer {
 
     private WidgetTabView(parent : RUIContainer) {
         let collapse = new RUICollapsibleContainer('tabview', true);
-        collapse.width = 400;
         parent.addChild(collapse);
 
         {
@@ -599,8 +596,9 @@ export class RUIPageCompoundWiget extends RUIContainer {
 
     private WidgetScrollView(parent : RUIContainer) {
         let collapse = new RUICollapsibleContainer('scrollview', true);
-        collapse.width = 400;
         parent.addChild(collapse);
+
+        parent.addChild(new RUIRectangle(1000,20));
 
         {
             let c = new RUIContainer();
