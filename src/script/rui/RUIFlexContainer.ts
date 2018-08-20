@@ -2,10 +2,7 @@ import { RUIOrientation, RUIConst, RUIAuto, ROUND, RUIObject, RUIPosition } from
 import { RUIContainer, RUIContainerUpdateMode } from "./RUIContainer";
 import { RUILayouter, RUILayoutData, RUIVal } from "./RUI";
 
-
 export class RUIFlexContainer extends RUIContainer {
-
-
     public layoutFlexAccu: number;
     public layoutFixedAccu: number;
 
@@ -70,8 +67,6 @@ export class RUIFlexLayouter implements RUILayouter {
         cui.layoutFlexAccu = 0;
         cui.layoutFixedAccu = 0;
 
-
-
         if (cui.isVertical) {
             if (cui.layoutWidth == RUIAuto) {
                 let maxwidth = -1;
@@ -116,7 +111,6 @@ export class RUIFlexLayouter implements RUILayouter {
                 return;
             }
         }
-
     }
 
     public LayoutPost(ui: RUIObject, data: RUILayoutData) {
@@ -150,34 +144,30 @@ export class RUIFlexLayouter implements RUILayouter {
             sizePerFlex = (cui.layoutWidth - cui.layoutFixedAccu) / cui.layoutFlexAccu;
         }
 
-
-
         var containerHeight = cui.layoutHeight;
         var containerWidth = cui.layoutWidth;
-
         cui.rCalWidth = cui.layoutWidth;
         cui.rCalHeight = cui.layoutHeight;
 
         if (cui.boxSideExtens) {
             if (isvertical) {
-                if(cui.width == RUIAuto){
+                if (cui.width == RUIAuto) {
                     containerWidth = data.containerWidth;
                     cui.rCalWidth = containerWidth;
                 }
             }
             else {
-                if(cui.height == RUIAuto){
+                if (cui.height == RUIAuto) {
                     containerHeight = data.containerHeight;
                     cui.rCalHeight = containerHeight;
                 }
-                
+
             }
         }
 
         var offset = 0;
-
         children.forEach(c => {
-            if(!c.isOnFlow) return;
+            if (!c.isOnFlow) return;
             let csize = 0;
 
             if (c.flex != null) {
@@ -198,10 +188,7 @@ export class RUIFlexLayouter implements RUILayouter {
                 cdata.flexHeight = null;
                 cdata.flexWidth = csize;
             }
-
             c.LayoutPost(cdata);
-
-
             if (isvertical) {
                 c.rOffx = 0;
                 c.rOffy = offset;
@@ -215,12 +202,9 @@ export class RUIFlexLayouter implements RUILayouter {
             }
 
         });
-
         //Process relative
-
-        cui.LayoutRelativeUI(cui,children);
-
+        cui.LayoutRelativeUI(cui, children);
     }
 
-    
+
 }

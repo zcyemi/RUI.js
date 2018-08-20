@@ -9,7 +9,7 @@ import {
     RUIConst
 } from "../RUIObject";
 import {RUIStyle} from "../RUIStyle";
-import {RUI, RUILayoutData} from "../RUI";
+import {RUI, RUILayoutData, CLAMP} from "../RUI";
 import {RUIEvent} from "../RUIEvent";
 import {RUIFlexContainer} from "../RUIFlexContainer";
 
@@ -29,6 +29,8 @@ export class RUIScrollView extends RUIContainer {
 
     private m_contentH : number = 0;
     private m_contentV : number = 0;
+    private m_viewH :number = 0;
+    private m_viewV: number = 0;
 
     public constructor() {
         super();
@@ -74,7 +76,14 @@ export class RUIScrollView extends RUIContainer {
     }
 
     private onScrollVertical(e : RUIEvent < number >) {
-        this.m_contentWrap.top = -e.object * this.m_contentV;
+        let val = -e.object * this.m_contentV;
+        
+        let wrap = this.m_contentWrap;
+
+        val = CLAMP(val,this.m_viewV - this.m_contentV,0);
+        if(wrap.top == val) return;
+
+        this.m_contentWrap.top = val;
     }
 
     public Layout() {
@@ -90,24 +99,31 @@ export class RUIScrollView extends RUIContainer {
         this.m_contentH = contentH;
         this.m_contentV = contentV;
 
-        let viewH = this.rCalWidth - this.padding[RUIConst.RIGHT];
-        let overflowH = viewH < contentH;
-        this.m_overflowH = overflowH;
-        this.scrollBarShowH(overflowH);
-        if (overflowH) {
-            this.m_sliderHorizontal.sizeVal = viewH / contentH;
-        } else {
-            this.m_contentWrap.left = 0;
+        {
+            let viewH = this.rCalWidth - this.padding[RUIConst.RIGHT];
+            this.m_viewH = viewH;
+    
+            let overflowH = viewH < contentH;
+            this.m_overflowH = overflowH;
+            this.scrollBarShowH(overflowH);
+            if (overflowH) {
+                this.m_sliderHorizontal.sizeVal = viewH / contentH;
+            } else {
+                this.m_contentWrap.left = 0;
+            }
         }
+        {
+            let viewV = this.rCalHeight - this.padding[RUIConst.BOTTOM];
+            this.m_viewV = viewV;
 
-        let viewV = this.rCalHeight - this.padding[RUIConst.BOTTOM];
-        let overflowV = viewV < contentV;
-        this.m_overflowV = overflowV;
-        this.scrollBarShowV(overflowV);
-        if (overflowV) {
-            this.m_sliderVertical.sizeVal = viewV / contentV;
-        } else {
-            this.m_contentWrap.top = 0;
+            let overflowV = viewV < contentV;
+            this.m_overflowV = overflowV;
+            this.scrollBarShowV(overflowV);
+            if (overflowV) {
+                this.m_sliderVertical.sizeVal = viewV / contentV;
+            } else {
+                this.m_contentWrap.top = 0;
+            }
         }
     }
 

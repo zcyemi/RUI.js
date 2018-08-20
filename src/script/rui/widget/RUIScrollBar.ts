@@ -48,15 +48,17 @@ export class RUIScrollBarThumb extends RUIRectangle {
     }
 
     public onDraw(cmd: RUICmdList) {
-
         let noclip = !this.isClip;
 
         let rect = this.calculateRect();
+        this._rect = rect;
         if (noclip) {
             cmd.PushClip(rect, null, RUIContainerClipType.NoClip);
         }
         else {
-            if (cmd.isSkipDraw) return;
+            if (cmd.isSkipDraw){
+                return;
+            }
         }
 
         this._rectclip = RUI.RectClip(rect, cmd.clipRect);
@@ -183,8 +185,15 @@ export class RUIScrollBar extends RUIContainer {
     }
 
     public onThumbDrag(pos: number) {
-        this.scrollPosVal = pos / this.m_size;
-        this.EventOnScroll.emitRaw(this.m_scrollPosVal);
+        
+        let val = pos / this.m_size;
+        
+        let prev = this.scrollPosVal;
+        this.scrollPosVal = val;
+        val = this.scrollPosVal;
+        if(prev != val){
+            this.EventOnScroll.emitRaw(val);
+        }
     }
 
     public get scrollOrientation(): RUIOrientation {

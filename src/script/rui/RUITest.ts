@@ -33,21 +33,15 @@ export class RUITest{
     }
 
     private buildUI(){
-        
         this.m_ruicmdlist = new RUICmdList();
 
-
-    
         var ui = new RUIContainer();
         ui.width = 800;
         ui.height = 600;
 
-
         ui.addChild(new RUIDebug());
 
         var root = new RUIRoot(ui,false);
-
-
         root.root = ui;
 
         root.resizeRoot(this.m_ruicanvas.m_width,this.m_ruicanvas.m_height);
@@ -55,7 +49,6 @@ export class RUITest{
             root.resizeRoot(e.object.width,e.object.height);
         });
         
-
         this.m_ruicanvas.EventOnUIEvent.on((e)=>root.dispatchEvent(e));
 
         this.m_ruiroot = root;

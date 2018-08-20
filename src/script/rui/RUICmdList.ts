@@ -91,6 +91,12 @@ export class RUICmdList{
         this.m_clipRectP = rootrect == null ? RUICLIP_MAX : rootrect;
         this.m_clipRect = RUI.toRect(this.m_clipRectP);
         root.root.onDraw(this);
+
+
+        let stacklen = this.m_clipStack.length;
+        if(stacklen !=0){
+            console.error('cliprect stack not valid: '+ stacklen);
+        }
         
         this.isDirty = true;
     }

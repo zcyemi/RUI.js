@@ -12,6 +12,7 @@ export class RUILabel extends RUIObject{
         super();
         this.label= label;
         this.width = 100;
+        this.height = 23;
 
     }   
 
@@ -35,7 +36,6 @@ export class RUILabel extends RUIObject{
         if(label == null || label === ''){
             return;
         }
-
 
         if(noclip) {
             cmd.PushClip(rect,null, RUIContainerClipType.NoClip);
