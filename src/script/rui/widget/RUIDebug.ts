@@ -19,11 +19,6 @@ export class RUIDebug extends RUIContainer {
         super();
         this.boxBorder = RUIStyle.Default.border0;
 
-        this.position = RUIPosition.Absolute;
-        this.left = 100;
-        this.right = 100;
-        this.top = 100;
-        this.bottom = 100;
 
         let pages : RUITabPage[] = [];
 
@@ -184,143 +179,205 @@ export class RUIPageLayout extends RUIContainer {
     public constructor() {
         super();
         this.PageLayoutClip(this);
+        this.PageLayoutMargin(this);
     }
 
     private PageLayoutClip(parent : RUIContainer) {
         let collapse = new RUICollapsibleContainer('Clip', true);
         parent.addChild(collapse);
 
-        let wrap = new RUIContainer();
-        collapse.addChild(wrap);
-
+        
+        collapse.addChild(new RUILabel('RUIContainerClipType.Clip'));
         {
-            let container2 = new RUIContainer();
-            container2.padding = [2, 2, 2, 2];
-            container2.margin = [0, 50, 0, 0];
-            container2.height = 94;
-            container2.width = 40;
-            container2.boxBorder = RUIStyle.Default.primary;
-            container2.boxClip = RUIContainerClipType.NoClip;
-            wrap.addChild(container2);
-            //clip default
-            let r1 = new RUIRectangle();
-            r1.width = 50;
-            r1.height = 30;
-            container2.addChild(r1);
-            //clip offset
-            let r2 = new RUIRectangle();
-            r2.width = 50;
-            r2.height = 30;
-            r2.position = RUIPosition.Offset;
-            r2.left = 20;
-            container2.addChild(r2);
-            //clip relative clip
-            let r3 = new RUIRectangle();
-            r3.width = 50;
-            r3.height = 30;
-            r3.position = RUIPosition.Relative;
-            r3.left = 22;
-            r3.top = 62;
-            container2.addChild(r3);
-        }
-
-        {
-            let container1 = new RUIContainer();
-            container1.padding = [2, 2, 2, 2];
-            container1.margin = [0, 50, 0, 0];
-            container1.height = 94;
-            container1.width = 40;
-            container1.boxBorder = RUIStyle.Default.primary;
-            wrap.addChild(container1);
-            //clip default
-            let r1 = new RUIRectangle();
-            r1.width = 50;
-            r1.height = 30;
-            container1.addChild(r1);
-            //clip offset
-            let r2 = new RUIRectangle();
-            r2.width = 50;
-            r2.height = 30;
-            r2.position = RUIPosition.Offset;
-            r2.left = 20;
-            container1.addChild(r2);
-            //clip relative clip
-            let r3 = new RUIRectangle();
-            r3.width = 50;
-            r3.height = 30;
-            r3.position = RUIPosition.Relative;
-            r3.left = 22;
-            r3.top = 62;
-            container1.addChild(r3);
-        }
-
-        {
-            let container1 = new RUIContainer();
-            container1.padding = [2, 2, 2, 2];
-            container1.height = 94;
-            container1.width = 40;
-            container1.boxBorder = RUIStyle.Default.primary;
-            wrap.addChild(container1);
-            //clip default
-            let r1 = new RUIRectangle();
-            r1.width = 50;
-            r1.height = 30;
-            r1.isClip = false;
-            container1.addChild(r1);
-            //clip offset
-            let r2 = new RUIRectangle();
-            r2.width = 50;
-            r2.height = 30;
-            r2.position = RUIPosition.Offset;
-            r2.left = 20;
-            r2.isClip = false;
-            container1.addChild(r2);
-            //clip relative clip
-            let r3 = new RUIRectangle();
-            r3.width = 50;
-            r3.height = 30;
-            r3.position = RUIPosition.Relative;
-            r3.left = 22;
-            r3.top = 62;
-            r3.isClip = false;
-            container1.addChild(r3);
-        }
-        {
-            let c = new RUIContainer();
-            c.padding = [2, 2, 2, 2];
-            c.margin = [0, 0, 0, 50];
-            c.height = 100;
-            c.width = 100;
-            c.boxBorder = RUIStyle.Default.primary;
-            wrap.addChild(c);
-
             let c1 = new RUIContainer();
-            c1.padding = RUI.Vector(10);
-            c1.width = 70;
-            c1.height = 70;
-            c1.boxBorder = RUIStyle.Default.primary;
-            c1.position = RUIPosition.Offset;
-            c1.left = 50;
-            c1.top = 70;
-            c1.addChild(new RUIRectangle(60, 60));
-            c.addChild(c1);
+            c1.boxOrientation = RUIOrientation.Horizontal;
+            c1.boxBorder = RUI.WHITE;
+            c1.padding = RUI.Vector(3);
+            c1.width = 400;
+            c1.height = 75;
+            collapse.addChild(c1);
 
-            let c2 = new RUIContainer();
-            c2.boxBorder = RUIStyle.Default.primary;
-            c2.boxClip = RUIContainerClipType.ClipSelf;
-            c2.position = RUIPosition.Relative;
-            c2.padding = RUI.Vector(2);
-            c2.width = 70;
-            c2.height = 60;
-            c2.top = 0;
-            c2.right = -30;
-
-            let r2 = new RUIRectangle(70, 60);
+            c1.addChild(new RUIRectangle(50,100));
+            
+            let r2 = new RUIRectangle(50,100);
             r2.position = RUIPosition.Offset;
-            r2.left = -50;
-            r2.top = -20;
-            c2.addChild(r2);
-            c.addChild(c2);
+            r2.width = 50;
+            r2.height = 100;
+            r2.top = 25;
+            c1.addChild(r2);
+
+            let r3 = new RUIRectangle(50,100);
+            r3.position = RUIPosition.Relative;
+            r3.top =25;
+            r3.left = 100;
+            c1.addChild(r3);
+
+            let r4 = new RUIRectangle(50,100);
+            r4.isClip =false;
+            c1.addChild(r4);
+
+        }
+
+
+        collapse.addChild(new RUILabel('RUIContainerClipType.clipself'));
+
+        let wrap = new RUIContainer();
+        //collapse.addChild(wrap);
+
+        // {
+        //     let container2 = new RUIContainer();
+        //     container2.padding = [2, 2, 2, 2];
+        //     container2.margin = [0, 50, 0, 0];
+        //     container2.height = 94;
+        //     container2.width = 40;
+        //     container2.boxBorder = RUIStyle.Default.primary;
+        //     container2.boxClip = RUIContainerClipType.NoClip;
+        //     wrap.addChild(container2);
+        //     //clip default
+        //     let r1 = new RUIRectangle();
+        //     r1.width = 50;
+        //     r1.height = 30;
+        //     container2.addChild(r1);
+        //     //clip offset
+        //     let r2 = new RUIRectangle();
+        //     r2.width = 50;
+        //     r2.height = 30;
+        //     r2.position = RUIPosition.Offset;
+        //     r2.left = 20;
+        //     container2.addChild(r2);
+        //     //clip relative clip
+        //     let r3 = new RUIRectangle();
+        //     r3.width = 50;
+        //     r3.height = 30;
+        //     r3.position = RUIPosition.Relative;
+        //     r3.left = 22;
+        //     r3.top = 62;
+        //     container2.addChild(r3);
+        // }
+
+        // {
+        //     let container1 = new RUIContainer();
+        //     container1.padding = [2, 2, 2, 2];
+        //     container1.margin = [0, 50, 0, 0];
+        //     container1.height = 94;
+        //     container1.width = 40;
+        //     container1.boxBorder = RUIStyle.Default.primary;
+        //     wrap.addChild(container1);
+        //     //clip default
+        //     let r1 = new RUIRectangle();
+        //     r1.width = 50;
+        //     r1.height = 30;
+        //     container1.addChild(r1);
+        //     //clip offset
+        //     let r2 = new RUIRectangle();
+        //     r2.width = 50;
+        //     r2.height = 30;
+        //     r2.position = RUIPosition.Offset;
+        //     r2.left = 20;
+        //     container1.addChild(r2);
+        //     //clip relative clip
+        //     let r3 = new RUIRectangle();
+        //     r3.width = 50;
+        //     r3.height = 30;
+        //     r3.position = RUIPosition.Relative;
+        //     r3.left = 22;
+        //     r3.top = 62;
+        //     container1.addChild(r3);
+        // }
+
+        // {
+        //     let container1 = new RUIContainer();
+        //     container1.padding = [2, 2, 2, 2];
+        //     container1.height = 94;
+        //     container1.width = 40;
+        //     container1.boxBorder = RUIStyle.Default.primary;
+        //     wrap.addChild(container1);
+        //     //clip default
+        //     let r1 = new RUIRectangle();
+        //     r1.width = 50;
+        //     r1.height = 30;
+        //     r1.isClip = false;
+        //     container1.addChild(r1);
+        //     //clip offset
+        //     let r2 = new RUIRectangle();
+        //     r2.width = 50;
+        //     r2.height = 30;
+        //     r2.position = RUIPosition.Offset;
+        //     r2.left = 20;
+        //     r2.isClip = false;
+        //     container1.addChild(r2);
+        //     //clip relative clip
+        //     let r3 = new RUIRectangle();
+        //     r3.width = 50;
+        //     r3.height = 30;
+        //     r3.position = RUIPosition.Relative;
+        //     r3.left = 22;
+        //     r3.top = 62;
+        //     r3.isClip = false;
+        //     container1.addChild(r3);
+        // }
+
+        // {
+        //     let c = new RUIContainer();
+        //     c.padding = [2, 2, 2, 2];
+        //     c.margin = [0, 0, 0, 50];
+        //     c.height = 100;
+        //     c.width = 100;
+        //     c.boxBorder = RUIStyle.Default.primary;
+        //     wrap.addChild(c);
+
+        //     let c1 = new RUIContainer();
+        //     c1.padding = RUI.Vector(10);
+        //     c1.width = 70;
+        //     c1.height = 70;
+        //     c1.boxBorder = RUIStyle.Default.primary;
+        //     c1.position = RUIPosition.Offset;
+        //     c1.left = 50;
+        //     c1.top = 70;
+        //     c1.addChild(new RUIRectangle(60, 60));
+        //     c.addChild(c1);
+
+        //     let c2 = new RUIContainer();
+        //     c2.boxBorder = RUIStyle.Default.primary;
+        //     c2.boxClip = RUIContainerClipType.ClipSelf;
+        //     c2.position = RUIPosition.Relative;
+        //     c2.padding = RUI.Vector(2);
+        //     c2.width = 70;
+        //     c2.height = 60;
+        //     c2.top = 0;
+        //     c2.right = -30;
+
+        //     let r2 = new RUIRectangle(70, 60);
+        //     r2.position = RUIPosition.Offset;
+        //     r2.left = -50;
+        //     r2.top = -20;
+        //     c2.addChild(r2);
+        //     c.addChild(c2);
+        // }
+    }
+
+    private PageLayoutMargin(parent:RUIContainer){
+        var collapse = new RUICollapsibleContainer('Margin',true);
+        parent.addChild(collapse);
+
+        //Horizontal
+        {
+            collapse.addChild(new RUILabel('Horizontal'));
+
+            let c1 = new RUIContainer(RUIOrientation.Horizontal);
+            collapse.addChild(c1);
+
+            c1.boxBorder= RUI.WHITE;
+            c1.padding = RUI.Vector(5);
+
+            let r1 = new RUIRectangle(100,100);
+            r1.margin = [0,20,20,0];
+            c1.addChild(r1);
+
+            let r2 = new RUIRectangle(50,50);
+            r2.margin = [10,50,0,30];
+            c1.addChild(r2);
+
         }
     }
 }

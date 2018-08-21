@@ -36,10 +36,7 @@ export class RUITest{
         this.m_ruicmdlist = new RUICmdList();
 
         var ui = new RUIContainer();
-        ui.width = 800;
-        ui.height = 600;
 
-      
 
         ui.addChild(new RUIDebug());
 

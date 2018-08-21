@@ -104,7 +104,6 @@ export class RUIRoot {
             switch (etype) {
                 case RUIEventType.MouseDown:
                     {
-                        console.log(newActiveUI);
                         this.m_onMouseDown = true;
                         if(curActiveUI != null && curActiveUI != newActiveUI){
                             curActiveUI.onInactive();
