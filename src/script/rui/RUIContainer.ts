@@ -7,13 +7,11 @@ import { RUIWheelEvent } from "./RUIEvent";
 import { RUI, RUILayouter, RUIVal, RUISizePair, RUILayoutData, RUICHECK, SIZE } from "./RUI";
 import { RUIDefaultLayouter } from "./RUIDefaultLayouter";
 
-
 export enum RUIContainerUpdateMode{
     None,
     LayoutUpdate,
     LayoutFull,
 }
-
 
 export enum RUIContainerClipType{
     NoClip,
@@ -36,11 +34,9 @@ export class RUIContainer extends RUIObject {
 
     public layoutSideChildMax?:number;
     public layoutSkipDraw:boolean =false;
-    public drawPushClipRectCount:number = 0;
 
     public layoutClipRect:RUIRect;
     public layoutClipRectPadded:RUIRect;
-
     /** mark execute for children ui of @function traversal */
     public skipChildTraversal: boolean = false;
 
@@ -49,14 +45,9 @@ export class RUIContainer extends RUIObject {
         this.layouter= RUIContainerLayouter.Layouter;
     }
 
-    public onBuild(){
-
-    }
-
     public get isVertical(){
         return this.boxOrientation == RUIOrientation.Vertical;
     }
-
 
     public addChild(ui: RUIObject) {
         if (ui == null){
@@ -103,11 +94,9 @@ export class RUIContainer extends RUIObject {
 
     protected containerUpdateCheck(): RUIContainerUpdateMode{
         if(!this.isdirty && !this._resized){
-
             let children = this.children;
             let cisdirty = false;
             let cisresize = false;
-
             for(var i=0,clen=children.length;i<clen;i++){
                 let c = children[i];
                 if( c.isdirty){
@@ -117,7 +106,6 @@ export class RUIContainer extends RUIObject {
                     cisresize = true;
                 }
             }
-
             if(!cisdirty && !cisresize){
                 return RUIContainerUpdateMode.None;
             }
@@ -128,14 +116,11 @@ export class RUIContainer extends RUIObject {
         return RUIContainerUpdateMode.LayoutFull;
     }
 
-
     public LayoutRelativeUI(container: RUIContainer, children: RUIObject[]) {
-
         let root = container._root.root;
 
         let rw = root.rCalWidth;
         let rh = root.rCalHeight;
-
         let cw = container.rCalWidth;
         let ch = container.rCalHeight;
 
@@ -153,9 +138,7 @@ export class RUIContainer extends RUIObject {
                 layoutRelative(c,rw,rh);
             }
         }
-
     }
-
 
     public onDraw(cmd: RUICmdList) {
         this.onDrawPre(cmd);
@@ -187,11 +170,7 @@ export class RUIContainer extends RUIObject {
     }
 
     public onDrawPre(cmd: RUICmdList) {
-
         let boxclip = this.boxClip;
-        this.drawPushClipRectCount = 0;
-
-
         let rect = this.calculateRect();
         this._rect = rect;
         let paddingrect = this.RectMinusePadding(rect, this.padding);
@@ -200,7 +179,6 @@ export class RUIContainer extends RUIObject {
             this._drawClipRect = null;
             return;
         }
-
 
         switch(boxclip){
             case RUIContainerClipType.NoClip:
@@ -219,20 +197,20 @@ export class RUIContainer extends RUIObject {
             break;
         }
 
-        this._drawClipRect = this.layoutClipRect;
+        let cliprect = this.layoutClipRect;
+        this._drawClipRect = cliprect;
 
         //background
-        if(this.boxBackground != null) cmd.DrawRectWithColor(rect,this.boxBackground,this._drawClipRect);
-
+        if(this.boxBackground != null && cliprect != null) cmd.DrawRectWithColor(rect,this.boxBackground,cliprect);
     }
-
     public onDrawPost(cmd: RUICmdList) {
         let rect = this._rect;
-        if(this.boxBorder != null && rect != RUICLIP_NULL) cmd.DrawBorder(rect, this.boxBorder,this._drawClipRect);
+        let clipRect = this._drawClipRect;
+        if(clipRect == null) return;
+        if(this.boxBorder != null && rect != RUICLIP_NULL ) cmd.DrawBorder(rect, this.boxBorder,clipRect);
     }
 
     protected RectMinusePadding(recta: RUIRect, offset: number[]): RUIRect {
-
         let pleft = Math.max(offset[3],0);
         let ptop = Math.max(offset[0],0);
 
@@ -277,7 +255,6 @@ export class RUIContainer extends RUIObject {
         }
     }
 }
-
 
 export class RUIContainerLayouter implements RUILayouter{
 
@@ -372,11 +349,9 @@ export class RUIContainerLayouter implements RUILayouter{
                 }
             }
         }
-
     }
 
     public LayoutPost(ui:RUIObject,data:RUILayoutData){
-
         if(ui.layoutHeight == null){
             console.error(ui);
             throw new Error();
@@ -406,23 +381,18 @@ export class RUIContainerLayouter implements RUILayouter{
 
         let isFlexWidth = false;
         let isFlexHeight = false;
-        let isFlexChild = false;
-        
 
         //Fill flex
         if(data.flexWidth != null){
             cui.layoutWidth =data.flexWidth;
             isFlexWidth = true;
-            isFlexChild = true;
         }
         if(data.flexHeight != null){
             cui.layoutHeight = data.flexHeight;
             isFlexHeight = true;
-            isFlexChild = true;
         }
 
         //Fill auto
-
         var isvertical = cui.isVertical;
         
         if(isvertical){
@@ -435,7 +405,6 @@ export class RUIContainerLayouter implements RUILayouter{
                 cui.layoutHeight = data.containerHeight;
             }
         }
-
 
         //padding
         let padding = cui.padding;
@@ -451,8 +420,6 @@ export class RUIContainerLayouter implements RUILayouter{
         if(cui.layoutWidth != RUIAuto && cui.layoutHeight != RUIAuto){
             cui.rCalWidth= cui.layoutWidth;
             cui.rCalHeight = cui.layoutHeight;
-
-            
 
             let cdata = new RUILayoutData();
             cdata.containerWidth = SIZE(cui.rCalWidth - paddinghorizontal);
@@ -483,8 +450,6 @@ export class RUIContainerLayouter implements RUILayouter{
             return;
         }
 
-
-
         //orientation auto
         console.assert((cui.isVertical ? cui.layoutHeight : cui.layoutWidth) == RUIAuto);
         if(cui.isVertical){
@@ -512,9 +477,7 @@ export class RUIContainerLayouter implements RUILayouter{
                     cui.rCalWidth = cui.layoutWidth;
                 }
                 else{
-    
                     let paddinghorizontalFixed = SIZE(paddingleft) + SIZE(paddingright);
-    
                     if(cui.boxSideExtens){
                     
                         if(maxChildWidth < data.containerWidth){
@@ -599,11 +562,8 @@ export class RUIContainerLayouter implements RUILayouter{
             else{
                 cui.rCalWidth = cui.layoutWidth;
             }
-
         }
-
         cui.LayoutRelativeUI(cui,cui.children);
         return;
     }
-
 }

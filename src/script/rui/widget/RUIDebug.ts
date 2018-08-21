@@ -596,9 +596,6 @@ export class RUIPageCompoundWiget extends RUIContainer {
     private WidgetScrollView(parent : RUIContainer) {
         let collapse = new RUICollapsibleContainer('scrollview', true);
         parent.addChild(collapse);
-
-        parent.addChild(new RUIRectangle(1000,20));
-
         {
             let c = new RUIContainer();
             c.boxOrientation = RUIOrientation.Horizontal;
