@@ -108,6 +108,7 @@ export class RUI{
     public static readonly GREY:RUIColor = RUI.ColorUNorm(200,200,200,255);
 
     public static RectClip(content:RUIRect,clip:RUIRect) : RUIRect | null{
+        if(clip == null || content == null) return null;
         let x2 = content[0]+ content[2];
         let y2 = content[1]+ content[3];
 
@@ -127,6 +128,7 @@ export class RUI{
     }
 
     public static RectClipP(content:RUIRectP,clip:RUIRectP) : RUIRectP{
+        if(content == null || clip == null) return null;
         if(content[2] <= clip[0]) return null;
         if(content[3] <= clip[1]) return null;
         if(clip[2] <= content[0]) return null;

@@ -27,25 +27,18 @@ export class RUILabel extends RUIObject{
 
     
     public onDraw(cmd:RUICmdList){
-        let noclip = !this.isClip;
-        
-        let rect = this.calculateRect();
-        this._rect = rect;
+
+        super.onDraw(cmd);
 
         let label = this.label;
         if(label == null || label === ''){
             return;
         }
 
-        if(noclip) {
-            cmd.PushClip(rect,null, RUIContainerClipType.NoClip);
+        let cliprect = this._drawClipRect;
+        if(cliprect == null){
+            return;
         }
-        else{
-            if(cmd.isSkipDraw) return;
-        }
-        this._rectclip = RUI.RectClip(rect,cmd.clipRect);
-        cmd.DrawText(this.label,rect);
-
-        if(noclip) cmd.PopClipRect();
+        cmd.DrawText(this.label,this._rect,null,cliprect);
     }
 }

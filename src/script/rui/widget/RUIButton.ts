@@ -24,25 +24,19 @@ export class RUIButton extends RUIObject{
         this.height = 23;
     }
 
-
     public onDraw(cmd:RUICmdList){
         let rect= this.calculateRect();
+        this._rect = rect;
 
-        let noclip = !this.isClip;
-        if(noclip){
-            cmd.PushClip(rect,null,RUIContainerClipType.NoClip);
+        let cliprect = RUI.RectClip(rect,this.clipMask);
+        this._drawClipRect = cliprect; 
+
+        if(cliprect == null){
+            return;
         }
-        else{
-            if(cmd.isSkipDraw) return;
-        }
+        cmd.DrawRectWithColor(rect,this.m_color,cliprect);
+        cmd.DrawText(this.label,rect,null,cliprect);
 
-        this._rectclip = RUI.RectClip(rect,cmd.clipRect);
-        this._rect= this._rectclip;
-        
-        cmd.DrawRectWithColor(rect,this.m_color);
-        cmd.DrawText(this.label,rect);
-
-        if(noclip) cmd.PopClipRect();
     }
 
     public onMouseEnter(){

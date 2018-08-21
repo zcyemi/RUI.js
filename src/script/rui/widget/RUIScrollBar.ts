@@ -47,27 +47,6 @@ export class RUIScrollBarThumb extends RUIRectangle {
         }
     }
 
-    public onDraw(cmd: RUICmdList) {
-        let noclip = !this.isClip;
-
-        let rect = this.calculateRect();
-        this._rect = rect;
-        if (noclip) {
-            cmd.PushClip(rect, null, RUIContainerClipType.NoClip);
-        }
-        else {
-            if (cmd.isSkipDraw){
-                return;
-            }
-        }
-
-        this._rectclip = RUI.RectClip(rect, cmd.clipRect);
-        this._rect = this._rectclip;
-        cmd.DrawRectWithColor(rect, this.m_debugColor);
-
-        if (noclip) cmd.PopClipRect();
-    }
-
     public onMouseDrag(e: RUIMouseDragEvent) {
         let isvertical = this.m_scrollbar.isVerticalScroll;
         if (e.stage == RUIMouseDragStage.Begin) {
