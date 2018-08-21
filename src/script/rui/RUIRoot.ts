@@ -170,11 +170,13 @@ export class RUIRoot {
         }
     }
 
-    private calculateFinalOffset(cui:RUIContainer){
+    private calculateFinalOffset(cui:RUIContainer,order:number =0):number{
         let children = cui.children;
         let clen = children.length;
 
         let isVertical = cui.boxOrientation == RUIOrientation.Vertical;
+
+        var corder = order;
 
         if(clen > 0){
 
@@ -183,19 +185,28 @@ export class RUIRoot {
 
             let clevel = cui._level + 1;
 
+            var corder = cui._order +1;
+
             for(var i=0;i<clen;i++){
                 var c= children[i];
                 c._level = clevel;
+                c._order= corder;
+                corder ++;
+
+                //console.log('o '+c._order);
+
 
                 c.rCalx = offx + c.rOffx;
                 c.rCaly = offy + c.rOffy;
 
                 if(c instanceof RUIContainer){
-                    this.calculateFinalOffset(c);
+                    corder = this.calculateFinalOffset(c,corder);
                 }
                 //c.onLayoutPost();
             }
         }
+
+        return corder;
     }
 
     private dispatchMouseMove(x: number, y: number) {
@@ -209,6 +220,10 @@ export class RUIRoot {
                 curList.splice(i, 1);
             }
         }
+
+        curList.sort((x,y)=>{
+            return y._order - x._order;
+        });
 
         for (var i = 0, len = newList.length; i < len; i++) {
             let c = newList[i];
@@ -248,7 +263,7 @@ export class RUIRoot {
                     target = ui;
                 }
                 else {
-                    if (ui._level >= target._level) target = ui;
+                    if (ui._order >= target._order) target = ui;
                 }
             }
         };

@@ -6,12 +6,14 @@ import {
     RUIObject,
     ROUND,
     RUIAuto,
-    RUIConst
+    RUIConst,
+    RUICLIP_MAX
 } from "../RUIObject";
 import {RUIStyle} from "../RUIStyle";
 import {RUI, RUILayoutData, CLAMP} from "../RUI";
-import {RUIEvent} from "../RUIEvent";
+import {RUIEvent, RUIWheelEvent} from "../RUIEvent";
 import {RUIFlexContainer} from "../RUIFlexContainer";
+import { RUICmdList } from "../RUICmdList";
 
 export class RUIScrollView extends RUIContainer {
     public scrollVertical : boolean = true;
@@ -72,18 +74,27 @@ export class RUIScrollView extends RUIContainer {
     }
 
     private onScrollHorizontal(e : RUIEvent < number >) {
-        this.m_contentWrap.left = -e.object * this.m_contentH;
+        let val = -e.object * this.m_contentH;
+        this.setScrollH(val);
     }
 
     private onScrollVertical(e : RUIEvent < number >) {
         let val = -e.object * this.m_contentV;
-        
+        this.setScrollV(val);
+    }
+
+    private setScrollV(pos:number){
+        pos = CLAMP(pos,this.m_viewV - this.m_contentV,0);
+        let wrap  =this.m_contentWrap;
+        if(wrap.top == pos) return;
+        wrap.top = pos;
+    }
+
+    private setScrollH(pos:number){
+        pos = CLAMP(pos,this.m_viewH - this.m_contentH,0);
         let wrap = this.m_contentWrap;
-
-        val = CLAMP(val,this.m_viewV - this.m_contentV,0);
-        if(wrap.top == val) return;
-
-        this.m_contentWrap.top = val;
+        if(wrap.left == pos) return;
+        wrap.left = pos;
     }
 
     public Layout() {
@@ -127,16 +138,34 @@ export class RUIScrollView extends RUIContainer {
         }
     }
 
+    public onMouseWheel(e:RUIWheelEvent){
+        let size = e.delta / 2;
+        if(this.m_overflowV){
+            let scrollbarV = this.m_sliderVertical;
+            let contentV = this.m_contentV;
+            scrollbarV.scrollPosVal += (size / contentV);
+            this.setScrollV(scrollbarV.scrollPosVal * -contentV);
+        }
+        else if(this.m_overflowH){
+            let scrollbarH = this.m_sliderHorizontal;
+            let contentH = this.m_contentH;
+            scrollbarH.scrollPosVal += (size /this.m_contentV);
+            this.setScrollH(scrollbarH.scrollPosVal * - contentH);
+        }
+        else{
+            return;
+        }
+
+        e.Use();
+        e.prevent();
+    }
+
     public addChild(ui : RUIObject) {
-        this
-            .m_contentWrap
-            .addChild(ui);
+        this.m_contentWrap.addChild(ui);
     }
 
     public removeChild(ui : RUIObject) {
-        this
-            .m_contentWrap
-            .removeChild(ui);
+        this.m_contentWrap.removeChild(ui);
     }
 
     public removeChildByIndex(index : number) : RUIObject {

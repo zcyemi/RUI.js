@@ -74,7 +74,7 @@ export class RUIObject{
     public zorder: number = 0;
     public flex?: number;
 
-    public parent: RUIObject = null;
+    public parent: RUIContainer = null;
     public id:string;
     public isdirty: boolean = true;
     public isClip: boolean = true;
@@ -82,9 +82,10 @@ export class RUIObject{
 
     public _enabled:boolean = true;
     public _level:number = 0;
+    public _order:number =0;
 
     protected _rect :RUIRect;
-    protected _rectclip: RUIRect;
+    public _drawClipRect:RUIRect;
 
     public _root :RUIRoot;
     public _resized:boolean = true;
@@ -106,6 +107,8 @@ export class RUIObject{
 
     public rCalx:number = 0;
     public rCaly:number = 0;
+
+    public clipMask:RUIRect = RUICLIP_MAX;
 
 
     public Layout(){
@@ -132,6 +135,11 @@ export class RUIObject{
     /* Refactoring end */
 
     public onDraw(cmd:RUICmdList){
+        let rect = this.calculateRect();
+        this._rect = rect;
+        let cliprect = RUI.RectClip(rect,this.clipMask);
+
+        this._drawClipRect = cliprect;
     }
 
     public set width(val:RUISize){
@@ -214,6 +222,10 @@ export class RUIObject{
     public onMouseDrag(e:RUIMouseDragEvent){}
 
     public calculateRect(cliprect?:RUIRect):RUIRect{
+        if(this.rCalWidth == RUIAuto || this.rCalHeight == RUIAuto){
+            console.error(this);
+            throw new Error('calculated size is auto!');
+        }
         //let rect =  [this._calx,this._caly,this._calwidth,this._calheight];
         let rect = [this.rCalx,this.rCaly,this.rCalWidth,this.rCalHeight];
         if(cliprect != null){
@@ -223,7 +235,7 @@ export class RUIObject{
     }
 
     public rectContains(x:number,y:number):boolean{
-        let rect = this._rectclip == null ? this._rect:this._rectclip;
+        let rect = this._drawClipRect;
 
         if(rect == null) return false;
         let calx = rect[0];

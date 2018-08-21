@@ -13,6 +13,7 @@ export class RUIButtonGroup extends RUIContainer {
         super();
 
         this.m_buttons = buttons;
+        this.boxBorder = RUIStyle.Default.border0;
         this.boxOrientation = orientation;
 
         buttons.forEach(b => {

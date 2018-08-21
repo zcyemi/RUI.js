@@ -26,21 +26,12 @@ export class RUIRectangle extends RUIObject{
 
     public onDraw(cmd:RUICmdList){
 
-        let noclip = !this.isClip;
-
-        let rect = this.calculateRect();
-        if(noclip) {
-            cmd.PushClip(rect,null, RUIContainerClipType.NoClip);
+        super.onDraw(cmd);
+        let cliprect = this._drawClipRect;
+        if(cliprect == null){
+            return;
         }
-        else{
-            if(cmd.isSkipDraw) return;
-        }
-        
-        this._rectclip = RUI.RectClip(rect,cmd.clipRect);
-        this._rect = this._rectclip;
-        cmd.DrawRectWithColor(rect,this.m_debugColor);
-
-        if(noclip) cmd.PopClipRect();
+        cmd.DrawRectWithColor(cliprect,this.m_debugColor);
     }
 
     public onMouseUp(){
