@@ -47,6 +47,10 @@ export class RUIScrollBarThumb extends RUIRectangle {
         }
     }
 
+    public onDraw(cmd:RUICmdList){
+        super.onDraw(cmd);
+    }
+
     public onMouseDrag(e: RUIMouseDragEvent) {
         let isvertical = this.m_scrollbar.isVerticalScroll;
         if (e.stage == RUIMouseDragStage.Begin) {

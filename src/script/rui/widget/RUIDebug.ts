@@ -434,7 +434,6 @@ export class RUIPageContainer extends RUIContainer {
             c4.padding = [1, 1, 1, 20];
             c.addChild(c4);
             let r = new RUIRectangle(50, 30);
-            r._debugname = 'x';
             r.isClip = false;
             c4.addChild(r);
         }
@@ -587,7 +586,6 @@ export class RUIPageCompoundWiget extends RUIContainer {
                     ui: c1
                 }
             ], RUIConst.LEFT);
-
             tabview1.width = 400;
             tabview1.height = 300;
 

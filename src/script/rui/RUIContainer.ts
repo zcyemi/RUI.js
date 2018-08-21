@@ -166,7 +166,6 @@ export class RUIContainer extends RUIObject {
             let c = children[i];
             if(!c._enabled) continue;
             if(c.visible){
-                
                 if(c.isClip){
                     c.clipMask = c.isOnFlow ? this.layoutClipRectPadded : this.layoutClipRect;
                     c.onDraw(cmd);
@@ -211,8 +210,8 @@ export class RUIContainer extends RUIObject {
             case RUIContainerClipType.Clip:
                 let parent = this.parent;
                 let rootrect = this._root.rootRect;
-                this.layoutClipRect = RUI.RectClip(rect, parent == null?rootrect : parent.layoutClipRect);
-                this.layoutClipRectPadded = RUI.RectClip(paddingrect,parent == null? rootrect: parent.layoutClipRectPadded);
+                this.layoutClipRect = RUI.RectClip(rect,parent == null ? rootrect: parent.layoutClipRect );
+                this.layoutClipRectPadded = RUI.RectClip(paddingrect,parent == null ? rootrect:(this.isOnFlow? parent.layoutClipRectPadded : parent.layoutClipRect));
             break;
             case RUIContainerClipType.ClipSelf:
                 this.layoutClipRect= rect;

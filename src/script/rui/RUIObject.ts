@@ -82,6 +82,7 @@ export class RUIObject{
 
     public _enabled:boolean = true;
     public _level:number = 0;
+    public _order:number =0;
 
     protected _rect :RUIRect;
     public _drawClipRect:RUIRect;
@@ -221,6 +222,10 @@ export class RUIObject{
     public onMouseDrag(e:RUIMouseDragEvent){}
 
     public calculateRect(cliprect?:RUIRect):RUIRect{
+        if(this.rCalWidth == RUIAuto || this.rCalHeight == RUIAuto){
+            console.error(this);
+            throw new Error('calculated size is auto!');
+        }
         //let rect =  [this._calx,this._caly,this._calwidth,this._calheight];
         let rect = [this.rCalx,this.rCaly,this.rCalWidth,this.rCalHeight];
         if(cliprect != null){
