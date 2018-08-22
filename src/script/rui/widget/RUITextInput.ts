@@ -43,6 +43,16 @@ export class RUITextInput extends RUIObject{
         this.m_isError = !format.verify(this.m_content);
     }
 
+    public get content():string{
+        return this.m_content;
+    }
+    public set content(content:string){
+        let curcontent = this.m_content;
+        if(content === curcontent) return;
+        this.m_content = content;
+        this.setDirty();
+    }
+
 
     public onActive(){
         this.m_onActive = true;

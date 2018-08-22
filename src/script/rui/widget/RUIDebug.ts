@@ -14,6 +14,7 @@ import {RUIScrollView} from "./RUIScrollView";
 import {RUICollapsibleContainer} from "./RUICollapsibleContainer";
 import { RUITextInput, RUITextInputFormat } from "./RUITextInput";
 import { RUIInput } from "../RUIInput";
+import { RUITextField } from "./RUIField";
 
 export class RUIDebug extends RUIContainer {
 
@@ -722,6 +723,7 @@ export class RUIPageWidget extends RUIContainer {
         super();
         this.WidgetButtons(this);
         this.WidgetInput(this);
+        this.WidgetField(this);
     }
 
     private WidgetButtons(parent : RUIContainer) {
@@ -782,6 +784,19 @@ export class RUIPageWidget extends RUIContainer {
 
         let inputemail = new RUITextInput('email input', RUITextInputFormat.EMAIL);
         collapse.addChild(inputemail);
+    }
+
+    private WidgetField(parent:RUIContainer){
+        let collapse = new RUICollapsibleContainer('Fields',true);
+        parent.addChild(collapse);
+
+        let textField= new RUITextField('TextField','contents');
+        collapse.addChild(textField);
+
+        let textFieldFixedSize = new RUITextField('TextField','fixed size');
+        textFieldFixedSize.width = 300;
+        collapse.addChild(textFieldFixedSize);
+
     }
 
 }
