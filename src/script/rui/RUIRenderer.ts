@@ -94,6 +94,7 @@ export class RUIRenderer{
         gl.depthFunc(gl.LEQUAL);
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+        //gl.blendFunc(gl.SRC_ALPHA,gl.ONE);    //overdraw test
 
         let clearColor = RUIStyle.Default.background1;
         gl.clearColor(clearColor[0],clearColor[1],clearColor[2],clearColor[3]);

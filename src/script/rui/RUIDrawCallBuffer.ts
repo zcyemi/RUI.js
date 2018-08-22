@@ -225,7 +225,8 @@ export class RUIDrawCallBuffer {
             maxClip[2] = maxClip[0] + maxClip[2];
             maxClip[3] = maxClip[1]+ maxClip[3];
 
-            for (var i = 0, cmdlen = drawlist.length; i < cmdlen; i++) {
+            let cmdlen = drawlist.length;
+            for (var i = cmdlen-1 ; i >=0; i--) {
                 let cmd = drawlist[i];
                 let rect = cmd.Rect;
                 let color = cmd.Color;

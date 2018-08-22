@@ -65,14 +65,15 @@ export class RUISlider extends RUIObject{
         if(cliprect == null) return;
 
         let rect = this._rect;
-        cmd.DrawRectWithColor(rect,RUIStyle.Default.background0,cliprect);
+        
 
         let val = this.m_value;
-        if(val == 0) return;
+        if(val != 0){
+            let vrect = rect.slice(0);
+            vrect[2] *= val;
+            cmd.DrawRectWithColor(vrect,RUIStyle.Default.primary0,cliprect);
+        }
+        cmd.DrawRectWithColor(rect,RUIStyle.Default.background0,cliprect);
 
-        let vrect = rect.slice(0);
-        vrect[2] *= val;
-
-        cmd.DrawRectWithColor(vrect,RUIStyle.Default.primary0,cliprect);
     }
 }
