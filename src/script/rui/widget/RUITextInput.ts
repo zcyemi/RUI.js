@@ -37,7 +37,7 @@ export class RUITextInput extends RUIObject{
         super();
         this.m_content = content;
         this.inputFormat = format;
-        this.height = 23;
+        this.height = RUI.LINE_HEIGHT_DEFAULT;
         this.width = 200;
 
         this.m_isError = !format.verify(this.m_content);

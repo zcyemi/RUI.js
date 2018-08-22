@@ -43,7 +43,7 @@ export class RUITabView extends RUIFlexContainer{
             
             this.boxOrientation = RUIOrientation.Vertical;
             pagewrap.boxMatchWidth = true;
-            menu.height = 23;
+            menu.height = RUI.LINE_HEIGHT_DEFAULT;
             menu = new RUIButtonGroup(buttons,RUIOrientation.Horizontal);
             if(tabpos == RUIConst.TOP){
                 super.addChild(menu);

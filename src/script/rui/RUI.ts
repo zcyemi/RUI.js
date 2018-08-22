@@ -97,6 +97,8 @@ export class RUILayoutData{
     }
 }
 
+export type RUIAlign = number;
+
 export class RUI{
 
     public static readonly RED:RUIColor = [1,0,0,1];
@@ -106,6 +108,13 @@ export class RUI{
     public static readonly BLUE:RUIColor = [0,0,1,1];
     public static readonly YELLOW:RUIColor = [1,1,0,1];
     public static readonly GREY:RUIColor = RUI.ColorUNorm(200,200,200,255);
+
+    public static readonly ALIGN_CENTER: RUIAlign = 0;
+    public static readonly ALIGN_LEFT:RUIAlign = 1;
+    public static readonly ALIGN_RIGHT:RUIAlign = 2;
+
+    public static readonly LINE_HEIGHT_DEFAULT:number = 23;
+
 
     public static RectClip(content:RUIRect,clip:RUIRect) : RUIRect | null{
         if(clip == null || content == null) return null;
@@ -178,6 +187,11 @@ export class RUI{
         if(b[0] > a[0]+ a[2]) return true;
         if(b[1] > a[1]+ a[3]) return true;
         return false;
+    }
+
+    public static RectIndent(r:RUIRect,off:number){
+        let off2 = off *2;
+        return [r[0]+off,r[1]+ off,r[2] - off2,r[3]- off2];
     }
 
     

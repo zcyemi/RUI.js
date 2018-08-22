@@ -14,7 +14,8 @@ import {RUIScrollView} from "./RUIScrollView";
 import {RUICollapsibleContainer} from "./RUICollapsibleContainer";
 import { RUITextInput, RUITextInputFormat } from "./RUITextInput";
 import { RUIInput } from "../RUIInput";
-import { RUITextField } from "./RUIField";
+import { RUITextField, RUICheckBoxField } from "./RUIField";
+import { RUICheckBox } from "./RUICheckBox";
 
 export class RUIDebug extends RUIContainer {
 
@@ -797,6 +798,17 @@ export class RUIPageWidget extends RUIContainer {
         textFieldFixedSize.width = 300;
         collapse.addChild(textFieldFixedSize);
 
+
+        {
+            collapse.addChild(new RUILabel('checkbox'));
+            collapse.addChild(new RUICheckBox(true));
+
+            let checkboxField = new RUICheckBoxField('CheckboxField',true);
+            collapse.addChild(checkboxField);
+            let checkboxFieldFixedSize = new RUICheckBoxField('CheckboxField',false);
+            checkboxFieldFixedSize.width = 300;
+            collapse.addChild(checkboxFieldFixedSize);
+        }
     }
 
 }
