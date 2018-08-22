@@ -37,7 +37,8 @@ export class RUITabView extends RUIFlexContainer{
 
         let pagewrap = new RUIScrollView();
         pagewrap.flex =1;
-        pagewrap.boxBorder= null;
+        pagewrap.boxBorder= RUIStyle.Default.border0;
+        pagewrap.boxBackground = RUIStyle.Default.background1;
         var menu:RUIButtonGroup;
         if(tabpos == RUIConst.TOP || tabpos == RUIConst.BOTTOM){
             

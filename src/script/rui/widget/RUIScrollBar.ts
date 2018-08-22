@@ -89,7 +89,7 @@ export class RUIScrollBar extends RUIContainer {
         this.m_thumb = thumb;
         this.m_scrollOrientation = orientation;
         this.boxOrientation = this.isVerticalScroll ? RUIOrientation.Horizontal : RUIOrientation.Vertical;
-        this.boxBackground = RUIStyle.Default.background1;
+        this.boxBackground = RUIStyle.Default.background0;
         this.boxSideExtens = true;
 
         if (orientation == RUIOrientation.Horizontal) {
