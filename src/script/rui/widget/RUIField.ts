@@ -5,6 +5,7 @@ import { RUITextInput, RUITextInputFormat } from "./RUITextInput";
 import { RUICheckBox } from "./RUICheckBox";
 import { RUIAlign, RUI } from "../RUI";
 import { RUIEventEmitter } from "../RUIEvent";
+import { RUISliderInput } from "./RUISliderInput";
 
 
 const FIELD_LABEL_WIDTH = 100;
@@ -62,5 +63,20 @@ export class RUICheckBoxField extends RUIField<RUICheckBox>{
     public set isChecked(c: boolean) { this.m_widget.isChecked = c; }
     public get EventOnClick(): RUIEventEmitter<boolean> {
         return this.m_widget.EventOnClick;
+    }
+}
+
+
+export class RUIIntegerField extends RUIField<RUISliderInput>{
+    public constructor(label:string,value:number,min:number=0,max:number=100){
+        let sliderinput = new RUISliderInput(value,min,max,true);
+        super(label,sliderinput);
+    }
+}
+
+export class RUIFloatField extends RUIField<RUISliderInput>{
+    public constructor(label:string,value:number,min:number=0,max:number=1.0){
+        let sliderinput = new RUISliderInput(value,min,max,false);
+        super(label,sliderinput);
     }
 }

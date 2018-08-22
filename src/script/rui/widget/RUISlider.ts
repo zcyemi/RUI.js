@@ -2,7 +2,7 @@ import { RUIObject, RUIOrientation } from "../RUIObject";
 import { RUICmdList } from "../RUICmdList";
 import { RUIStyle } from "../RUIStyle";
 import { SATURATE } from "../RUI";
-import { RUIMouseEvent, RUIMouseDragEvent, RUIMouseDragStage } from "../RUIEvent";
+import { RUIMouseEvent, RUIMouseDragEvent, RUIMouseDragStage, RUIEventEmitter } from "../RUIEvent";
 
 
 export class RUISlider extends RUIObject{
@@ -10,6 +10,9 @@ export class RUISlider extends RUIObject{
     public static readonly SLIDER_HEIGHT: number = 10;
 
     private m_value :number = 0;
+
+    public EventOnValue: RUIEventEmitter<number> = new RUIEventEmitter();
+
     public constructor(val:number,height:number = RUISlider.SLIDER_HEIGHT){
         super();
         this.value =val;
@@ -21,6 +24,16 @@ export class RUISlider extends RUIObject{
     }
 
     public set value(val:number){
+        if(val === NaN) return;
+        val = SATURATE(val);
+        if(this.m_value == val) return;
+        this.m_value = val;
+        this.setDirty();
+        this.EventOnValue.emitRaw(val);
+    }
+
+    public setValue(val:number){
+        if(val === NaN) return;
         val = SATURATE(val);
         if(this.m_value == val) return;
         this.m_value = val;
@@ -35,6 +48,7 @@ export class RUISlider extends RUIObject{
     }
 
     public onMouseDrag(e:RUIMouseDragEvent){
+        e.Use();
         let stage = e.stage;
         if(stage == RUIMouseDragStage.Update){
             let val = (e.mousex - this.rCalx) / this.rCalWidth;
@@ -42,7 +56,6 @@ export class RUISlider extends RUIObject{
             this.value = val;
         }
 
-        e.Use();
     }
 
     public onDraw(cmd:RUICmdList){

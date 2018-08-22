@@ -13,7 +13,7 @@ export class RUITextInputFormat{
         this.m_regexp =  r;
     }
 
-    public static NUMBER :RUITextInputFormat = new RUITextInputFormat(/^\d+$/);
+    public static NUMBER :RUITextInputFormat = new RUITextInputFormat(/^[\d]+[.[\d]+]*$/);
     public static DEFAULT:RUITextInputFormat = new RUITextInputFormat(null);
     public static EMAIL: RUITextInputFormat = new RUITextInputFormat(/\S+@\S+\.\S+/);
 

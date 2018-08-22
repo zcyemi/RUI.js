@@ -14,9 +14,10 @@ import {RUIScrollView} from "./RUIScrollView";
 import {RUICollapsibleContainer} from "./RUICollapsibleContainer";
 import { RUITextInput, RUITextInputFormat } from "./RUITextInput";
 import { RUIInput } from "../RUIInput";
-import { RUITextField, RUICheckBoxField } from "./RUIField";
+import { RUITextField, RUICheckBoxField, RUIIntegerField, RUIFloatField } from "./RUIField";
 import { RUICheckBox } from "./RUICheckBox";
 import { RUISlider } from "./RUISlider";
+import { RUISliderInput } from "./RUISliderInput";
 
 export class RUIDebug extends RUIContainer {
 
@@ -814,6 +815,18 @@ export class RUIPageWidget extends RUIContainer {
         {
             collapse.addChild(new RUILabel('slider'));
             collapse.addChild(new RUISlider(0.5));
+
+            collapse.addChild(new RUILabel('sliderInput-[0.0,1.0]'));
+            collapse.addChild(new RUISliderInput(0.5,0,1.0,false));
+
+            collapse.addChild(new RUILabel('sliderInput-[-10,100]'));
+            collapse.addChild(new RUISliderInput(50,-10,100,true));
+
+            collapse.addChild(new RUILabel('integerfield'));
+            collapse.addChild(new RUIIntegerField('Integer',50));
+
+            collapse.addChild(new RUILabel('Floatfield'));
+            collapse.addChild(new RUIFloatField('Float-xfwhoiyffes',0.3));
         }
     }
 
