@@ -1,6 +1,6 @@
 import { RUIRoot } from "./RUIRoot";
 import { RUICmdList } from "./RUICmdList";
-import { RUIMouseEvent, RUIMouseDragEvent } from "./RUIEvent";
+import { RUIMouseEvent, RUIMouseDragEvent, RUIKeyboardEvent } from "./RUIEvent";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIContainer } from "./RUIContainer";
 import { RUI, RUILayouter, RUIVal, RUILayoutData } from "./RUI";
@@ -220,6 +220,7 @@ export class RUIObject{
     public onMouseEnter(){}
     public onMouseClick(e:RUIMouseEvent){}
     public onMouseDrag(e:RUIMouseDragEvent){}
+    public onKeyPress(e:RUIKeyboardEvent){}
 
     public calculateRect(cliprect?:RUIRect):RUIRect{
         if(this.rCalWidth == RUIAuto || this.rCalHeight == RUIAuto){

@@ -12,6 +12,8 @@ import {RUITabView, RUITabPage} from "./RUITabView";
 import {RUIScrollBar} from "./RUIScrollBar";
 import {RUIScrollView} from "./RUIScrollView";
 import {RUICollapsibleContainer} from "./RUICollapsibleContainer";
+import { RUITextInput, RUITextInputFormat } from "./RUITextInput";
+import { RUIInput } from "../RUIInput";
 
 export class RUIDebug extends RUIContainer {
 
@@ -719,6 +721,7 @@ export class RUIPageWidget extends RUIContainer {
     public constructor() {
         super();
         this.WidgetButtons(this);
+        this.WidgetInput(this);
     }
 
     private WidgetButtons(parent : RUIContainer) {
@@ -765,6 +768,20 @@ export class RUIPageWidget extends RUIContainer {
             btnGroupSwitch.width = 200;
             collapse.addChild(btnGroupSwitch);
         }
+    }
+
+    private WidgetInput(parent:RUIContainer){
+        let collapse = new RUICollapsibleContainer('Input',true);
+        parent.addChild(collapse);
+
+        let input = new RUITextInput('hello');
+        collapse.addChild(input);
+
+        let inputnumber = new RUITextInput('number input',RUITextInputFormat.NUMBER);
+        collapse.addChild(inputnumber);
+
+        let inputemail = new RUITextInput('email input', RUITextInputFormat.EMAIL);
+        collapse.addChild(inputemail);
     }
 
 }

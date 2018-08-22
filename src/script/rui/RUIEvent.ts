@@ -86,10 +86,11 @@ export class RUIResizeEvent extends RUIEvent<RUIResizeEvent>{
 
 export class RUIKeyboardEvent extends RUIObjEvent{
 
-    private m_keyboardEvent: KeyboardEvent;
+    public raw:KeyboardEvent;
     public constructor(e: KeyboardEvent){
         super();
         this.object = this;
+        this.raw = e;
     }
 }
 

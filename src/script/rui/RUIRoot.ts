@@ -62,7 +62,10 @@ export class RUIRoot {
 
         let target = event.object;
         if (event instanceof RUIKeyboardEvent) {
-
+            let activeUI = this.m_activeUI;
+            if(activeUI != null){
+                activeUI.onKeyPress(event);
+            }
         }
         else if(event instanceof RUIWheelEvent){
             let hoverUI = this.m_hoverUI;
