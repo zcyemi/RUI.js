@@ -16,6 +16,7 @@ import { RUITextInput, RUITextInputFormat } from "./RUITextInput";
 import { RUIInput } from "../RUIInput";
 import { RUITextField, RUICheckBoxField } from "./RUIField";
 import { RUICheckBox } from "./RUICheckBox";
+import { RUISlider } from "./RUISlider";
 
 export class RUIDebug extends RUIContainer {
 
@@ -808,6 +809,11 @@ export class RUIPageWidget extends RUIContainer {
             let checkboxFieldFixedSize = new RUICheckBoxField('CheckboxField',false);
             checkboxFieldFixedSize.width = 300;
             collapse.addChild(checkboxFieldFixedSize);
+        }
+
+        {
+            collapse.addChild(new RUILabel('slider'));
+            collapse.addChild(new RUISlider(0.5));
         }
     }
 
