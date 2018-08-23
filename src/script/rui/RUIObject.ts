@@ -78,9 +78,8 @@ export class RUIObject{
     public id:string;
     public isdirty: boolean = true;
     public isClip: boolean = true;
-    public enabled:boolean = true;
 
-    public _enabled:boolean = true;
+    private _enable:boolean = true;
     public _level:number = 0;
     public _order:number =0;
 
@@ -190,6 +189,16 @@ export class RUIObject{
 
     public setRoot(root:RUIRoot){
         this._root = root;
+    }
+
+    public get enable(){
+        return this._enable;
+    }
+
+    public set enable(val:boolean){
+        if(this._enable == val) return;
+        this._enable = val;
+        this.setDirty();
     }
 
     public setDirty(resize:boolean = false){

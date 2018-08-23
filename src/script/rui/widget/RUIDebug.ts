@@ -18,6 +18,8 @@ import { RUITextField, RUICheckBoxField, RUIIntegerField, RUIFloatField } from "
 import { RUICheckBox } from "./RUICheckBox";
 import { RUISlider } from "./RUISlider";
 import { RUISliderInput } from "./RUISliderInput";
+import { RUIToolTip } from "./RUIToolTip";
+import { RUIOverlay } from "./RUIOverlay";
 
 export class RUIDebug extends RUIContainer {
 
@@ -109,7 +111,7 @@ export class RUIPageBasis extends RUIContainer {
 
             var r1 = new RUIRectangle(120, 20);
             let btn = new RUIButton('enable/disable', (b) => {
-                r1.enabled = !r1.enabled;
+                r1.enable = !r1.enable;
                 r1.setDirty(true);
             });
             btn.width = 100;
@@ -121,9 +123,9 @@ export class RUIPageBasis extends RUIContainer {
             collapse.addChild(new RUILabel('container has single child'));
 
             var rect = new RUIRectangle(50, 50);
-            rect.enabled = true;
+            rect.enable = true;
             let btn = new RUIButton("ClickMe", (b) => {
-                rect.enabled = !rect.enabled;
+                rect.enable = !rect.enable;
                 rect.setDirty(true);
             });
             btn.width = 50;
@@ -147,7 +149,7 @@ export class RUIPageBasis extends RUIContainer {
             var r = new RUIRectangle(120);
             r.flex = 1;
             let btn = new RUIButton('enable/disable', (b) => {
-                r.enabled = !r.enabled;
+                r.enable = !r.enable;
                 r.setDirty(true);
             })
             btn.width = 100;
@@ -161,9 +163,9 @@ export class RUIPageBasis extends RUIContainer {
             collapse.addChild(new RUILabel('flex has single child'));
             var r2 = new RUIRectangle(50, 50);
             r2.flex = 1;
-            r2.enabled = true;
+            r2.enable = true;
             let btn = new RUIButton("ClickMe", (b) => {
-                r2.enabled = !r2.enabled;
+                r2.enable = !r2.enable;
                 r2.setDirty(true);
             });
             btn.width = 50;
@@ -727,6 +729,7 @@ export class RUIPageWidget extends RUIContainer {
         this.WidgetButtons(this);
         this.WidgetInput(this);
         this.WidgetField(this);
+        this.WidgetToolTip(this);
     }
 
     private WidgetButtons(parent : RUIContainer) {
@@ -828,6 +831,24 @@ export class RUIPageWidget extends RUIContainer {
             collapse.addChild(new RUILabel('Floatfield'));
             collapse.addChild(new RUIFloatField('Float-xfwhoiyffes',0.3));
         }
+    }
+
+    private WidgetToolTip(parent:RUIContainer){
+        let collapse = new RUICollapsibleContainer('ToolTip',true);
+        parent.addChild(collapse);
+
+        let tip = new RUIToolTip();
+        collapse.addChild(tip);
+        
+
+        var overlay = new RUIOverlay();
+        let btn = new RUIButton('overlay',b=>{
+            overlay.enable = !overlay.enable;
+            overlay.setDirty();
+        });
+        btn.width = 100;
+        collapse.addChild(btn);
+        collapse.addChild(overlay);
     }
 
 }

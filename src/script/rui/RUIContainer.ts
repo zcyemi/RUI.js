@@ -148,7 +148,7 @@ export class RUIContainer extends RUIObject {
         let children = this.children;
         for (var i = 0, clen = children.length; i < clen; i++) {
             let c = children[i];
-            if (!c._enabled) continue;
+            if (!c.enable) continue;
 
             cmd.currentOrder = c._order;
 
