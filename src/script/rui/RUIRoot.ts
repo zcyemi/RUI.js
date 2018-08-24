@@ -261,6 +261,7 @@ export class RUIRoot {
 
         let f = (ui: RUIObject) => {
             if(!ui.enable) return;
+            if(!ui.responseToMouseEvent) return;
             if (ui.rectContains(x, y)) {
                 if (target == null) {
                     target = ui;

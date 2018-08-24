@@ -1,4 +1,4 @@
-import { RUICanvas } from "./RUICanvas";
+import { RUIDOMCanvas } from "./RUIDOMCanvas";
 import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIWheelEvent } from "./RUIEvent";
 
 
@@ -35,7 +35,7 @@ export enum RUIEventType{
 
 export class RUIInput{
 
-    private m_target : RUICanvas;
+    private m_target : RUIDOMCanvas;
 
     // private m_activeMouseUI: UIObject = null;
     // private m_activeMouseUIDrag:boolean = false;
@@ -53,7 +53,7 @@ export class RUIInput{
     public static readonly MOUSE_DROP:string = "onMouseDrop";
 
 
-    public constructor(uicanvas:RUICanvas){
+    public constructor(uicanvas:RUIDOMCanvas){
 
         this.m_target = uicanvas;
         // this.EvtMouseEnter = new RUIEventEmitter();

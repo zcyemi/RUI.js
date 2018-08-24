@@ -1,4 +1,4 @@
-import {RUIContainer, RUIContainerClipType} from "../RUIContainer";
+import {RUIContainer, RUIContainerClipType, RUIContainerUpdateMode} from "../RUIContainer";
 import {RUILabel} from "./RUILabel";
 import {RUIButton} from "./RUIButton";
 import {RUIRectangle} from "../RUIRectangle";
@@ -20,6 +20,7 @@ import { RUISlider } from "./RUISlider";
 import { RUISliderInput } from "./RUISliderInput";
 import { RUIToolTip } from "./RUIToolTip";
 import { RUIOverlay } from "./RUIOverlay";
+import { RUICanvas, RUICanvasNode, RUICanvasContainerNode } from "./RUICanvas";
 
 export class RUIDebug extends RUIContainer {
 
@@ -35,6 +36,7 @@ export class RUIDebug extends RUIContainer {
         pages.push({label: 'container', ui: new RUIPageContainer()});
         pages.push({label: 'widget', ui: new RUIPageWidget()});
         pages.push({label: 'compoundwidget', ui: new RUIPageCompoundWiget()});
+        pages.push({label:'canvas',ui:new RUIPageCanvas()})
 
         let tabview = new RUITabView(pages, RUIConst.LEFT);
         this.addChild(tabview);
@@ -857,4 +859,29 @@ export class RUIPageWidget extends RUIContainer {
         collapse.addChild(overlay);
     }
 
+}
+
+export class RUIPageCanvas extends RUIContainer{
+    
+    public constructor(){
+        super();
+        this.PageCanvas(this);
+    }
+
+    public PageCanvas(parent:RUIContainer){
+        var collapse = new RUICollapsibleContainer('Canvas',true);
+        parent.addChild(collapse);
+
+        let canvas= new RUICanvas();
+        canvas.height =400;
+        collapse.addChild(canvas);
+
+        var node = new RUICanvasContainerNode("TestNode");
+        node.addChild(new RUIRectangle(50,100));
+
+        var node1 = new RUICanvasContainerNode('Node2');
+
+        canvas.addChild(node);
+        canvas.addChild(node1);
+    }
 }

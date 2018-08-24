@@ -13,6 +13,7 @@ export class RUILabel extends RUIObject{
         this.m_label= label;
         this.width = 100;
         this.height = RUI.LINE_HEIGHT_DEFAULT;
+        this.responseToMouseEvent = false;
     }   
 
     public get label(){

@@ -361,9 +361,7 @@ export class RUIDrawCallBuffer {
                             }
                         }
                         break;
-
                 }
-
             }
 
             //Rect

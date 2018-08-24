@@ -1,3 +1,10 @@
+import { RUIContainer } from "../RUIContainer";
+import { RUIPosition } from "../RUIObject";
+import { RUI } from "../RUI";
+import { RUIStyle } from "../RUIStyle";
+import { RUIMouseDragEvent, RUIMouseDragStage, RUIMouseEvent } from "../RUIEvent";
+import { RUILabel } from "./RUILabel";
+
 // import { RUIObject, RUIPosition } from "../RUIObject";
 // import { RUIRoot } from "../RUIRoot";
 // import { RUIContainer } from "../RUIContainer";
@@ -88,3 +95,62 @@
 
 
 // }
+
+export class RUICanvas extends RUIContainer{
+
+    public constructor(){
+        super();
+
+        this.boxBackground = RUIStyle.Default.background3;
+    }
+}
+
+
+export class RUICanvasNode extends RUIContainer{
+
+    private m_dragStartPosX:number;
+    private m_dragStartPosY:number;
+    protected m_draggable:boolean = true;
+
+    public constructor(){
+        super();
+        this.position = RUIPosition.Relative;
+        this.left =0;
+        this.top = 0;
+    }
+
+    public onMouseDrag(e:RUIMouseDragEvent){
+        if(!this.m_draggable) return;
+        if(e.stage == RUIMouseDragStage.Begin){
+            this.m_dragStartPosX = this.left - e.mousex;
+            this.m_dragStartPosY = this.top - e.mousey;
+        }
+        else{
+            this.left = this.m_dragStartPosX + e.mousex;
+            this.top = this.m_dragStartPosY + e.mousey;
+            this.setDirty();
+        }
+    }
+}
+
+
+export class RUICanvasContainerNode extends RUICanvasNode{
+    
+    private m_onactive:boolean = false;
+    public constructor(title:string){
+        super();
+        this.padding = RUI.Vector(3);
+        this.boxBorder = RUIStyle.Default.border0;
+        this.boxBackground = RUIStyle.Default.background1;
+        this.addChild(new RUILabel(title));
+    }
+
+    public onActive(){
+        this.m_onactive = true;
+    }
+
+    public onInactive(){
+        this.m_onactive = false;
+    }
+
+}

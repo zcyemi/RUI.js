@@ -1,4 +1,4 @@
-import { RUICanvas } from "./RUICanvas";
+import { RUIDOMCanvas } from "./RUIDOMCanvas";
 import { GLContext, GLProgram } from "wglut";
 import { RUIDrawCallBuffer } from "./RUIDrawCallBuffer";
 import { RUIFontTexture } from "./RUIFontTexture";
@@ -22,13 +22,13 @@ export class RUIRenderer{
 
     private m_isResized: boolean = false;
 
-    private m_uicanvas:RUICanvas;
+    private m_uicanvas:RUIDOMCanvas;
 
 
     private m_needRedraw: boolean = false;
 
 
-    public constructor(uicanvas: RUICanvas){
+    public constructor(uicanvas: RUIDOMCanvas){
         this.m_uicanvas = uicanvas;
         this.glctx = GLContext.createFromCanvas(uicanvas.canvas);
 

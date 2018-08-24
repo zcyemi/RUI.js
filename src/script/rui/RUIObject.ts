@@ -110,6 +110,10 @@ export class RUIObject{
     public clipMask:RUIRect = RUICLIP_MAX;
 
 
+    public responseToMouseEvent:boolean = true;
+
+
+
     public Layout(){
         this.layoutWidth = null;
         this.layoutHeight = null;
