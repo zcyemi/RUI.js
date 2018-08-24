@@ -80,7 +80,7 @@ export class RUIDrawCallBuffer {
 
     public indicesBuffer: WebGLBuffer;
 
-    private m_drawcall:  RUICmdList;
+    private m_drawcall: RUICmdList;
 
     public isDirty: boolean = true;
 
@@ -98,7 +98,7 @@ export class RUIDrawCallBuffer {
     private m_aryBufferTextClip: RUIArrayBufferF32 = new RUIArrayBufferF32(Float32Array);
 
 
-    constructor(glctx: GLContext, drawcall:  RUICmdList) {
+    constructor(glctx: GLContext, drawcall: RUICmdList) {
         let gl = glctx.gl;
         this.m_drawcall = drawcall;
         if (drawcall == null) return;
@@ -146,9 +146,9 @@ export class RUIDrawCallBuffer {
 
             //clip
             let clipbuffer = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER,clipbuffer);
+            gl.bindBuffer(gl.ARRAY_BUFFER, clipbuffer);
             this.clipBufferRect = clipbuffer;
-            gl.vertexAttribPointer(program.aClip,4,gl.FLOAT,false,0,0);
+            gl.vertexAttribPointer(program.aClip, 4, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(program.aClip);
 
 
@@ -181,9 +181,9 @@ export class RUIDrawCallBuffer {
 
             //Clip
             let clipbuffer = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER,clipbuffer);
+            gl.bindBuffer(gl.ARRAY_BUFFER, clipbuffer);
             this.clipBufferText = clipbuffer;
-            gl.vertexAttribPointer(program.aClip,4,gl.FLOAT,false,0,0);
+            gl.vertexAttribPointer(program.aClip, 4, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(program.aClip);
 
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuffer);
@@ -221,19 +221,19 @@ export class RUIDrawCallBuffer {
             let rectCount = 0;
             let textCount = 0;
 
-            let maxClip = [0,0,2000,1000];
+            let maxClip = [0, 0, 2000, 1000];
             maxClip[2] = maxClip[0] + maxClip[2];
-            maxClip[3] = maxClip[1]+ maxClip[3];
+            maxClip[3] = maxClip[1] + maxClip[3];
 
             let cmdlen = drawlist.length;
-            for (var i = cmdlen-1 ; i >=0; i--) {
+            for (var i = cmdlen - 1; i >= 0; i--) {
                 let cmd = drawlist[i];
                 let rect = cmd.Rect;
                 let color = cmd.Color;
 
                 let d = 1.0 - cmd.Index * 1.0 / drawDepthMax;
 
-                let clip = cmd.clip == null? maxClip : cmd.clip;
+                let clip = cmd.clip == null ? maxClip : cmd.clip;
 
                 switch (cmd.type) {
                     case RUIDrawCmdType.rect:
@@ -249,8 +249,8 @@ export class RUIDrawCallBuffer {
                             let w = rect[2];
                             let h = rect[3];
                             rect_vert.push([x, y, d, x + w, y, d, x + w, y + h, d, x, y + h, d]);
-                            
-                           
+
+
                             rect_clip.push(clip);
                             rect_clip.push(clip);
                             rect_clip.push(clip);
@@ -330,7 +330,7 @@ export class RUIDrawCallBuffer {
                             let contentW = fonttex.MeasureTextWith(content);
 
                             x += Math.max(3, Math.floor((w - contentW) / 2.0));
-                            y = y + h - (h - fonttex.fontSize);
+                            y = y + fonttex.fontSize;
 
                             for (var j = 0, len = content.length; j < len; j++) {
 
@@ -338,15 +338,16 @@ export class RUIDrawCallBuffer {
                                 if (glyph == null) {
                                     // text_vert.push(x, y, x + w, y, x + w, y + h, x, y + h);
                                     // text_uv.push(0, 0, 1, 0, 1, 1, 0, 1);
+                                    x += 8;
                                 }
                                 else {
 
-                                    let drawy = y + glyph.offsetY;
+                                    let drawy = y - glyph.offsetY;
 
                                     let drawy1 = drawy + glyph.height;
                                     let drawx1 = x + glyph.width;
 
-                                    text_vert.push([x, drawy,d, drawx1, drawy,d, drawx1, drawy1,d, x, drawy1,d]);
+                                    text_vert.push([x, drawy, d, drawx1, drawy, d, drawx1, drawy1, d, x, drawy1, d]);
                                     text_uv.push(glyph.uv);
 
                                     text_clip.push(clip);
@@ -354,12 +355,13 @@ export class RUIDrawCallBuffer {
                                     text_clip.push(clip);
                                     text_clip.push(clip);
 
-                                    x += glyph.width;
+                                    x += glyph.width + 1;
                                     textCount++;
                                 }
                             }
                         }
                         break;
+
                 }
 
             }
@@ -375,8 +377,8 @@ export class RUIDrawCallBuffer {
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBufferRect);
                     gl.bufferData(gl.ARRAY_BUFFER, rect_color.buffer, gl.STATIC_DRAW);
 
-                    gl.bindBuffer(gl.ARRAY_BUFFER,this.clipBufferRect);
-                    gl.bufferData(gl.ARRAY_BUFFER,rect_clip.buffer,gl.STATIC_DRAW);
+                    gl.bindBuffer(gl.ARRAY_BUFFER, this.clipBufferRect);
+                    gl.bufferData(gl.ARRAY_BUFFER, rect_clip.buffer, gl.STATIC_DRAW);
 
                 }
             }
@@ -390,8 +392,8 @@ export class RUIDrawCallBuffer {
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBufferText);
                 gl.bufferData(gl.ARRAY_BUFFER, text_uv.buffer, gl.STATIC_DRAW);
 
-                gl.bindBuffer(gl.ARRAY_BUFFER,this.clipBufferText);
-                gl.bufferData(gl.ARRAY_BUFFER,text_clip.buffer,gl.STATIC_DRAW);
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.clipBufferText);
+                gl.bufferData(gl.ARRAY_BUFFER, text_clip.buffer, gl.STATIC_DRAW);
             }
         }
 

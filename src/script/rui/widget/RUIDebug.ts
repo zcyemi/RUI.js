@@ -47,12 +47,13 @@ export class RUIPageBasis extends RUIContainer {
 
     public constructor() {
         super();
-        RUIPageBasis.PageBasicResize(this);
-        RUIPageBasis.PageBasisAddRemove(this);
-        //RUIPageBasis.PageBasisToggleEnable(this);
+        this.PageBasicResize(this);
+        this.PageBasisAddRemove(this);
+        this.PageBasisToggleEnable(this);
+        this.PageBasisTextRendering(this);
     }
 
-    public static PageBasisAddRemove(parent : RUIContainer) {
+    public PageBasisAddRemove(parent : RUIContainer) {
         var collapse = new RUICollapsibleContainer('remove/add children', true);
         parent.addChild(collapse);
 
@@ -75,7 +76,7 @@ export class RUIPageBasis extends RUIContainer {
 
     }
 
-    public static PageBasicResize(parent : RUIContainer) {
+    public PageBasicResize(parent : RUIContainer) {
 
         var collapse = new RUICollapsibleContainer('Resize', true);
         parent.addChild(collapse);
@@ -97,7 +98,7 @@ export class RUIPageBasis extends RUIContainer {
         }))
     }
 
-    public static PageBasisToggleEnable(parent : RUIContainer) {
+    public PageBasisToggleEnable(parent : RUIContainer) {
         let collapse = new RUICollapsibleContainer('Enable/Disable', true);
         collapse.width = 400;
         parent.addChild(collapse);
@@ -179,6 +180,11 @@ export class RUIPageBasis extends RUIContainer {
             collapse.addChild(c2);
             collapse.addChild(btn);
         }
+    }
+
+    public PageBasisTextRendering(parent:RUIContainer){
+        let collapse = new RUICollapsibleContainer("TextRendering",true);
+        parent.addChild(collapse);
     }
 }
 

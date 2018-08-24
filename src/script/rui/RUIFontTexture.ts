@@ -7,6 +7,7 @@ export class RUIGlyph{
 
     public width:number;
     public height:number;
+    public advancex: number;
 
     public offsetY: number;
 
@@ -66,7 +67,7 @@ export class RUIFontTexture{
     }
 
     private LoadFont(){
-        opentype.load('arial.ttf',(e,f)=>{
+        opentype.load('consola.ttf',(e,f)=>{
             this.m_font = f;
             
             this.FillTexture();
@@ -109,10 +110,11 @@ export class RUIFontTexture{
             let g = f.charToGlyph(c);
             let m =g.getMetrics();
 
-            let y = Math.ceil(upx *(m.yMax));
-            let x= Math.ceil(upx*(m.xMax - m.xMin)) + 1;
+            let y = Math.ceil(upx *(m.yMax - m.yMin));
+            let ybase = Math.ceil(upx *(m.yMax));
+            let x= Math.ceil(upx*(m.xMax - m.xMin));
 
-            if(linw + x > 128){
+            if(linw + x > 126){
                 linw =0;
                 linh += fontsize;
                 maxh = 0;
@@ -121,10 +123,10 @@ export class RUIFontTexture{
             let glyph = new RUIGlyph();
             glyph.width = x;
             glyph.height = y;
-            glyph.offsetY = (upx * -m.yMax);
+            glyph.advancex = g.advanceWidth *upx;
+            glyph.offsetY = ybase;
             glyphWidth.push(x);
 
-            
             let uvx1 = linw * uvunit;
             let uvx2 = (linw + x)* uvunit;
             let uvy1 = linh* uvunit;
@@ -134,10 +136,10 @@ export class RUIFontTexture{
             
             this.glyphs[i] = glyph;
 
-            let p = g.getPath(linw,linh+y,fontsize);
+            let p = g.getPath(linw,linh+ybase,fontsize);
             p['fill'] = "white";
             p.draw(ctx2d);
-            linw += x;
+            linw += x+2;
             maxh = Math.max(maxh,y);
         }
 
@@ -184,7 +186,7 @@ export class RUIFontTexture{
         let texh = 128;
         
         let canvas2d = document.createElement("canvas");
-        canvas2d.style.backgroundColor="#000";
+        canvas2d.style.backgroundColor="#00000000";
         canvas2d.width = texw;
         canvas2d.height = texh;
 

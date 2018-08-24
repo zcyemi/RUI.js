@@ -143,6 +143,7 @@ export class RUIRenderer{
 
         if(drawTextCount > 0){
             if(fonttex.isTextureValid){
+
                 let programText: GLProgram|any = drawbuffer.programText;
                 gl.useProgram(programText.Program);
                 gl.uniform4fv(programText.uProj,this.m_projectParam);
