@@ -109,6 +109,8 @@ export class RUI{
     public static readonly YELLOW:RUIColor = [1,1,0,1];
     public static readonly GREY:RUIColor = RUI.ColorUNorm(200,200,200,255);
 
+    public static readonly COLOR_ERROR:RUIColor = [1,0,1,1];
+
     public static readonly ALIGN_CENTER: RUIAlign = 0;
     public static readonly ALIGN_LEFT:RUIAlign = 1;
     public static readonly ALIGN_RIGHT:RUIAlign = 2;

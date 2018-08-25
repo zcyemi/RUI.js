@@ -21,6 +21,7 @@ import { RUISliderInput } from "./RUISliderInput";
 import { RUIToolTip } from "./RUIToolTip";
 import { RUIOverlay } from "./RUIOverlay";
 import { RUICanvas, RUICanvasNode, RUICanvasContainerNode } from "./RUICanvas";
+import { RUIImage } from "./RUIImage";
 
 export class RUIDebug extends RUIContainer {
 
@@ -738,6 +739,7 @@ export class RUIPageWidget extends RUIContainer {
         this.WidgetInput(this);
         this.WidgetField(this);
         this.WidgetToolTip(this);
+        this.WidgetImage(this);
     }
 
     private WidgetButtons(parent : RUIContainer) {
@@ -857,6 +859,17 @@ export class RUIPageWidget extends RUIContainer {
         btn.width = 100;
         collapse.addChild(btn);
         collapse.addChild(overlay);
+    }
+
+    private WidgetImage(parent:RUIContainer){
+        let collapse = new RUICollapsibleContainer('Image',true);
+        parent.addChild(collapse);
+
+        let image = new RUIImage('Octocat.png',100,100);
+        collapse.addChild(image);
+
+        let imageWrap = RUIImage.Create(image,200,50);
+        collapse.addChild(imageWrap);
     }
 
 }

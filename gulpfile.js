@@ -6,53 +6,57 @@ const path = require('path');
 const fs = require('fs');
 const util = require('util');
 
-gulp.task("build",()=>{
+gulp.task("build", () => {
     BuildScript();
     BuildTemplate();
     BuildShader();
 });
 
-gulp.task("watch",()=>{
+gulp.task("watch", () => {
 
     BuildScript();
     BuildTemplate();
     BuildShader();
-    
 
-    gulp.watch('./src/script/**/*.ts',BuildScript);
-    gulp.watch('./src/template/**.*',BuildTemplate);
-    gulp.watch('./src/shader/*.glsl',BuildShader);
+
+    gulp.watch('./src/script/**/*.ts', BuildScript);
+    gulp.watch('./src/template/**.*', BuildTemplate);
+    gulp.watch('./src/shader/*.glsl', BuildShader);
 
     browersync.init({
         server: {
-            baseDir: './dist/'
+            baseDir: './dist/',
+            middleware: function (req, res, next) {
+                res.setHeader('Access-Control-Allow-Origin', '*');
+                next();
+            }
         },
         port: 6633,
         files: ['./dist/*.js', './dist/*.html']
     })
 });
 
-function BuildScript(){
+function BuildScript() {
     console.log('[sync script]');
     gulp.src('./src/script/**/*.ts').pipe(gulpts({
         module: 'amd',
-        lib: ['dom','es2015'],
+        lib: ['dom', 'es2015'],
         declaration: true,
         outFile: 'rui.js',
         target: 'es5',
-        moduleResolution:'node'
+        moduleResolution: 'node'
     }))
-    .pipe(gulp.dest('./dist/'));
+        .pipe(gulp.dest('./dist/'));
 }
 
-function BuildTemplate(){
+function BuildTemplate() {
     console.log('[sync template]');
     gulp.src('./src/template/**.*').pipe(gulp.dest('./dist'));
     gulp.src('./node_modules/opentype.js/dist/opentype.js').pipe(gulp.dest('./dist'));
     gulp.src('./node_modules/wglut/dist/**.js').pipe(gulp.dest('./dist/'));
 }
 
-function BuildShader(){
+function BuildShader() {
     console.log('[sync shader]');
     gulp.src('./src/shader/*.glsl').pipe(gulpGLSLMerge('/src/script/gl/wglShaderLib.ts'));
 }

@@ -136,7 +136,7 @@ export class RUIFontTexture{
             
             this.glyphs[i] = glyph;
 
-            let p = g.getPath(linw,linh+ybase,fontsize);
+            let p = g.getPath(linw-1,linh+ybase,fontsize);
             p['fill'] = "white";
             p.draw(ctx2d);
             linw += x+2;
