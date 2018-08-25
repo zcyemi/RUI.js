@@ -58,8 +58,8 @@ export class RUIDefaultLayouter implements RUILayouter {
         let constraintHori = cleft != RUIAuto && cright != RUIAuto;
         let constraintVert = ctop != RUIAuto && cbottom != RUIAuto;
 
-        let cwidth = 0;
-        let cheight = 0;
+        let cwidth = RUIAuto;
+        let cheight = RUIAuto;
 
         let coffx = cleft;
         let coffy = ctop;
@@ -111,8 +111,8 @@ export class RUIDefaultLayouter implements RUILayouter {
         }
 
         let data = new RUILayoutData();
-        data.flexWidth = null;
-        data.flexHeight = null;
+        data.flexWidth = cwidth;
+        data.flexHeight = cheight;
         data.containerWidth = cpw;
         data.containerHeight = cph;
 

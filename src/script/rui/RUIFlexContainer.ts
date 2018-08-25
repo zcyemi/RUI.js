@@ -121,10 +121,12 @@ export class RUIFlexLayouter implements RUILayouter {
         var isvertical = cui.isVertical;
 
         //Fill flex
-        if (data.flexWidth != null) {
+        let dataFlexWidth = data.flexWidth;
+        let dataFlexHeight = data.flexHeight;
+        if (dataFlexWidth != null && dataFlexWidth != RUIAuto) {
             cui.layoutWidth = data.flexWidth;
         }
-        if (data.flexHeight != null) {
+        if (dataFlexHeight != null && dataFlexHeight != RUIAuto) {
             cui.layoutHeight = data.flexHeight;
         }
 

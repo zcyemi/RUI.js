@@ -20,6 +20,7 @@ export class RUIScrollBarThumb extends RUIRectangle {
         this.m_scrollbar = scrollbar;
         this.m_debugColor = this.m_defaultColor;
         this.position = RUIPosition.Offset;
+        this.responseToMouseEvent =true;
         this.left = 0;
         this.top = 0;
 
