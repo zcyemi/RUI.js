@@ -7,7 +7,8 @@ export enum RUIDrawCmdType {
     rect,
     text,
     border,
-    line
+    line,
+    image,
 }
 
 export class RUIDrawCmd{
@@ -15,6 +16,7 @@ export class RUIDrawCmd{
     public Color: number[];
     public Text: string;
     public clip: RUIRectP;
+    public object?:any;
 
     public Index:number = 0;
 
@@ -55,6 +57,14 @@ export class RUIDrawCmd{
         cmd.type = RUIDrawCmdType.line;
         return cmd;
     }
+
+    public static CmdImage(image:HTMLImageElement,rect:RUIRect){
+        let cmd = new RUIDrawCmd();
+        cmd.Rect = rect;
+        cmd.type = RUIDrawCmdType.image;
+        cmd.object = image;
+        return cmd;
+    }
 }
 
 export class RUICmdList{
@@ -85,6 +95,18 @@ export class RUICmdList{
         this.drawList.push(cmd);
     }
 
+    public DrawImage(image:HTMLImageElement,rect:RUIRect,clip?:RUIRect,order?:number){
+        let cmd = RUIDrawCmd.CmdImage(image,rect);
+        cmd.clip = RUI.toRectP(clip == null? rect:clip);
+        if(order != null){
+            cmd.Index = order;
+        }
+        else{
+            cmd.Index = this.currentOrder;
+        }
+        this.drawList.push(cmd);
+    }
+
     public DrawText(text: string, rect:RUIRect, color?: number[],cliprect?:RUIRect,order?:number) {
         let cmd = RUIDrawCmd.CmdText(text, rect, color);
         cmd.clip = RUI.toRectP(cliprect == null? rect:cliprect);
@@ -96,6 +118,7 @@ export class RUICmdList{
         }
         this.drawList.push(cmd);
     }
+    
 
     public DrawBorder(rect: number[], color: number[],cliprect?:RUIRect,order?:number) {
         if(rect == null) throw new Error();
