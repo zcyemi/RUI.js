@@ -5,17 +5,9 @@ import { RUIEventEmitter, RUIResizeEvent, RUIObjEvent } from "./RUIEvent";
 import { RUIContainer } from "./RUIContainer";
 
 
-type RUICanvasNodeFunc = (f:RUICanvasNode) =>void;
 
-export class RUICanvasNode extends RUIContainer{
 
-    public constructor(creation: RUICanvasNodeFunc){
-        super();
-        if(creation !=null) creation.call(this);
-    }
-}
-
-export class RUICanvas {
+export class RUIDOMCanvas {
     private m_canvas: HTMLCanvasElement;
     private m_renderer: RUIRenderer;
 

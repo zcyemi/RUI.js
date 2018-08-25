@@ -7,7 +7,8 @@ export enum RUIDrawCmdType {
     rect,
     text,
     border,
-    line
+    line,
+    image,
 }
 
 export class RUIDrawCmd{
@@ -15,6 +16,7 @@ export class RUIDrawCmd{
     public Color: number[];
     public Text: string;
     public clip: RUIRectP;
+    public object?:any;
 
     public Index:number = 0;
 
@@ -55,12 +57,22 @@ export class RUIDrawCmd{
         cmd.type = RUIDrawCmdType.line;
         return cmd;
     }
+
+    public static CmdImage(image:HTMLImageElement,rect:RUIRect){
+        let cmd = new RUIDrawCmd();
+        cmd.Rect = rect;
+        cmd.type = RUIDrawCmdType.image;
+        cmd.object = image;
+        return cmd;
+    }
 }
 
 export class RUICmdList{
     public drawList: RUIDrawCmd[] = [];
     public MaxDrawCount:number = 1000;
     public isDirty:boolean = false;
+
+    public currentOrder:number = 0;
 
     public draw(root: RUIRoot){
 
@@ -70,36 +82,60 @@ export class RUICmdList{
         this.isDirty = true;
     }
 
-    public DrawRect(x: number, y: number, w: number, h: number,cliprect?:RUIRect) {
-        let rect = [x, y, w, h];
-        let cmd = new RUIDrawCmd(rect);
-        cmd.clip = RUI.toRectP(cliprect == null ?  rect: cliprect);
-        this.drawList.push();
-    }
-
-    public DrawRectWithColor(pos: number[], color: number[],clip?:RUIRect) {
+    public DrawRectWithColor(pos: number[], color: number[],clip?:RUIRect,order?:number) {
         let cmd = new RUIDrawCmd(pos);
         cmd.clip = RUI.toRectP(clip == null? pos:clip);
         cmd.Color = color;
+        if(order!=null){
+            cmd.Index = order;
+        }
+        else{
+            cmd.Index = this.currentOrder;
+        }
         this.drawList.push(cmd);
     }
 
-    public DrawText(text: string, rect:RUIRect, color?: number[],cliprect?:RUIRect) {
+    public DrawImage(image:HTMLImageElement,rect:RUIRect,clip?:RUIRect,order?:number){
+        let cmd = RUIDrawCmd.CmdImage(image,rect);
+        cmd.clip = RUI.toRectP(clip == null? rect:clip);
+        if(order != null){
+            cmd.Index = order;
+        }
+        else{
+            cmd.Index = this.currentOrder;
+        }
+        this.drawList.push(cmd);
+    }
+
+    public DrawText(text: string, rect:RUIRect, color?: number[],cliprect?:RUIRect,order?:number) {
         let cmd = RUIDrawCmd.CmdText(text, rect, color);
         cmd.clip = RUI.toRectP(cliprect == null? rect:cliprect);
+        if(order!=null){
+            cmd.Index = order;
+        }
+        else{
+            cmd.Index = this.currentOrder;
+        }
         this.drawList.push(cmd);
     }
+    
 
-    public DrawBorder(rect: number[], color: number[],cliprect?:RUIRect) {
+    public DrawBorder(rect: number[], color: number[],cliprect?:RUIRect,order?:number) {
         if(rect == null) throw new Error();
 
         let cmd = RUIDrawCmd.CmdBorder(rect, color);
         cmd.clip = RUI.toRectP(cliprect == null? rect:cliprect);
+        if(order!=null){
+            cmd.Index = order;
+        }
+        else{
+            cmd.Index = this.currentOrder;
+        }
         this.drawList.push(cmd);
     }
 
     /** TODO */
-    public DrawLine(x1: number, y1: number, x2: number, y2: number, color: number[],) {
+    public DrawLine(x1: number, y1: number, x2: number, y2: number, color: number[],order:number= 0) {
         // if(this.m_clipRectP == RUICLIP_NULL) return;
 
         // let cmd = RUIDrawCmd.CmdLine(x1,y1,x2,y2,color);

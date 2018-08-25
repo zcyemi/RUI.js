@@ -37,13 +37,14 @@ export class RUITabView extends RUIFlexContainer{
 
         let pagewrap = new RUIScrollView();
         pagewrap.flex =1;
-        pagewrap.boxBorder= null;
+        pagewrap.boxBorder= RUIStyle.Default.border0;
+        pagewrap.boxBackground = RUIStyle.Default.background1;
         var menu:RUIButtonGroup;
         if(tabpos == RUIConst.TOP || tabpos == RUIConst.BOTTOM){
             
             this.boxOrientation = RUIOrientation.Vertical;
             pagewrap.boxMatchWidth = true;
-            menu.height = 23;
+            menu.height = RUI.LINE_HEIGHT_DEFAULT;
             menu = new RUIButtonGroup(buttons,RUIOrientation.Horizontal);
             if(tabpos == RUIConst.TOP){
                 super.addChild(menu);

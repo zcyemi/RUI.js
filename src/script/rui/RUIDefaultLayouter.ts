@@ -1,6 +1,7 @@
 import { RUILayouter, RUIVal, RUISizePair, RUILayoutData, ROUND } from "./RUI";
 import { RUIObject, RUIAuto } from "./RUIObject";
 import { RUIContainer } from "./RUIContainer";
+import { RUICanvasNode } from "./widget/RUICanvas";
 
 export class RUIDefaultLayouter implements RUILayouter {
 
@@ -48,6 +49,7 @@ export class RUIDefaultLayouter implements RUILayouter {
 
     public static LayoutRelative(c: RUIObject, cpw: number, cph: number) {
 
+
         let cleft = c.left;
         let cright = c.right;
         let ctop = c.top;
@@ -56,8 +58,8 @@ export class RUIDefaultLayouter implements RUILayouter {
         let constraintHori = cleft != RUIAuto && cright != RUIAuto;
         let constraintVert = ctop != RUIAuto && cbottom != RUIAuto;
 
-        let cwidth = 0;
-        let cheight = 0;
+        let cwidth = RUIAuto;
+        let cheight = RUIAuto;
 
         let coffx = cleft;
         let coffy = ctop;
@@ -81,7 +83,9 @@ export class RUIDefaultLayouter implements RUILayouter {
                 }
             }
             else {
-                throw new Error();
+                // console.error(c);
+                // throw new Error();
+                coffx = cleft;
             }
         }
 
@@ -100,7 +104,9 @@ export class RUIDefaultLayouter implements RUILayouter {
                     coffy = ROUND((cph - cheight) / 2);
                 }
             } else {
-                throw new Error();
+                // console.error(c);
+                // throw new Error();
+                coffy  =ctop;
             }
         }
 
@@ -111,8 +117,8 @@ export class RUIDefaultLayouter implements RUILayouter {
         data.containerHeight = cph;
 
         c.LayoutPost(data);
-        c.rCalWidth = cwidth;
-        c.rCalHeight = cheight;
+        // c.rCalWidth = cwidth;
+        // c.rCalHeight = cheight;
         c.rOffx = coffx;
         c.rOffy = coffy;
     }

@@ -148,7 +148,10 @@ export class RUIContainer extends RUIObject {
         let children = this.children;
         for (var i = 0, clen = children.length; i < clen; i++) {
             let c = children[i];
-            if (!c._enabled) continue;
+            if (!c.enable) continue;
+
+            cmd.currentOrder = c._order;
+
             if (c.visible) {
                 if (c.isClip) {
                     c.clipMask = c.isOnFlow ? this.layoutClipRectPadded : this.layoutClipRect;
@@ -201,6 +204,7 @@ export class RUIContainer extends RUIObject {
         let cliprect = this.layoutClipRect;
         this._drawClipRect = cliprect;
 
+        cmd.currentOrder = this._order;
         //background
         if (this.boxBackground != null && cliprect != null) cmd.DrawRectWithColor(rect, this.boxBackground, cliprect);
     }
@@ -208,6 +212,7 @@ export class RUIContainer extends RUIObject {
         let rect = this._rect;
         let clipRect = this._drawClipRect;
         if (clipRect == null) return;
+        //cmd.currentOrder = this._order;
         if (this.boxBorder != null && rect != RUICLIP_NULL) cmd.DrawBorder(rect, this.boxBorder, clipRect);
     }
 
@@ -384,11 +389,13 @@ export class RUIContainerLayouter implements RUILayouter {
         let isFlexHeight = false;
 
         //Fill flex
-        if (data.flexWidth != null) {
+        let dataFlexWidth = data.flexWidth;
+        let dataFlexHeight = data.flexHeight;
+        if (dataFlexWidth != null && dataFlexWidth != RUIAuto) {
             cui.layoutWidth = data.flexWidth;
             isFlexWidth = true;
         }
-        if (data.flexHeight != null) {
+        if (dataFlexHeight != null && dataFlexHeight != RUIAuto) {
             cui.layoutHeight = data.flexHeight;
             isFlexHeight = true;
         }

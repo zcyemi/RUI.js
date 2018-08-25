@@ -14,11 +14,11 @@ export class RUICollapsibleContainer extends RUIContainer {
         super();
         this.m_show = show;
         this.boxBorder = RUIStyle.Default.border0;
-        this.boxBackground = RUIStyle.Default.background0;
+        this.boxBackground = RUIStyle.Default.background1;
         this.boxOrientation = orientation;
-        this.padding = RUI.Vector(1);
 
         let button = new RUIButton(label, this.onButtonClick.bind(this));
+        button.margin = [1,0,1,0];
         super.addChild(button);
 
         let container = new RUIContainer();

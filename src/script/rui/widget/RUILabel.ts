@@ -6,19 +6,29 @@ import { RUIContainerClipType } from "../RUIContainer";
 
 export class RUILabel extends RUIObject{
 
-    public label:string;
+    public m_label:string;
 
     public constructor(label:string){
         super();
-        this.label= label;
+        this.m_label= label;
         this.width = 100;
-        this.height = 23;
-
+        this.height = RUI.LINE_HEIGHT_DEFAULT;
+        this.responseToMouseEvent = false;
     }   
+
+    public get label(){
+        return this.m_label;
+    }
+
+    public set label(l:string){
+        if(l === this.m_label) return;
+        this.m_label =l;
+        this.setDirty();
+    }
 
     public Layout(){
         super.Layout();
-        let ftw = RUIFontTexture.ASIICTexture.MeasureTextWith(this.label) + 20;
+        let ftw = RUIFontTexture.ASIICTexture.MeasureTextWith(this.m_label) + 20;
         if(!Number.isNaN(ftw)){
             this.width= ftw;
             this.layoutWidth = ftw;
@@ -30,7 +40,7 @@ export class RUILabel extends RUIObject{
 
         super.onDraw(cmd);
 
-        let label = this.label;
+        let label = this.m_label;
         if(label == null || label === ''){
             return;
         }
@@ -39,6 +49,6 @@ export class RUILabel extends RUIObject{
         if(cliprect == null){
             return;
         }
-        cmd.DrawText(this.label,this._rect,null,cliprect);
+        cmd.DrawText(this.m_label,this._rect,null,cliprect);
     }
 }

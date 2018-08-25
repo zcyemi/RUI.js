@@ -1,4 +1,4 @@
-import { RUICanvas } from "./RUICanvas";
+import { RUIDOMCanvas } from "./RUIDOMCanvas";
 import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIWheelEvent } from "./RUIEvent";
 
 
@@ -35,7 +35,7 @@ export enum RUIEventType{
 
 export class RUIInput{
 
-    private m_target : RUICanvas;
+    private m_target : RUIDOMCanvas;
 
     // private m_activeMouseUI: UIObject = null;
     // private m_activeMouseUIDrag:boolean = false;
@@ -53,7 +53,7 @@ export class RUIInput{
     public static readonly MOUSE_DROP:string = "onMouseDrop";
 
 
-    public constructor(uicanvas:RUICanvas){
+    public constructor(uicanvas:RUIDOMCanvas){
 
         this.m_target = uicanvas;
         // this.EvtMouseEnter = new RUIEventEmitter();
@@ -77,7 +77,7 @@ export class RUIInput{
         let c = this.m_target;
         let tar = this.m_target;
 
-        window.addEventListener('keypress',(e)=>c.EventOnUIEvent.emit(new RUIKeyboardEvent(e)));
+        window.addEventListener('keydown',(e)=>c.EventOnUIEvent.emit(new RUIKeyboardEvent(e)));
         window.addEventListener('mousedown',(e)=>c.EventOnUIEvent.emit(new RUIMouseEvent(e,RUIEventType.MouseDown)));
         window.addEventListener('mouseup',(e)=>c.EventOnUIEvent.emit(new RUIMouseEvent(e,RUIEventType.MouseUp)));
         window.addEventListener('mousemove',(e)=>c.EventOnUIEvent.emit(new RUIMouseEvent(e,RUIEventType.MouseMove)));
@@ -149,18 +149,20 @@ export class RUIInput{
     //     // if(activeUI != null) activeUI.onKeyDown(e);
     // }
 
-    // public static ProcessTextKeyPress(text:string,e:KeyboardEvent):string{
-    //     return text +e.key;
-    // }
+    public static ProcessTextKeyDown(text:string,e:RUIKeyboardEvent): string{
+        let raw = e.raw;
+        let key = raw.key;
 
-    // public static ProcessTextKeyDown(text:string,e:KeyboardEvent): string{
-    //     if(text == null || text.length == 0) return text;
-    //     if(e.key == 'Backspace'){
-    //         if(e.shiftKey){
-    //             return '';
-    //         }
-    //         text = text.slice(0,text.length-1);
-    //     }
-    //     return text;
-    // }
+        if(key == 'Backspace'){
+            if(raw.shiftKey){
+                return '';
+            }
+            if(text == null || text.length == 0) return text;
+            text = text.slice(0,text.length-1);
+        }
+        else if(key.length == 1) {
+            return text + raw.key;
+        }
+        return text;
+    }
 }

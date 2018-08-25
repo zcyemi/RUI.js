@@ -42,6 +42,7 @@ export class RUIScrollView extends RUIContainer {
         this.boxMatchHeight = true;
 
         let contentWrap = new RUIContainer();
+        contentWrap.boxBackground = RUIStyle.Default.background1;
         contentWrap.boxSideExtens = true;
         contentWrap.position = RUIPosition.Offset;
         contentWrap.left = 0;

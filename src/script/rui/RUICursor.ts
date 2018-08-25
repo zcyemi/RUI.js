@@ -1,5 +1,5 @@
 import { RUIInput } from "./RUIInput";
-import { RUICanvas } from "./RUICanvas";
+import { RUIDOMCanvas } from "./RUIDOMCanvas";
 
 
 export enum RUICursorType{
@@ -29,7 +29,7 @@ export class RUICursor{
 
     private m_input: RUIInput;
     private m_canvas:HTMLCanvasElement;
-    public constructor(canvas: RUICanvas){
+    public constructor(canvas: RUIDOMCanvas){
         this.m_input = canvas.input;
         this.m_canvas = canvas.canvas;
         //this.m_input.EvtMouseEnter.on(this.onMouseEnter.bind(this));

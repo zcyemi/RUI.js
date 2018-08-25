@@ -12,7 +12,7 @@ export class RUIRectangle extends RUIObject{
 
     public constructor(w:number = RUIAuto,h:number = RUIAuto){
         super();
-
+        this.responseToMouseEvent = false;
         this.width= w;
         this.height =h;
     }

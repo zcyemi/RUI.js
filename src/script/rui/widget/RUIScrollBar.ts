@@ -20,6 +20,7 @@ export class RUIScrollBarThumb extends RUIRectangle {
         this.m_scrollbar = scrollbar;
         this.m_debugColor = this.m_defaultColor;
         this.position = RUIPosition.Offset;
+        this.responseToMouseEvent =true;
         this.left = 0;
         this.top = 0;
 
@@ -89,7 +90,7 @@ export class RUIScrollBar extends RUIContainer {
         this.m_thumb = thumb;
         this.m_scrollOrientation = orientation;
         this.boxOrientation = this.isVerticalScroll ? RUIOrientation.Horizontal : RUIOrientation.Vertical;
-        this.boxBackground = RUIStyle.Default.background1;
+        this.boxBackground = RUIStyle.Default.background0;
         this.boxSideExtens = true;
 
         if (orientation == RUIOrientation.Horizontal) {

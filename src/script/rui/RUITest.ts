@@ -1,5 +1,4 @@
 import { RUIRenderer } from "./RUIRenderer";
-import { RUICanvas } from "./RUICanvas";
 import { RUICmdList } from "./RUICmdList";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIRoot } from "./RUIRoot";
@@ -16,6 +15,7 @@ import { RUILabel } from "./widget/RUILabel";
 import { RUICollapsibleContainer } from "./widget/RUICollapsibleContainer";
 import { RUIScrollBar } from "./widget/RUIScrollBar";
 import { RUIScrollView } from "./widget/RUIScrollView";
+import { RUIDOMCanvas } from "./RUIDOMCanvas";
 
 
 export class RUITest{
@@ -25,10 +25,10 @@ export class RUITest{
     private m_ruiroot: RUIRoot;
     private m_ruicmdlist: RUICmdList;
 
-    private m_ruicanvas: RUICanvas;
+    private m_ruicanvas: RUIDOMCanvas;
 
     public constructor(canvas:HTMLCanvasElement){
-        this.m_ruicanvas = new RUICanvas(canvas);
+        this.m_ruicanvas = new RUIDOMCanvas(canvas);
         this.buildUI();
     }
 

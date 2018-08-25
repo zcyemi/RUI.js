@@ -1,6 +1,6 @@
 import { RUIRoot } from "./RUIRoot";
 import { RUICmdList } from "./RUICmdList";
-import { RUIMouseEvent, RUIMouseDragEvent } from "./RUIEvent";
+import { RUIMouseEvent, RUIMouseDragEvent, RUIKeyboardEvent } from "./RUIEvent";
 import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIContainer } from "./RUIContainer";
 import { RUI, RUILayouter, RUIVal, RUILayoutData } from "./RUI";
@@ -78,9 +78,8 @@ export class RUIObject{
     public id:string;
     public isdirty: boolean = true;
     public isClip: boolean = true;
-    public enabled:boolean = true;
 
-    public _enabled:boolean = true;
+    private _enable:boolean = true;
     public _level:number = 0;
     public _order:number =0;
 
@@ -109,6 +108,10 @@ export class RUIObject{
     public rCaly:number = 0;
 
     public clipMask:RUIRect = RUICLIP_MAX;
+
+
+    public responseToMouseEvent:boolean = true;
+
 
 
     public Layout(){
@@ -192,6 +195,16 @@ export class RUIObject{
         this._root = root;
     }
 
+    public get enable(){
+        return this._enable;
+    }
+
+    public set enable(val:boolean){
+        if(this._enable == val) return;
+        this._enable = val;
+        this.setDirty();
+    }
+
     public setDirty(resize:boolean = false){
         this.isdirty =true;
         let root = this._root;
@@ -220,6 +233,7 @@ export class RUIObject{
     public onMouseEnter(){}
     public onMouseClick(e:RUIMouseEvent){}
     public onMouseDrag(e:RUIMouseDragEvent){}
+    public onKeyPress(e:RUIKeyboardEvent){}
 
     public calculateRect(cliprect?:RUIRect):RUIRect{
         if(this.rCalWidth == RUIAuto || this.rCalHeight == RUIAuto){

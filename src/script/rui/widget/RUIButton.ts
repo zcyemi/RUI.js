@@ -21,7 +21,7 @@ export class RUIButton extends RUIObject{
         super();
         this.label = label;
         this.clickFunction = f;
-        this.height = 23;
+        this.height = RUI.LINE_HEIGHT_DEFAULT;
     }
 
     public onDraw(cmd:RUICmdList){

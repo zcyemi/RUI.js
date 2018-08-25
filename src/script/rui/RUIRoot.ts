@@ -62,7 +62,10 @@ export class RUIRoot {
 
         let target = event.object;
         if (event instanceof RUIKeyboardEvent) {
-
+            let activeUI = this.m_activeUI;
+            if(activeUI != null){
+                activeUI.onKeyPress(event);
+            }
         }
         else if(event instanceof RUIWheelEvent){
             let hoverUI = this.m_hoverUI;
@@ -237,7 +240,7 @@ export class RUIRoot {
         var list: RUIObject[] = [];
 
         let f = (ui: RUIObject) => {
-            if(!ui._enabled) return;
+            if(!ui.enable) return;
             if (ui.rectContains(x, y)) {
                 list.push(ui);
             }
@@ -257,7 +260,8 @@ export class RUIRoot {
         var target: RUIObject = null;
 
         let f = (ui: RUIObject) => {
-            if(!ui._enabled) return;
+            if(!ui.enable) return;
+            if(!ui.responseToMouseEvent) return;
             if (ui.rectContains(x, y)) {
                 if (target == null) {
                     target = ui;
