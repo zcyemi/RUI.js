@@ -59,7 +59,7 @@ class RUIArrayBuffer<T extends TypedArray>{
 class RUIArrayBufferF32 extends RUIArrayBuffer<Float32Array>{ }
 class RUIArrayBufferUI16 extends RUIArrayBuffer<Uint16Array>{ }
 
-class RUITextureDrawData {
+export class RUITextureDrawData {
     public texture: WebGLTexture;
     public data: number[]  =[];
     public uv:number[] = [];

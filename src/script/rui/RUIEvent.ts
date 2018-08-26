@@ -1,4 +1,21 @@
-import { RUIMouseButton, RUIEventType } from "./RUIInput";
+
+export enum RUIMouseButton{
+    Left = 0,
+    Middle = 1,
+    Right = 2
+}
+
+export enum RUIEventType{
+    MouseDown,
+    MouseUp,
+    MouseClick,
+    MouseEnter,
+    MouseLeave,
+    MouseDrag,
+    MouseDrop,
+    MouseMove,
+    MouseWheel,
+}
 
 export class RUIEvent<T>{
     

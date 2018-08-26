@@ -1,5 +1,5 @@
 import { RUIDOMCanvas } from "./RUIDOMCanvas";
-import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIWheelEvent } from "./RUIEvent";
+import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIWheelEvent, RUIEventType } from "./RUIEvent";
 
 
 export class IInputUI{
@@ -14,23 +14,7 @@ export class IInputUI{
 }
 
 
-export enum RUIMouseButton{
-    Left = 0,
-    Middle = 1,
-    Right = 2
-}
 
-export enum RUIEventType{
-    MouseDown,
-    MouseUp,
-    MouseClick,
-    MouseEnter,
-    MouseLeave,
-    MouseDrag,
-    MouseDrop,
-    MouseMove,
-    MouseWheel,
-}
 
 
 export class RUIInput{
