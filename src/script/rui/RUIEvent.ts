@@ -1,5 +1,4 @@
 import { RUIMouseButton, RUIEventType } from "./RUIInput";
-import { RUIObject } from "./RUIObject";
 
 export class RUIEvent<T>{
     

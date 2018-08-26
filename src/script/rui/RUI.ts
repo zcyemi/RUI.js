@@ -138,7 +138,7 @@ export class RUI{
         return [x,y,Math.min(x2,cx2) -x,Math.min(y2,cy2)-y];
     }
 
-    public static RectClipP(content:RUIRectP,clip:RUIRectP) : RUIRectP{
+    public static RectClipP(content:RUIRectP,clip:RUIRectP) : RUIRectP|null{
         if(content == null || clip == null) return null;
         if(content[2] <= clip[0]) return null;
         if(content[3] <= clip[1]) return null;
