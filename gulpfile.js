@@ -46,16 +46,30 @@ gulp.task("sample",()=>{
 });
 
 gulp.task("sample-run",()=>{
-    console.log("[sample run]");
+    var onbuild = false;
+    var onTimeout = false;
 
+    var f = ()=>{
+        onTimeout = false;
+        if(onbuild){
+            if(!onTimeout){
+                onTimeout = true;
+                setTimeout(f,5000);
+            }
+        }
+        else{
+            onbuild = true;
+            console.log('[build sample]');
+            gulprun('rollup -c rollup.config.sample.ts').exec(()=>{
+                onbuild =false;
+                console.log('[build done!]');
+            });
+        }
+        
+    };
 
-    gulp.watch('./sample/src/**/*.ts', ()=>{
-        gulprun('rollup -c rollup.config.sample.ts').exec();
-    })
-
-    gulp.watch('./src/**/*.ts', ()=>{
-        gulprun('rollup -c rollup.config.sample.ts').exec();
-    })
+    gulp.watch('./sample/src/**/*.ts',f);
+    gulp.watch('./src/**/*.ts',f);
 
 
     // browersync.init({

@@ -19,6 +19,6 @@ export default{
             extensions: ['.ts','.js']
         }),
         sourceMaps(),
-        terser()
+        //terser()
     ]
 }
