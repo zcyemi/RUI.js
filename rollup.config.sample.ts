@@ -18,6 +18,7 @@ export default{
             jsnext:true,
             extensions: ['.ts','.js']
         }),
-        sourceMaps()
+        sourceMaps(),
+        terser()
     ]
 }

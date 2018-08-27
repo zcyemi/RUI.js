@@ -1,5 +1,5 @@
 import { GLProgram, GLContext } from "wglut";
-import { GLSL_VERT_DEF, GLSL_FRAG_COLOR, GLSL_VERT_TEXT, GLSL_FRAG_TEXT, GLSL_VERT_IMAGE, GLSL_FRAG_IMAGE } from "../gl/wglShaderLib";
+import { GLSL_VERT_DEF, GLSL_FRAG_COLOR, GLSL_VERT_TEXT, GLSL_FRAG_TEXT, GLSL_VERT_IMAGE, GLSL_FRAG_IMAGE } from "../rui/RUIShaderLib";
 import { RUIFontTexture } from "./RUIFontTexture";
 import { RUICmdList, RUIDrawCmdType } from "./RUICmdList";
 import { RUI } from "./RUI";

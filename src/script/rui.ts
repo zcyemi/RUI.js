@@ -35,3 +35,5 @@ export * from './rui/widget/RUITextInput';
 export * from './rui/widget/RUIToolTip';
 
 export * from './rui/widget/RUIDebug';
+
+export * from './rui/RUIShaderLib';

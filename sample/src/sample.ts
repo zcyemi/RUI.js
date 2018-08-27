@@ -1,12 +1,15 @@
-import {RUIDOMCanvas, RUIRoot, RUICmdList, RUIContainer, RUIDebug} from '../../src/script/rui';
+import {RUIDOMCanvas, RUIRoot, RUICmdList, RUIContainer, RUI} from '../../src/script/rui';
+import { RUISampleWidget } from './ruidebug';
 
 
 export class RUISample{
 
-    private m_ruiroot: RUIRoot;
-    private m_ruicmdlist: RUICmdList;
+    private m_ruiroot:RUIRoot = null;
+    private m_ruicmdlist: RUICmdList = null;
 
     private m_ruicanvas: RUIDOMCanvas;
+
+    private m_sampleWidget:RUISampleWidget;
 
     public constructor(canvas:HTMLCanvasElement){
         this.m_ruicanvas = new RUIDOMCanvas(canvas);
@@ -18,8 +21,11 @@ export class RUISample{
 
         var ui = new RUIContainer();
 
+        let sampleWdiget = new RUISampleWidget();
+        this.m_sampleWidget = sampleWdiget;
 
-        ui.addChild(new RUIDebug());
+
+        ui.addChild(sampleWdiget);
 
         var root = new RUIRoot(ui,false);
         root.root = ui;
@@ -55,6 +61,11 @@ function sample(){
     canvas.style.width = '100%';
     canvas.style.height = '100%';
     canvas.style.backgroundColor = '#333';
+
+    RUI.Init({
+        fontPath: 'resources/consola.ttf',
+        fontSize: 16
+    });
 
     let ruisample = new RUISample(canvas);
 
