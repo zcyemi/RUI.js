@@ -1,8 +1,8 @@
-import { RUIObject, RUIOverflow, RUIOrientation, RUIConst, RUIAuto, RUIPosition, ROUND, RUIRect, RUICLIP_NULL, RUIDefaultLayouter } from "./RUIObject";
+import { RUIObject, RUIOverflow, RUIOrientation, RUIConst, RUIAuto, RUIPosition, ROUND, RUIRect, RUICLIP_NULL, RUIDefaultLayouter, RUILayouter, RUILayoutData } from "./RUIObject";
 import { RUICmdList } from "./RUICmdList";
 import { RUIRoot } from "./RUIRoot";
 import { RUIWheelEvent } from "./RUIEvent";
-import { RUI, RUILayouter, RUIVal, RUISizePair, RUILayoutData, RUICHECK, SIZE } from "./RUI";
+import { RUI, RUIVal, RUISizePair, SIZE } from "./RUI";
 
 export enum RUIContainerUpdateMode {
     None,

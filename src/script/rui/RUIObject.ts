@@ -2,7 +2,7 @@ import { RUIRoot } from "./RUIRoot";
 import { RUICmdList } from "./RUICmdList";
 import { RUIMouseEvent, RUIMouseDragEvent, RUIKeyboardEvent } from "./RUIEvent";
 import { RUIContainer } from "./RUIContainer";
-import { RUI, RUILayouter, RUIVal, RUILayoutData } from "./RUI";
+import { RUI, RUIVal } from "./RUI";
 
 export const RUIAuto: number= -Infinity;
 
@@ -379,5 +379,33 @@ export class RUIDefaultLayouter implements RUILayouter {
         c.rOffx = coffx;
         c.rOffy = coffy;
     }
+}
 
+export interface RUILayouter{
+
+    /**
+     * calculate ui.LayoutWidth ui.LayoutHeight
+     * @param ui Target UI object.
+     */
+    Layout(ui:RUIObject);
+    LayoutPost(ui:RUIObject,data:RUILayoutData);
+}
+
+export class RUILayoutData{
+
+    /** should not be RUIAuto */
+    public containerWidth:RUIVal;
+    /** should not be RUIAuto */
+    public containerHeight:RUIVal;
+    public containerPadding: number[];
+
+
+    public flexWidth?:number;
+    public flexHeight?:number;
+
+    public verify(){
+        if(Number.isNaN(this.containerWidth)) throw new Error('container width is NaN');
+        if(Number.isNaN(this.containerHeight)) throw new Error('container height is NaN');
+        if(this.containerWidth == RUIAuto || this.containerHeight == RUIAuto) throw new Error('coantiner size can not be RUIAuto'); 
+    }
 }
