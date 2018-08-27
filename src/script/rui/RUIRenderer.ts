@@ -2,7 +2,6 @@ import { RUIDOMCanvas } from "./RUIDOMCanvas";
 import { GLContext, GLProgram } from "wglut";
 import { RUIDrawCallBuffer } from "./RUIDrawCallBuffer";
 import { RUIFontTexture } from "./RUIFontTexture";
-import { GLSL_VERT_DEF, GLSL_FRAG_COLOR } from "../gl/wglShaderLib";
 import { RUIStyle } from "./RUIStyle";
 import { RUICmdList } from "./RUICmdList";
 

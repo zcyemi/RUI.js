@@ -1,5 +1,5 @@
 import {RUIObject, ROUND, RUIRect, RUIPosition, RUIAuto} from "../RUIObject";
-import {RUIAlign, RUI, RUILayoutData} from "../RUI";
+import {RUIAlign, RUI} from "../RUI";
 import {RUICmdList} from "../RUICmdList";
 import {RUIStyle} from "../RUIStyle";
 import {RUIContainer} from "../RUIContainer";

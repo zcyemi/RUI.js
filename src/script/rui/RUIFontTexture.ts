@@ -1,6 +1,7 @@
 import * as opentype from 'opentype.js';
 import { GLContext } from 'wglut';
 import { RUIEventEmitter } from './RUIEvent';
+import { RUI } from './RUI';
 
 
 export class RUIGlyph{
@@ -67,7 +68,7 @@ export class RUIFontTexture{
     }
 
     private LoadFont(){
-        opentype.load('consola.ttf',(e,f)=>{
+        opentype.load(RUI.InitConfig.fontPath,(e,f)=>{
             this.m_font = f;
             
             this.FillTexture();

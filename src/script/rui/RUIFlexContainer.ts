@@ -1,6 +1,6 @@
-import { RUIOrientation, RUIConst, RUIAuto, ROUND, RUIObject, RUIPosition } from "./RUIObject";
+import { RUIOrientation, RUIConst, RUIAuto, ROUND, RUIObject, RUIPosition, RUILayouter, RUILayoutData } from "./RUIObject";
 import { RUIContainer, RUIContainerUpdateMode } from "./RUIContainer";
-import { RUILayouter, RUILayoutData, RUIVal } from "./RUI";
+import { RUIVal } from "./RUI";
 
 export class RUIFlexContainer extends RUIContainer {
     public layoutFlexAccu: number;

@@ -1,10 +1,8 @@
 import { RUIRoot } from "./RUIRoot";
 import { RUICmdList } from "./RUICmdList";
 import { RUIMouseEvent, RUIMouseDragEvent, RUIKeyboardEvent } from "./RUIEvent";
-import { RUIFlexContainer } from "./RUIFlexContainer";
 import { RUIContainer } from "./RUIContainer";
-import { RUI, RUILayouter, RUIVal, RUILayoutData } from "./RUI";
-import { RUIDefaultLayouter } from "./RUIDefaultLayouter";
+import { RUI, RUIVal } from "./RUI";
 
 export const RUIAuto: number= -Infinity;
 
@@ -30,7 +28,6 @@ export class RUIConst{
     public static readonly LEFT: number = 3;
 }
 
-type RUISize = number;
 
 export enum RUIPosition{
     Default = 0,
@@ -56,19 +53,19 @@ export enum RUIOrientation{
 
 export class RUIObject{
 
-    public maxwidth: RUISize = RUIAuto;
-    public maxheight: RUISize = RUIAuto;
-    public minwidth:RUISize = 70;
-    public minheight:RUISize = 23;
+    public maxwidth: number = RUIAuto;
+    public maxheight: number = RUIAuto;
+    public minwidth:number = 70;
+    public minheight:number = 23;
     public margin : number[] = [0,0,0,0];    // top right bottom left
     public padding: number[] = [0,0,0,0]; 
 
     public position : RUIPosition = RUIPosition.Default;
 
-    public left: RUISize = RUIAuto;
-    public right: RUISize = RUIAuto;
-    public top: RUISize = RUIAuto;
-    public bottom:RUISize = RUIAuto;
+    public left: number = RUIAuto;
+    public right: number = RUIAuto;
+    public top: number = RUIAuto;
+    public bottom:number = RUIAuto;
 
     public visible: boolean = true;
     public zorder: number = 0;
@@ -145,7 +142,7 @@ export class RUIObject{
         this._drawClipRect = cliprect;
     }
 
-    public set width(val:RUISize){
+    public set width(val:number){
         if(val != this.rWidth){
             this.rWidth = val;
             this._resized = true;
@@ -153,17 +150,17 @@ export class RUIObject{
         
     }
 
-    public get width():RUISize{
+    public get width():number{
         return this.rWidth;
     }
 
-    public set height(val:RUISize){
+    public set height(val:number){
         if(val != this.rHeight){
             this.rHeight = val;
             this._resized = true;
         }
     }
-    public get height():RUISize{
+    public get height():number{
         return this.rHeight;
     }
 
@@ -260,4 +257,155 @@ export class RUIObject{
         return true;
     }
 
+}
+
+
+export class RUIDefaultLayouter implements RUILayouter {
+
+    private static s_layouter = new RUIDefaultLayouter();
+    public static get Layouter(): RUIDefaultLayouter {
+        return this.s_layouter;
+    }
+
+
+    public Layout(ui: RUIObject) {
+
+        ui.layoutWidth = ui.rWidth;
+        ui.layoutHeight = ui.rHeight;
+
+    }
+
+    public LayoutPost(ui: RUIObject, data: RUILayoutData) {
+
+        if (data.flexWidth != null) {
+            ui.rCalWidth = data.flexWidth;
+        }
+        else {
+            if (ui.layoutWidth == RUIAuto) {
+                ui.rCalWidth = data.containerWidth;
+            }
+            else {
+                ui.rCalWidth = ui.layoutWidth;
+            }
+        }
+
+        if (data.flexHeight != null) {
+            ui.rCalHeight = data.flexHeight;
+        }
+        else {
+            if (ui.layoutHeight == RUIAuto) {
+                ui.rCalHeight = data.containerHeight;
+            }
+            else {
+                ui.rCalHeight = ui.layoutHeight;
+            }
+        }
+
+
+    }
+
+    public static LayoutRelative(c: RUIObject, cpw: number, cph: number) {
+
+
+        let cleft = c.left;
+        let cright = c.right;
+        let ctop = c.top;
+        let cbottom = c.bottom;
+
+        let constraintHori = cleft != RUIAuto && cright != RUIAuto;
+        let constraintVert = ctop != RUIAuto && cbottom != RUIAuto;
+
+        let cwidth = RUIAuto;
+        let cheight = RUIAuto;
+
+        let coffx = cleft;
+        let coffy = ctop;
+
+        c.Layout();
+
+        if (constraintHori) {
+            cwidth = Math.max(0, cpw - cleft - cright);
+        }
+        else {
+            if (c.layoutWidth != RUIAuto) {
+                cwidth = c.layoutWidth;
+                if (cleft != RUIAuto) {
+
+                }
+                else if (cright != RUIAuto) {
+                    coffx = cpw - cright - cwidth;
+                }
+                else {
+                    coffx = ROUND((cpw - cwidth) / 2);
+                }
+            }
+            else {
+                // console.error(c);
+                // throw new Error();
+                coffx = cleft;
+            }
+        }
+
+        if (constraintVert) {
+            cheight = Math.max(0, cph - ctop - cbottom);
+        }
+        else {
+            if (c.layoutHeight != RUIAuto) {
+                cheight = c.layoutHeight;
+                if (ctop != RUIAuto) {
+                }
+                else if (cbottom != RUIAuto) {
+                    coffy = cph - cbottom - cheight;
+                }
+                else {
+                    coffy = ROUND((cph - cheight) / 2);
+                }
+            } else {
+                // console.error(c);
+                // throw new Error();
+                coffy  =ctop;
+            }
+        }
+
+        let data = new RUILayoutData();
+        data.flexWidth = cwidth;
+        data.flexHeight = cheight;
+        data.containerWidth = cpw;
+        data.containerHeight = cph;
+
+        c.LayoutPost(data);
+        // c.rCalWidth = cwidth;
+        // c.rCalHeight = cheight;
+        c.rOffx = coffx;
+        c.rOffy = coffy;
+    }
+}
+
+export interface RUILayouter{
+
+    /**
+     * calculate ui.LayoutWidth ui.LayoutHeight
+     * @param ui Target UI object.
+     */
+    Layout(ui:RUIObject);
+    LayoutPost(ui:RUIObject,data:RUILayoutData);
+}
+
+export class RUILayoutData{
+
+    /** should not be RUIAuto */
+    public containerWidth:RUIVal;
+    /** should not be RUIAuto */
+    public containerHeight:RUIVal;
+    public containerPadding: number[];
+
+
+    public flexWidth?:number;
+    public flexHeight?:number;
+
+    public verify(){
+        if(Number.isNaN(this.containerWidth)) throw new Error('container width is NaN');
+        if(Number.isNaN(this.containerHeight)) throw new Error('container height is NaN');
+        if(this.containerWidth == RUIAuto || this.containerHeight == RUIAuto) throw new Error('coantiner size can not be RUIAuto'); 
+    }
 }

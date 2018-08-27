@@ -7,10 +7,11 @@ import {
     ROUND,
     RUIAuto,
     RUIConst,
-    RUICLIP_MAX
+    RUICLIP_MAX,
+    RUILayoutData
 } from "../RUIObject";
 import {RUIStyle} from "../RUIStyle";
-import {RUI, RUILayoutData, CLAMP} from "../RUI";
+import {RUI, CLAMP} from "../RUI";
 import {RUIEvent, RUIWheelEvent} from "../RUIEvent";
 import {RUIFlexContainer} from "../RUIFlexContainer";
 import { RUICmdList } from "../RUICmdList";

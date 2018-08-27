@@ -1,50 +1,28 @@
-import {RUIContainer, RUIContainerClipType, RUIContainerUpdateMode} from "../RUIContainer";
-import {RUILabel} from "./RUILabel";
-import {RUIButton} from "./RUIButton";
-import {RUIRectangle} from "../RUIRectangle";
-import {RUIPosition, RUIOrientation, RUIAuto, RUIConst} from "../RUIObject";
-import {RUIButtonGroup} from "./RUIButtonGroup";
-import {RUIStyle} from "../RUIStyle";
-import {RUIRenderer} from "../RUIRenderer";
-import {RUIFlexContainer} from "../RUIFlexContainer";
-import {RUI} from "../RUI";
-import {RUITabView, RUITabPage} from "./RUITabView";
-import {RUIScrollBar} from "./RUIScrollBar";
-import {RUIScrollView} from "./RUIScrollView";
-import {RUICollapsibleContainer} from "./RUICollapsibleContainer";
-import { RUITextInput, RUITextInputFormat } from "./RUITextInput";
-import { RUIInput } from "../RUIInput";
-import { RUITextField, RUICheckBoxField, RUIIntegerField, RUIFloatField } from "./RUIField";
-import { RUICheckBox } from "./RUICheckBox";
-import { RUISlider } from "./RUISlider";
-import { RUISliderInput } from "./RUISliderInput";
-import { RUIToolTip } from "./RUIToolTip";
-import { RUIOverlay } from "./RUIOverlay";
-import { RUICanvas, RUICanvasNode, RUICanvasContainerNode } from "./RUICanvas";
-import { RUIImage } from "./RUIImage";
+import { RUIContainer, RUIRectangle, RUITabPage, RUITabView, RUICollapsibleContainer, RUIButton, RUI, RUILabel, RUIStyle, RUIFlexContainer, RUIContainerClipType, RUIScrollBar, RUIButtonGroup, RUIScrollView, RUITextInput, RUITextInputFormat, RUITextField, RUICheckBox, RUICheckBoxField, RUISlider, RUISliderInput, RUIIntegerField, RUIFloatField, RUIToolTip, RUIOverlay, RUIImage, RUICanvas, RUICanvasContainerNode, RUIImageSize } from "../../src/script/rui";
+import { RUIConst, RUIOrientation, RUIPosition, RUIAuto } from "../../src/script/rui/RUIObject";
 
-export class RUIDebug extends RUIContainer {
+export class RUISampleWidget extends RUIContainer{
+
 
     public constructor() {
         super();
-        this.boxBorder = RUIStyle.Default.border0;
 
-
-        let pages : RUITabPage[] = [];
+        let pages :RUITabPage[] = [];
 
         pages.push({label: 'basis', ui: new RUIPageBasis()});
         pages.push({label: 'layout', ui: new RUIPageLayout()});
         pages.push({label: 'container', ui: new RUIPageContainer()});
         pages.push({label: 'widget', ui: new RUIPageWidget()});
         pages.push({label: 'compoundwidget', ui: new RUIPageCompoundWiget()});
-        pages.push({label:'canvas',ui:new RUIPageCanvas()})
+        pages.push({label: 'canvas',ui:new RUIPageCanvas()})
 
         let tabview = new RUITabView(pages, RUIConst.LEFT);
         this.addChild(tabview);
 
-    }
 
+    }
 }
+
 
 export class RUIPageBasis extends RUIContainer {
 
@@ -701,7 +679,8 @@ export class RUIPageCompoundWiget extends RUIContainer {
             c2.margin = [10, 0, 0, 0];
             collapse.addChild(c2);
 
-            let sbarVertical = new RUIScrollBar();
+            let sbarVertical = new RUIScrollBar(RUIOrientation.Vertical);
+            sbarVertical.sizeVal =0.5;
             sbarVertical.height = 120;
             c2.addChild(sbarVertical);
 
@@ -865,13 +844,17 @@ export class RUIPageWidget extends RUIContainer {
         let collapse = new RUICollapsibleContainer('Image',true);
         parent.addChild(collapse);
 
-        let image = new RUIImage('Octocat.png',100,100);
+        let image = new RUIImage('resources/octocat.png',200,100,RUIImageSize.Cover);
+        image.imageBackground = RUI.RED;
         collapse.addChild(image);
 
-        let imageWrap = RUIImage.Create(image,200,50);
-        collapse.addChild(imageWrap);
-    }
+        // let imageWrap = RUIImage.Create(image,100,50,RUIImageSize.ScaleToFit);
+        // imageWrap.imageBackground = RUI.RED;
+        // collapse.addChild(imageWrap);
 
+        // let imageWrap1 = RUIImage.Create(image,100,120,RUIImageSize.Cover);
+        // collapse.addChild(imageWrap1);
+    }
 }
 
 export class RUIPageCanvas extends RUIContainer{
