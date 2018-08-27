@@ -1,5 +1,5 @@
 import {RUIDOMCanvas, RUIRoot, RUICmdList, RUIContainer, RUI} from '../../src/script/rui';
-import { RUISampleWidget } from './ruidebug';
+import { RUISampleWidget } from './RUISampleWidget';
 
 
 export class RUISample{

@@ -679,7 +679,8 @@ export class RUIPageCompoundWiget extends RUIContainer {
             c2.margin = [10, 0, 0, 0];
             collapse.addChild(c2);
 
-            let sbarVertical = new RUIScrollBar();
+            let sbarVertical = new RUIScrollBar(RUIOrientation.Vertical);
+            sbarVertical.sizeVal =0.5;
             sbarVertical.height = 120;
             c2.addChild(sbarVertical);
 
