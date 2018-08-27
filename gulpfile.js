@@ -6,6 +6,8 @@ const path = require('path');
 const fs = require('fs');
 const util = require('util');
 
+const gulprun = require('gulp-run');
+
 gulp.task("build", () => {
     BuildScript();
     BuildTemplate();
@@ -35,6 +37,32 @@ gulp.task("watch", () => {
         files: ['./dist/*.js', './dist/*.html']
     })
 });
+
+
+gulp.task("sample",()=>{
+    console.log("[sample]");
+    gulprun('rollup -c rollup.config.sample.ts').exec();
+
+});
+
+gulp.task("sample-run",()=>{
+    console.log("[sample run]");
+
+    gulprun('rollup -c rollup.config.sample.ts -w').exec();
+
+    browersync.init({
+        server: {
+            baseDir: './sample/',
+            middleware: function (req, res, next) {
+                res.setHeader('Access-Control-Allow-Origin', '*');
+                next();
+            }
+        },
+        port: 6633,
+        files: ['./sample/dist/*.js','./sample/index.html']
+    })
+    
+})
 
 function BuildScript() {
     console.log('[sync script]');

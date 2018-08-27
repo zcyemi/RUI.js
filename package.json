@@ -11,7 +11,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc --module commonjs && rollup -c rollup.config.ts",
-    "doc": "typedoc --out docs --target es6 --theme minimal --mode file src"
+    "doc": "typedoc --out docs --target es6 --theme minimal --mode file src",
+    "sample": "gulp sample",
+    "sample-run": "gulp sample-run"
   },
   "repository": {
     "type": "git",
@@ -28,6 +30,8 @@
     "browser-sync": "^2.24.6",
     "gulp": "^3.9.1",
     "gulp-glsl": "^1.2.4",
+    "gulp-rollup": "^2.16.2",
+    "gulp-run": "^1.7.1",
     "gulp-sequence": "^1.0.0",
     "gulp-typescript": "^5.0.0-alpha.3",
     "lodash.camelcase": "^4.3.0",
