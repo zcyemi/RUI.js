@@ -1,6 +1,5 @@
-import { RUI } from "./RUI";
+import { RUI, RUIColor } from "./RUI";
 
-export type RUIColor = number[];
 
 export class RUIStyle{
 
