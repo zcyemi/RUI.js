@@ -14,6 +14,8 @@ export function RUICHECK(ui:RUIObject,name:string){
     if(ui._debugname === name) console.error(ui);
 }
 
+
+
 export type RUIColor = number[];
 export type RUIVal = number;
 
@@ -99,7 +101,22 @@ export class RUILayoutData{
 
 export type RUIAlign = number;
 
+export type RUIInitConfig = {
+    fontPath?: string,
+    fontSize?: number,
+}
+
 export class RUI{
+
+    private static s_config: RUIInitConfig;
+
+    public static Init(config: RUIInitConfig){
+        RUI.s_config = config;
+    }
+
+    public static get InitConfig():RUIInitConfig{
+        return RUI.s_config;
+    }
 
     public static readonly RED:RUIColor = [1,0,0,1];
     public static readonly BLACK:RUIColor =[0,0,0,1];

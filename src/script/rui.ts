@@ -13,7 +13,6 @@ export * from './rui/RUIRectangle';
 export * from './rui/RUIRenderer';
 export * from './rui/RUIStyle';
 
-
 export * from './rui/RUIContainer';
 export * from './rui/RUIFlexContainer';
 
@@ -33,7 +32,5 @@ export * from './rui/widget/RUISliderInput';
 export * from './rui/widget/RUITabView';
 export * from './rui/widget/RUITextInput';
 export * from './rui/widget/RUIToolTip';
-
-export * from './rui/widget/RUIDebug';
 
 export * from './rui/RUIShaderLib';
