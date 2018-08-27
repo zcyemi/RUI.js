@@ -34,9 +34,7 @@ export class RUISample{
         this.m_ruicanvas.EventOnResize.on((e)=>{
             root.resizeRoot(e.object.width,e.object.height);
         });
-        
         this.m_ruicanvas.EventOnUIEvent.on((e)=>root.dispatchEvent(e));
-
         this.m_ruiroot = root;
     }
 

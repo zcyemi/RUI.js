@@ -844,7 +844,8 @@ export class RUIPageWidget extends RUIContainer {
         let collapse = new RUICollapsibleContainer('Image',true);
         parent.addChild(collapse);
 
-        let image = new RUIImage('resources/octocat.png',100,50,RUIImageSize.ScaleToFit);
+        let image = new RUIImage('resources/octocat.png',200,100,RUIImageSize.Cover);
+        image.imageBackground = RUI.RED;
         collapse.addChild(image);
 
         // let imageWrap = RUIImage.Create(image,100,50,RUIImageSize.ScaleToFit);
