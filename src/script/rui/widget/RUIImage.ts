@@ -1,20 +1,31 @@
 import { RUIObject, RUIAuto } from "../RUIObject";
 import { RUICmdList } from "../RUICmdList";
-import { RUI } from "../RUI";
+import { RUI, RUIColor } from "../RUI";
 import { RUIBind } from "../RUIBinder";
+
+export enum RUIImageSize{
+    Initial,
+    Cover,
+    Contain,
+    ScaleToFit
+}
 
 export class RUIImage extends RUIObject{
 
     private m_image:HTMLImageElement;
     private m_valid:boolean = false;
+    private m_size:RUIImageSize;
 
-    public constructor(url:string,width:number = RUIAuto,height:number = RUIAuto){
+    public imageBackground?:RUIColor;
+
+    public constructor(url:string,width:number = RUIAuto,height:number = RUIAuto,size:RUIImageSize = RUIImageSize.Initial){
         super();
         if(url != null && url != ''){
             this.loadImage(url);
         }
         this.width = width;
         this.height = height;
+        this.m_size = size;
 
     }
 
@@ -30,11 +41,24 @@ export class RUIImage extends RUIObject{
         this.m_valid= v;
     }
 
-    public static Create(ruiimg: RUIImage,width:number= RUIAuto,height:number = RUIAuto){
-        var image = new RUIImage(null,width,height);
+    public get imageSize():RUIImageSize{
+        return this.m_size;
+    }
+
+    public set imageSize(size:RUIImageSize){
+        if(this.m_size == size) return;
+        this.m_size = size;
+        this.updateImageSize();
+    }
+
+    public static Create(ruiimg: RUIImage,width:number= RUIAuto,height:number = RUIAuto,size:RUIImageSize = RUIImageSize.Initial){
+        var image = new RUIImage(null,width,height,size);
         image.m_image = ruiimg.m_image;
 
-        RUIBind(ruiimg,'m_valid',v=>image.m_valid = v);
+        RUIBind(ruiimg,'m_valid',v=>{
+            image.m_valid = v;
+            image.updateImageSize();
+        });
         return image;
     }
 
@@ -48,6 +72,42 @@ export class RUIImage extends RUIObject{
 
     private onImageLoaded(image:HTMLImageElement,e:Event){
         this.m_valid = true;
+        console.log('>imgPre: ' + this.width +' '+ this.height);
+        this.updateImageSize();
+
+        console.log('>imgPost: ' + this.width +' '+ this.height);
+    }
+
+    private updateImageSize(){
+
+        let image = this.m_image;
+        let size =this.m_size
+        switch(size){
+            case RUIImageSize.Initial:
+            {
+                this.width = image.width;
+                this.height = image.height;
+
+            }
+            break;
+            default:
+            {
+                let w = this.width;
+                let h = this.height;
+                let aspectRatio = image.width *1.0 / image.height;
+                if(w == RUIAuto){
+                    if(h != RUIAuto){
+                        this.width = aspectRatio * this.height;
+                    }
+                }
+                else{
+                    if(h == RUIAuto){
+                        this.height = this.width / aspectRatio;
+                    }
+                }
+            }
+            break;
+        }
         this.setDirty();
     }
 
@@ -58,8 +118,17 @@ export class RUIImage extends RUIObject{
             return;
         }
 
+        let rect = this._rect;
+
+
         if(this.m_valid){
-            cmd.DrawImage(this.m_image,this._rect,cliprect);
+
+            cmd.DrawImage(this.m_image,rect,cliprect,null);
+            
+            if(this.imageBackground != null){
+                cmd.DrawRectWithColor(rect,this.imageBackground,cliprect);
+            }
+            
         }
         else{
             cmd.DrawRectWithColor(cliprect,RUI.COLOR_ERROR);

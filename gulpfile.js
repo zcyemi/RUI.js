@@ -48,21 +48,34 @@ gulp.task("sample",()=>{
 gulp.task("sample-run",()=>{
     console.log("[sample run]");
 
-    gulprun('rollup -c rollup.config.sample.ts -w').exec();
 
-    browersync.init({
-        server: {
-            baseDir: './sample/',
-            middleware: function (req, res, next) {
-                res.setHeader('Access-Control-Allow-Origin', '*');
-                next();
-            }
-        },
-        port: 6633,
-        files: ['./sample/dist/*.js','./sample/index.html']
+    gulp.watch('./sample/src/**/*.ts', ()=>{
+        gulprun('rollup -c rollup.config.sample.ts').exec();
     })
+
+    gulp.watch('./src/**/*.ts', ()=>{
+        gulprun('rollup -c rollup.config.sample.ts').exec();
+    })
+
+
+    // browersync.init({
+    //     server: {
+    //         baseDir: './sample/',
+    //         middleware: function (req, res, next) {
+    //             res.setHeader('Access-Control-Allow-Origin', '*');
+    //             next();
+    //         }
+    //     },
+    //     port: 6633,
+    //     files: ['./sample/dist/*.js','./sample/index.html']
+    // })
     
 })
+
+
+gulp.task("shader",()=>{
+    BuildShader();
+});
 
 function BuildScript() {
     console.log('[sync script]');
@@ -86,7 +99,7 @@ function BuildTemplate() {
 
 function BuildShader() {
     console.log('[sync shader]');
-    gulp.src('./src/shader/*.glsl').pipe(gulpGLSLMerge('/src/script/gl/wglShaderLib.ts'));
+    gulp.src('./src/shader/*.glsl').pipe(gulpGLSLMerge('/src/script/rui/RUIShaderLib.ts'));
 }
 
 

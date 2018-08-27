@@ -2,6 +2,7 @@ import { RUIRect, RUICLIP_MAX, RUIRectP, RUICLIP_NULL } from "./RUIObject";
 import { RUIRoot } from "./RUIRoot";
 import { RUI } from "./RUI";
 import { RUIContainerClipType } from "./RUIContainer";
+import { RUIImageSize } from "./widget/RUIImage";
 
 export enum RUIDrawCmdType {
     rect,
