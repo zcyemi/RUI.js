@@ -4,6 +4,7 @@ import { RUIFontTexture } from "./RUIFontTexture";
 import { RUICmdList, RUIDrawCmdType } from "./RUICmdList";
 import { RUI } from "./RUI";
 import { RUITextureStorage } from "./RUIRenderer";
+import { CLAMP } from "./RUIObject";
 
 
 const COLOR_ERROR: number[] = [1, 0, 1, 1];
@@ -431,12 +432,21 @@ export class RUIDrawCallBuffer {
 
                         let rect = cmd.Rect;
 
-                        let x =rect[0];
+                        let x = rect[0];
                         let y = rect[1];
-                        let x1 = x+ rect[2];
-                        let y1 = y + rect[3];
+                        let x1 = rect[2];
+                        let y1 = rect[3];
+
+
                         drawData.data.push(x,y,d,x1,y,d,x1,y1,d,x,y1,d);
-                        drawData.uv.push(0,0,1,0,1,1,0,1);
+                        if(cmd.param == null){
+                            drawData.uv.push(0,0,1,0,1,1,0,1);
+                        }
+                        else{
+                            let uv = drawData.uv;
+                            uv = uv.concat(cmd.param);
+                            drawData.uv = uv;
+                        }
                         drawData.count ++;
 
                     }

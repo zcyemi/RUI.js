@@ -1,6 +1,6 @@
 import { RUIRect, RUICLIP_MAX, RUIRectP, RUICLIP_NULL } from "./RUIObject";
 import { RUIRoot } from "./RUIRoot";
-import { RUI } from "./RUI";
+import { RUI, CLAMP } from "./RUI";
 import { RUIContainerClipType } from "./RUIContainer";
 import { RUIImageSize } from "./widget/RUIImage";
 
@@ -18,6 +18,7 @@ export class RUIDrawCmd{
     public Text: string;
     public clip: RUIRectP;
     public object?:any;
+    public param?:any;
 
     public Index:number = 0;
 
@@ -96,7 +97,8 @@ export class RUICmdList{
         this.drawList.push(cmd);
     }
 
-    public DrawImage(image:HTMLImageElement,rect:RUIRect,clip?:RUIRect,order?:number){
+    public DrawImage(image:HTMLImageElement,r:RUIRect,clip?:RUIRect,order?:number,size:RUIImageSize = RUIImageSize.Initial){
+        let rect = r.slice(0);
         let cmd = RUIDrawCmd.CmdImage(image,rect);
         cmd.clip = RUI.toRectP(clip == null? rect:clip);
         if(order != null){
@@ -105,6 +107,79 @@ export class RUICmdList{
         else{
             cmd.Index = this.currentOrder;
         }
+
+        let uv = null;
+
+        let rectwidth = rect[2];
+        let rectheight = rect[3];
+
+        let isCover = size == RUIImageSize.Cover;
+        let isContain = size == RUIImageSize.Contain;
+
+        let imgw  =image.width;
+        let imgh = image.height;
+
+        if(isCover || isContain){
+            let imageRatio = imgw / imgh;
+            let rectRatio = rectwidth / rectheight;
+
+            if(imageRatio != rectRatio){
+                let stretchWidth = true;
+                if(isCover){
+                    if(rectRatio > imageRatio){
+                        stretchWidth = false;
+                    }
+                }
+                else{
+                    if(rectRatio < imageRatio) stretchWidth = false;
+                }
+
+                if(stretchWidth){
+                    let w = rectheight * imageRatio;
+                    rect[0] += (rectwidth - w)/2.0;
+                    rect[2] = w;
+                }
+                else{
+                    let h = rectwidth / imageRatio;
+                    rect[1] += (rectheight - h) / 2.0;
+                    rect[3] = h;
+                }
+            }
+        }
+
+        //doclip
+
+        let cclip = cmd.clip;
+
+        let xmin = cclip[0];
+        let xmax = cclip[2];
+        let ymin = cclip[1];
+        let ymax = cclip[3];
+
+        let rx1 = rect[0];
+        let rx2 = rx1 + rect[2];
+        let ry1 = rect[1];
+        let ry2 = ry1 + rect[3];
+
+
+        let x1 = CLAMP(rx1,xmin,xmax);
+        let x2 = CLAMP(rx2,xmin,xmax);
+        let y1 = CLAMP(ry1,ymin,ymax);
+        let y2 = CLAMP(ry2,ymin,ymax);
+
+        cmd.Rect = [x1,y1,x2,y2];
+
+        if(size == RUIImageSize.Cover){
+            let ux1 = (x1 - rx1) / imgw;
+            let ux2 = 1.0+ (x2 - rx2) / imgw;
+            let uy1 = (y1 - ry1) / imgh;
+            let uy2 = 1.0 + (y2 - ry2) / imgh;
+
+            uv = [ux1,uy1,ux2,uy1,ux2,uy2,ux1,uy2];
+        }
+
+        cmd.param = uv;
+
         this.drawList.push(cmd);
     }
 
