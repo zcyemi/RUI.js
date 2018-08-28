@@ -4,15 +4,23 @@ import camelCase from 'lodash.camelcase';
 import typescript from 'rollup-plugin-typescript2';
 import sourceMaps from 'rollup-plugin-sourcemaps';
 import { terser } from "rollup-plugin-terser";
+import process from 'process';
 
-const pkg = require('./package.json');
 const libraryName = 'rui';
+
+var fileUMD = 'dist/rui.umd.js';
+var fileESM = 'dist/rui.es5.js';
+
+if(process.env.TERSER === 'true'){
+    fileUMD = 'dist/rui.umd.min.js';
+    fileESM = 'dist/rui.es5.min.js';
+}
 
 export default{
     input: `src/script/${libraryName}.ts`,
     output: [
-        {file: pkg.main, name: camelCase(libraryName), format: 'umd',sourcemap: true},
-        {file:pkg.module,format: 'es',sourcemap:true}
+        {file: fileUMD, name: camelCase(libraryName), format: 'umd',sourcemap: true},
+        {file:fileESM,format: 'es',sourcemap:true}
     ],
     external: [],
     plugins: [
@@ -23,6 +31,6 @@ export default{
             extensions: ['.ts','.js']
         }),
         sourceMaps(),
-        terser(),
+        (process.env.TERSER === 'true' && terser())
     ]
 }
