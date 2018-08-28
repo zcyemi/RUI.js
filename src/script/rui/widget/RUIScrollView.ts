@@ -11,7 +11,7 @@ import {
     RUILayoutData
 } from "../RUIObject";
 import {RUIStyle} from "../RUIStyle";
-import {RUI, CLAMP} from "../RUI";
+import {RUIUtil, CLAMP} from "../RUIUtil";
 import {RUIEvent, RUIWheelEvent} from "../RUIEvent";
 import {RUIFlexContainer} from "../RUIFlexContainer";
 import { RUICmdList } from "../RUICmdList";

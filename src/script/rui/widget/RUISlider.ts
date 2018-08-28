@@ -1,7 +1,7 @@
 import { RUIObject, RUIOrientation } from "../RUIObject";
 import { RUICmdList } from "../RUICmdList";
 import { RUIStyle } from "../RUIStyle";
-import { SATURATE } from "../RUI";
+import { SATURATE } from "../RUIUtil";
 import { RUIMouseEvent, RUIMouseDragEvent, RUIMouseDragStage, RUIEventEmitter } from "../RUIEvent";
 
 

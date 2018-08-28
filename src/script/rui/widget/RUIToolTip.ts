@@ -1,6 +1,7 @@
 import { RUIRectangle } from "../RUIRectangle";
 import { RUICmdList } from "../RUICmdList";
-import { RUI } from "../RUI";
+import { RUIUtil } from "../RUIUtil";
+import { RUIColor } from "../RUIColor";
 
 
 export class RUIToolTip extends RUIRectangle{
@@ -31,7 +32,7 @@ export class RUIToolTip extends RUIRectangle{
         {
             let rect = this._rect.slice(0);
             rect[1]-= 20;
-            cmd.DrawRectWithColor(rect,RUI.RED,null,500);
+            cmd.DrawRectWithColor(rect,RUIColor.RED,null,500);
         }
     }
 }

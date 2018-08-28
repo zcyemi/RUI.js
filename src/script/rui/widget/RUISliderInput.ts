@@ -1,5 +1,5 @@
 import { RUIFlexContainer } from "../RUIFlexContainer";
-import { RUI } from "../RUI";
+import { RUIUtil } from "../RUIUtil";
 import { RUISlider } from "./RUISlider";
 import { RUITextInput, RUITextInputFormat } from "./RUITextInput";
 import { RUIAuto, RUIOrientation } from "../RUIObject";
@@ -19,13 +19,13 @@ export class RUISliderInput extends RUIFlexContainer{
 
     public constructor(val:number,min:number = 0,max:number=1.0,isInteger:boolean = false){
         super();
-        this.height = RUI.LINE_HEIGHT_DEFAULT;
+        this.height = RUIUtil.LINE_HEIGHT_DEFAULT;
         this.boxOrientation = RUIOrientation.Horizontal;
         this.m_isinteger = isInteger;
         this.m_min = min;
         this.m_max = max;
 
-        let slider = new RUISlider(val,RUI.LINE_HEIGHT_DEFAULT);
+        let slider = new RUISlider(val,RUIUtil.LINE_HEIGHT_DEFAULT);
         slider.EventOnValue.on(this.onValue.bind(this));
         slider.flex= 1;
         this.addChild(slider);

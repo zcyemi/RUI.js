@@ -1,6 +1,6 @@
 export * from './rui/RUIDOMCanvas';
 
-export * from './rui/RUI';
+export * from './rui/RUIUtil';
 export * from './rui/RUIBinder';
 export * from './rui/RUICmdList';
 export * from './rui/RUIRoot';

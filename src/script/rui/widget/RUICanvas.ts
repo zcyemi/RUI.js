@@ -1,6 +1,6 @@
 import { RUIContainer } from "../RUIContainer";
 import { RUIPosition } from "../RUIObject";
-import { RUI } from "../RUI";
+import { RUIUtil } from "../RUIUtil";
 import { RUIStyle } from "../RUIStyle";
 import { RUIMouseDragEvent, RUIMouseDragStage, RUIMouseEvent } from "../RUIEvent";
 import { RUILabel } from "./RUILabel";
@@ -139,7 +139,7 @@ export class RUICanvasContainerNode extends RUICanvasNode{
     private m_onactive:boolean = false;
     public constructor(title:string){
         super();
-        this.padding = RUI.Vector(3);
+        this.padding = RUIUtil.Vector(3);
         this.boxBorder = RUIStyle.Default.border0;
         this.boxBackground = RUIStyle.Default.background1;
         this.addChild(new RUILabel(title));

@@ -4,11 +4,11 @@ import { RUICmdList } from "../RUICmdList";
 import { RUIStyle } from "../RUIStyle";
 import { RUIRectangle } from "../RUIRectangle";
 import { RUIMouseEvent, RUIMouseDragEvent, RUIMouseDragStage, RUIEventEmitter } from "../RUIEvent";
-import { RUI, RUIColor, SATURATE } from "../RUI";
+import { RUIUtil, SATURATE } from "../RUIUtil";
 
 export class RUIScrollBarThumb extends RUIRectangle {
-    private m_hoverColor: RUIColor = RUIStyle.Default.primary0;
-    private m_defaultColor: RUIColor = RUIStyle.Default.background3;
+    private m_hoverColor: number[] = RUIStyle.Default.primary0;
+    private m_defaultColor: number[] = RUIStyle.Default.background3;
 
     private m_scrollbar: RUIScrollBar;
     private m_dragStartOffset: number;

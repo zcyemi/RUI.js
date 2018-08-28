@@ -1,6 +1,6 @@
 import { RUIRect, RUICLIP_MAX, RUIRectP, RUICLIP_NULL } from "./RUIObject";
 import { RUIRoot } from "./RUIRoot";
-import { RUI, CLAMP } from "./RUI";
+import { RUIUtil, CLAMP } from "./RUIUtil";
 import { RUIContainerClipType } from "./RUIContainer";
 import { RUIImageSize } from "./widget/RUIImage";
 
@@ -86,7 +86,7 @@ export class RUICmdList{
 
     public DrawRectWithColor(pos: number[], color: number[],clip?:RUIRect,order?:number) {
         let cmd = new RUIDrawCmd(pos);
-        cmd.clip = RUI.toRectP(clip == null? pos:clip);
+        cmd.clip = RUIUtil.toRectP(clip == null? pos:clip);
         cmd.Color = color;
         if(order!=null){
             cmd.Index = order;
@@ -100,7 +100,7 @@ export class RUICmdList{
     public DrawImage(image:HTMLImageElement,r:RUIRect,clip?:RUIRect,order?:number,size:RUIImageSize = RUIImageSize.Initial){
         let rect = r.slice(0);
         let cmd = RUIDrawCmd.CmdImage(image,rect);
-        cmd.clip = RUI.toRectP(clip == null? rect:clip);
+        cmd.clip = RUIUtil.toRectP(clip == null? rect:clip);
         if(order != null){
             cmd.Index = order;
         }
@@ -185,7 +185,7 @@ export class RUICmdList{
 
     public DrawText(text: string, rect:RUIRect, color?: number[],cliprect?:RUIRect,order?:number) {
         let cmd = RUIDrawCmd.CmdText(text, rect, color);
-        cmd.clip = RUI.toRectP(cliprect == null? rect:cliprect);
+        cmd.clip = RUIUtil.toRectP(cliprect == null? rect:cliprect);
         if(order!=null){
             cmd.Index = order;
         }
@@ -200,7 +200,7 @@ export class RUICmdList{
         if(rect == null) throw new Error();
 
         let cmd = RUIDrawCmd.CmdBorder(rect, color);
-        cmd.clip = RUI.toRectP(cliprect == null? rect:cliprect);
+        cmd.clip = RUIUtil.toRectP(cliprect == null? rect:cliprect);
         if(order!=null){
             cmd.Index = order;
         }

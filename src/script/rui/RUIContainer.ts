@@ -2,7 +2,7 @@ import { RUIObject, RUIOverflow, RUIOrientation, RUIConst, RUIAuto, RUIPosition,
 import { RUICmdList } from "./RUICmdList";
 import { RUIRoot } from "./RUIRoot";
 import { RUIWheelEvent } from "./RUIEvent";
-import { RUI, RUIVal, RUISizePair, SIZE } from "./RUI";
+import { RUIUtil, RUISizePair, SIZE } from "./RUIUtil";
 
 export enum RUIContainerUpdateMode {
     None,
@@ -189,8 +189,8 @@ export class RUIContainer extends RUIObject {
             case RUIContainerClipType.Clip:
                 let parent = this.parent;
                 let rootrect = this._root.rootRect;
-                this.layoutClipRect = RUI.RectClip(rect, parent == null ? rootrect : parent.layoutClipRect);
-                this.layoutClipRectPadded = RUI.RectClip(paddingrect, parent == null ? rootrect : (this.isOnFlow ? parent.layoutClipRectPadded : parent.layoutClipRect));
+                this.layoutClipRect = RUIUtil.RectClip(rect, parent == null ? rootrect : parent.layoutClipRect);
+                this.layoutClipRectPadded = RUIUtil.RectClip(paddingrect, parent == null ? rootrect : (this.isOnFlow ? parent.layoutClipRectPadded : parent.layoutClipRect));
                 break;
             case RUIContainerClipType.ClipSelf:
                 this.layoutClipRect = rect;
