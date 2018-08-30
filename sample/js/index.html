@@ -1,0 +1,28 @@
+<html>
+    <head>
+        <title>RUI Sample</title>
+        <style>
+            body,html{
+                padding: 0;
+                margin: 0;
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.min.js"></script>
+    </head>
+    <body>
+        <canvas id="ruisample" style="width:100%;height:100%; background-color:black"></canvas>
+        <!-- <script src="./js//opentype.js"></script> -->
+        <script>
+
+            require.config({
+                baseUrl: './'
+            });
+            require(['opentype.js','rui'],(rui)=>{
+                require(['ruisample']);
+                console.log(rui);
+            });
+        </script>
+    </body>
+</html>

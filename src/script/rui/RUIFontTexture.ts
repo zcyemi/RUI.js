@@ -1,8 +1,11 @@
-import * as opentype from 'opentype.js';
+
 import { GLContext } from 'wglut';
 import { RUIEventEmitter } from './RUIEvent';
 import { RUIUtil } from './RUIUtil';
 import { RUI_CONFIG} from './RUIContext';
+
+/// <reference path='./../../../node_modules/@types/opentype.js/index.d.ts' />
+import opentype = require('opentype.js');
 
 export class RUIGlyph{
 

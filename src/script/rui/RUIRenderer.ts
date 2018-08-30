@@ -1,9 +1,13 @@
 import { RUIDOMCanvas } from "./RUIDOMCanvas";
-import { GLContext, GLProgram } from "wglut";
 import { RUIDrawCallBuffer } from "./RUIDrawCallBuffer";
 import { RUIFontTexture } from "./RUIFontTexture";
 import { RUIStyle } from "./RUIStyle";
 import { RUICmdList } from "./RUICmdList";
+
+import wglut = require('wglut');
+
+type GLContext = wglut.GLContext;
+type GLProgram = wglut.GLProgram;
 
 
 export class RUIRenderer {
@@ -30,7 +34,7 @@ export class RUIRenderer {
 
     public constructor(uicanvas: RUIDOMCanvas) {
         this.m_uicanvas = uicanvas;
-        this.glctx = GLContext.createFromCanvas(uicanvas.canvas);
+        this.glctx = wglut.GLContext.createFromCanvas(uicanvas.canvas);
         this.m_textureStorage = new RUITextureStorage(this.glctx);
 
 
@@ -199,11 +203,11 @@ export class RUIRenderer {
 
 export class RUITextureStorage {
 
-    private m_glctx: GLContext;
+    private m_glctx: wglut.GLContext;
 
     private m_map: { key: HTMLImageElement, value: WebGLTexture }[] = [];
 
-    public constructor(glctx: GLContext) {
+    public constructor(glctx: wglut.GLContext) {
         this.m_glctx = glctx;
     }
 

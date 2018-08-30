@@ -5,111 +5,60 @@ const through = require('through2')
 const path = require('path');
 const fs = require('fs');
 const util = require('util');
+const seq = require('gulp-sequence');
 
 const gulprun = require('gulp-run');
 
 gulp.task("build", () => {
     BuildScript();
-    BuildTemplate();
     BuildShader();
 });
 
 gulp.task("watch", () => {
-
     BuildScript();
-    BuildTemplate();
     BuildShader();
-
-
     gulp.watch('./src/script/**/*.ts', BuildScript);
-    gulp.watch('./src/template/**.*', BuildTemplate);
     gulp.watch('./src/shader/*.glsl', BuildShader);
-
-    browersync.init({
-        server: {
-            baseDir: './dist/',
-            middleware: function (req, res, next) {
-                res.setHeader('Access-Control-Allow-Origin', '*');
-                next();
-            }
-        },
-        port: 6633,
-        files: ['./dist/*.js', './dist/*.html']
-    })
 });
 
 
 gulp.task("sample",()=>{
-    console.log("[sample]");
-    gulprun('rollup -c rollup.config.sample.ts').exec();
-
-});
-
-gulp.task("sample-run",()=>{
-    var onbuild = false;
-    var onTimeout = false;
-
-    var f = ()=>{
-        onTimeout = false;
-        if(onbuild){
-            if(!onTimeout){
-                onTimeout = true;
-                setTimeout(f,5000);
-            }
-        }
-        else{
-            onbuild = true;
-            console.log('[build sample]');
-            gulprun('rollup -c rollup.config.sample.ts').exec(()=>{
-                onbuild =false;
-                console.log('[build done!]');
-            });
-        }
-        
-    };
-
-    gulp.watch('./sample/src/**/*.ts',f);
-    gulp.watch('./src/**/*.ts',f);
-
-
-    // browersync.init({
-    //     server: {
-    //         baseDir: './sample/',
-    //         middleware: function (req, res, next) {
-    //             res.setHeader('Access-Control-Allow-Origin', '*');
-    //             next();
-    //         }
-    //     },
-    //     port: 6633,
-    //     files: ['./sample/dist/*.js','./sample/index.html']
-    // })
-    
+    BuildShader();
+    BuildSample();
 })
 
+gulp.task("sample-watch",()=>{
+
+    BuildSample();
+
+    gulp.watch('./src/script/**/*.ts', seq(["builscript","buildsample"]));
+    gulp.watch('./src/shader/*.glsl', BuildShader);
+    gulp.watch('./sample/src/*.ts',BuildSample);
+})
 
 gulp.task("shader",()=>{
     BuildShader();
 });
 
+
+gulp.task("builscript",BuildScript);
+gulp.task("buildsample",BuildSample);
 function BuildScript() {
     console.log('[sync script]');
-    gulp.src('./src/script/**/*.ts').pipe(gulpts({
-        module: 'amd',
-        lib: ['dom', 'es2015'],
-        declaration: true,
-        outFile: 'rui.js',
-        target: 'es5',
-        moduleResolution: 'node'
-    }))
-        .pipe(gulp.dest('./dist/'));
+    gulprun('tsc -p ./src --module amd --outFile ./dist/bundle/rui.js').exec();
 }
 
-function BuildTemplate() {
-    console.log('[sync template]');
-    gulp.src('./src/template/**.*').pipe(gulp.dest('./dist'));
-    gulp.src('./node_modules/opentype.js/dist/opentype.js').pipe(gulp.dest('./dist'));
-    gulp.src('./node_modules/wglut/dist/**.js').pipe(gulp.dest('./dist/'));
+function BuildSample() {
+    console.log('[sync script]');
+    gulprun('tsc -p ./sample').exec();
+
+    gulp.src('./node_modules/wglut/dist/wglut.js').pipe(gulp.dest('./sample/js/'));
+    gulp.src('./node_modules/opentype.js/dist/opentype.js').pipe(gulp.dest('./sample/js/'));
+    gulp.src('./dist/bundle/rui.js').pipe(gulp.dest('./sample/js/'));
+
+
 }
+
 
 function BuildShader() {
     console.log('[sync shader]');

@@ -3,6 +3,9 @@ import { RUICursor } from "./RUICursor";
 import { RUIRenderer } from "./RUIRenderer";
 import { RUIEventEmitter, RUIResizeEvent, RUIObjEvent } from "./RUIEvent";
 import { RUIContainer } from "./RUIContainer";
+import { RUIRoot } from "./RUIRoot";
+import { RUIObject } from "./RUIObject";
+import { RUIEVENT_ONFRAME } from "./RUIContext";
 
 
 
@@ -14,8 +17,8 @@ export class RUIDOMCanvas {
     private m_input: RUIInput;
     private m_cursor: RUICursor;
 
-    public m_width: number;
-    public m_height: number;
+    private m_width: number;
+    private m_height: number;
 
     private m_isResized: boolean = false;
 
@@ -23,7 +26,9 @@ export class RUIDOMCanvas {
 
     public EventOnUIEvent: RUIEventEmitter<RUIObjEvent> = new RUIEventEmitter();
 
-    constructor(canvas: HTMLCanvasElement) {
+    private m_root: RUIRoot;
+
+    constructor(canvas: HTMLCanvasElement,baseui:RUIObject = new RUIContainer()) {
         this.m_canvas = canvas;
         this.m_renderer = new RUIRenderer(this);
 
@@ -32,6 +37,23 @@ export class RUIDOMCanvas {
 
         this.registerEvent();
 
+        if(baseui != null){
+            let root = new RUIRoot(baseui,true);
+            this.m_root = root;
+            this.rootInit();
+        }
+
+
+        RUIEVENT_ONFRAME.on(this.onFrame.bind(this));
+
+    }
+
+    private rootInit(){
+        let root = this.root;
+        root.resizeRoot(this.canvasWidth,this.canvasHeight);
+        this.EventOnResize.on((e)=>{
+            root.resizeRoot(e.object.width,e.object.height);
+        })
     }
 
     private registerEvent() {
@@ -44,12 +66,32 @@ export class RUIDOMCanvas {
         })
     }
 
+    private onFrame(f:number){
+    }
+
     private onResizeCanvas(width:number,height:number){
         this.m_renderer.resizeCanvas(width,height);
         this.EventOnResize.emit(new RUIResizeEvent(width,height));
     }
 
 
+    public get root():RUIRoot{
+        return this.m_root;
+    }
+
+    public set root(val:RUIRoot){
+        if(val == null) return;
+        this.m_root =this.root;
+        this.rootInit();
+    }
+
+    public get canvasWidth():number{
+        return this.m_canvas.width;
+    }
+
+    public get canvasHeight():number{
+        return this.m_canvas.height;
+    }
 
     public get canvas(): HTMLCanvasElement {
         return this.m_canvas;
