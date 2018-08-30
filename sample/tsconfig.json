@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "moduleResolution": "classic",
+        "moduleResolution": "node",
         "target": "es5",
         "module": "amd",
         "lib": ["es2015","es2016","es2017","dom"],
@@ -13,9 +13,6 @@
         "outDir": "./js",
         "outFile": "./js/ruisample.js",
         "rootDir": "./src",
-        "typeRoots": [
-            "./js"
-        ],
         "strictNullChecks": false,
     },
     "include": [

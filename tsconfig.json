@@ -2,7 +2,7 @@
     "compilerOptions": {
         "moduleResolution": "node",
         "target": "es5",
-        "module": "amd",
+        "module": "es2015",
         "lib": ["es2015","es2016","es2017","dom"],
         "strict": false,
         "sourceMap": true,
@@ -11,12 +11,16 @@
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         //"declarationDir": "dist/types",
-        "outDir": "../dist/lib",
+        "outDir": "./dist/lib",
         "typeRoots": [
-            "../node_modules/@types",
+            "./node_modules/@types",
+            "./node_modules/wglut/dist/types"
+        ],
+        "types": [
+            "wglut","opentype.js"
         ]
     },
     "include": [
-        "./script"
+        "./src/script"
     ]
 }

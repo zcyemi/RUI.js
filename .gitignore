@@ -3,3 +3,4 @@ package-lock.json
 dist/
 .rpt2_cache/
 /docs/
+sample/js

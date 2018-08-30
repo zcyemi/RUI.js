@@ -11,8 +11,8 @@
     "doc": "typedoc --out docs --target es6 --theme minimal --mode file src",
     "build": "gulp build",
     "watch": "gulp watch",
-    "build-sample": "gulp build && gulp sample",
-    "watch-sample": "gulp build && gulp sample-watch",
+    "build-sample": "gulp build && gulp build-sample",
+    "watch-sample": "gulp build && gulp watch-sample",
     "prebuild": "rimraf ./dist"
   },
   "repository": {
@@ -36,6 +36,12 @@
     "gulp-typescript": "^5.0.0-alpha.3",
     "lodash.camelcase": "^4.3.0",
     "rimraf": "^2.6.2",
+    "rollup": "^0.65.0",
+    "rollup-plugin-commonjs": "^9.1.6",
+    "rollup-plugin-node-resolve": "^3.3.0",
+    "rollup-plugin-sourcemaps": "^0.4.2",
+    "rollup-plugin-terser": "^1.0.1",
+    "rollup-plugin-typescript2": "^0.17.0",
     "through2": "^2.0.3",
     "typedoc": "^0.12.0",
     "typescript": "^2.9.2"
@@ -44,6 +50,6 @@
     "@types/webgl2": "0.0.4",
     "opentype.js": "^0.9.0",
     "typr-ts": "^1.1.5",
-    "wglut": "0.0.3"
+    "wglut": "file:../wglut"
   }
 }

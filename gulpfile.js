@@ -22,12 +22,12 @@ gulp.task("watch", () => {
 });
 
 
-gulp.task("sample",()=>{
+gulp.task("build-sample",()=>{
     BuildShader();
     BuildSample();
 })
 
-gulp.task("sample-watch",()=>{
+gulp.task("watch-sample",()=>{
 
     BuildSample();
 
@@ -45,16 +45,17 @@ gulp.task("builscript",BuildScript);
 gulp.task("buildsample",BuildSample);
 function BuildScript() {
     console.log('[sync script]');
-    gulprun('tsc -p ./src --module amd --outFile ./dist/bundle/rui.js').exec();
+    gulprun('tsc --module amd --outFile ./dist/rui.js --emitDeclarationOnly').exec();
+    gulprun('rollup -c rollup.config.ts').exec();
 }
 
 function BuildSample() {
     console.log('[sync script]');
     gulprun('tsc -p ./sample').exec();
 
-    gulp.src('./node_modules/wglut/dist/wglut.js').pipe(gulp.dest('./sample/js/'));
-    gulp.src('./node_modules/opentype.js/dist/opentype.js').pipe(gulp.dest('./sample/js/'));
-    gulp.src('./dist/bundle/rui.js').pipe(gulp.dest('./sample/js/'));
+    //gulp.src('./node_modules/wglut/dist/wglut.js').pipe(gulp.dest('./sample/js/'));
+    // gulp.src('./node_modules/opentype.js/dist/opentype.js').pipe(gulp.dest('./sample/js/'));
+    gulp.src('./dist/rui.js').pipe(gulp.dest('./sample/js/'));
 
 
 }

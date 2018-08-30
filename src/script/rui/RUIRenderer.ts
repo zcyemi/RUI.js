@@ -4,7 +4,7 @@ import { RUIFontTexture } from "./RUIFontTexture";
 import { RUIStyle } from "./RUIStyle";
 import { RUICmdList } from "./RUICmdList";
 
-import wglut = require('wglut');
+import * as wglut from 'wglut';
 
 type GLContext = wglut.GLContext;
 type GLProgram = wglut.GLProgram;
