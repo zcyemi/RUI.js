@@ -13,15 +13,12 @@
     </head>
     <body>
         <canvas id="ruisample" style="width:100%;height:100%; background-color:black"></canvas>
-        <!-- <script src="./js//opentype.js"></script> -->
         <script>
-
             require.config({
                 baseUrl: './js'
             });
             require(['rui'],(rui)=>{
                 require(['ruisample']);
-                console.log(rui);
             });
         </script>
     </body>
