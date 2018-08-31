@@ -1,6 +1,8 @@
 /// <reference path='./../../dist/rui.d.ts'/>
 
-import { RUIContainer, RUIInitContext, RUIDOMCanvas, RUIRectangle, RUILabel } from "rui";
+import { RUIContainer, RUIInitContext, RUIDOMCanvas } from "rui";
+import { RUISampleWidget } from "./RUISampleWidget";
+
 
 let canvas = <HTMLCanvasElement>document.getElementById('ruisample');
 
@@ -8,9 +10,11 @@ RUIInitContext({
     fontPath :'./resources/consola.ttf'
 });
 
-let uicontainer = new RUIContainer();
-uicontainer.addChild(new RUIRectangle(100,100));
-uicontainer.addChild(new RUILabel('demo'));
 
-let ruicanvas = new RUIDOMCanvas(canvas,uicontainer);
+let sample = new RUISampleWidget();
+
+
+
+
+let ruicanvas = new RUIDOMCanvas(canvas,sample);
 
