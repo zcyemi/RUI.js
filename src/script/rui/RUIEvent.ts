@@ -39,7 +39,6 @@ export class RUIEvent<T>{
 
 export type RUIEventFunc<T> = (e:RUIEvent<T>)=>void; 
 
-
 export class RUIEventEmitter<T>{
 
     private m_listener:RUIEventFunc<T>[] = [];

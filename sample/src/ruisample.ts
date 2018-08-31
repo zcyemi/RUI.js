@@ -1,15 +1,16 @@
 /// <reference path='./../../dist/rui.d.ts'/>
-import rui = require('rui');
+
+import { RUIContainer, RUIInitContext, RUIDOMCanvas, RUIRectangle, RUILabel } from "rui";
+
 
 let canvas = <HTMLCanvasElement>document.getElementById('ruisample');
 
-rui.RUIInitContext({
+RUIInitContext({
     fontPath :'./resources/consola.ttf'
 });
 
-let ruicanvas = new rui.RUIDOMCanvas(canvas);
+let uicontainer = new RUIContainer();
+uicontainer.addChild(new RUIRectangle(100,100));
+uicontainer.addChild(new RUILabel('demo'));
 
-console.log(ruicanvas);
-
-
-window['sample'] = canvas;
+let ruicanvas = new RUIDOMCanvas(canvas,uicontainer);

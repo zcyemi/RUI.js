@@ -21,43 +21,85 @@ gulp.task("watch", () => {
     gulp.watch('./src/shader/*.glsl', BuildShader);
 });
 
+gulp.task('run-sample',()=>{
+    RunSample();
+});
 
 gulp.task("build-sample",()=>{
     BuildShader();
-    BuildSample();
+    BuildSample(true);
 })
 
+
 gulp.task("watch-sample",()=>{
-
-    BuildSample();
-
-    gulp.watch('./src/script/**/*.ts', seq(["builscript","buildsample"]));
+    BuildSample(true);
+    gulp.watch('./src/script/**/*.ts', ()=>{
+        BuildSample(true);
+    });
     gulp.watch('./src/shader/*.glsl', BuildShader);
-    gulp.watch('./sample/src/*.ts',BuildSample);
+    gulp.watch('./sample/src/*.ts',()=>{
+        BuildSample();
+    });
+
+    RunSample();
 })
 
 gulp.task("shader",()=>{
     BuildShader();
 });
 
-
 gulp.task("builscript",BuildScript);
 gulp.task("buildsample",BuildSample);
+
+
 function BuildScript() {
-    console.log('[sync script]');
-    gulprun('tsc --module amd --outFile ./dist/rui.js --emitDeclarationOnly').exec();
-    gulprun('rollup -c rollup.config.ts').exec();
+    gulprun('tsc --module amd --outFile ./dist/rui.js --emitDeclarationOnly && rollup -c rollup.config.ts').exec();
 }
 
-function BuildSample() {
-    console.log('[sync script]');
-    gulprun('tsc -p ./sample').exec();
+var onBuild = false;
+var onScheduler = false;
 
-    //gulp.src('./node_modules/wglut/dist/wglut.js').pipe(gulp.dest('./sample/js/'));
-    // gulp.src('./node_modules/opentype.js/dist/opentype.js').pipe(gulp.dest('./sample/js/'));
+function BuildSample(script = false) {
+
+    if(onBuild){
+        if(onScheduler){
+            return;
+        }
+        else{
+            setTimeout(()=>{
+                onScheduler = false;
+                BuildSample(script);
+            },5000);
+        }
+    }
+    onBuild = true;
+
+    if(script){
+        console.log('[build script and sample]');
+        gulprun('tsc --module amd --outFile ./dist/rui.js --emitDeclarationOnly && rollup -c rollup.config.ts && tsc -p ./sample').exec();
+    }
+    else{
+        console.log('[sync sample]');
+        gulprun('tsc -p ./sample').exec();
+        
+    }
     gulp.src('./dist/rui.js').pipe(gulp.dest('./sample/js/'));
 
+    onBuild = false;
+}
 
+function RunSample(){
+    browersync.init({
+        server: {
+            baseDir: './sample/',
+            middleware: function (req, res, next) {
+                res.setHeader('Access-Control-Allow-Origin', '*');
+                next();
+            }
+        },
+        port: 6633,
+        files: ['./sample/js/*.js', './sample/*.html']
+    })
 }
 
 

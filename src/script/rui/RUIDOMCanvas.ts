@@ -6,9 +6,7 @@ import { RUIContainer } from "./RUIContainer";
 import { RUIRoot } from "./RUIRoot";
 import { RUIObject } from "./RUIObject";
 import { RUIEVENT_ONFRAME } from "./RUIContext";
-
-
-
+import { RUICmdList } from "./RUICmdList";
 
 export class RUIDOMCanvas {
     private m_canvas: HTMLCanvasElement;
@@ -27,6 +25,7 @@ export class RUIDOMCanvas {
     public EventOnUIEvent: RUIEventEmitter<RUIObjEvent> = new RUIEventEmitter();
 
     private m_root: RUIRoot;
+    private m_cmdlist:RUICmdList;
 
     constructor(canvas: HTMLCanvasElement,baseui:RUIObject = new RUIContainer()) {
         this.m_canvas = canvas;
@@ -40,12 +39,11 @@ export class RUIDOMCanvas {
         if(baseui != null){
             let root = new RUIRoot(baseui,true);
             this.m_root = root;
+            this.m_cmdlist = new RUICmdList();
             this.rootInit();
         }
 
-
         RUIEVENT_ONFRAME.on(this.onFrame.bind(this));
-
     }
 
     private rootInit(){
@@ -62,11 +60,18 @@ export class RUIDOMCanvas {
         this.m_canvas.addEventListener('contextmenu', (e) => { e.preventDefault(); return false });
         window.addEventListener('resize',()=>{
             ruicanvas.onResizeCanvas(window.innerWidth,window.innerHeight);
-
         })
     }
 
     private onFrame(f:number){
+        let root = this.root;
+        if(this.root == null) return;
+        let renderer = this.renderer;
+        if(root.isdirty || renderer.needRedraw){
+            root.layout();
+            this.m_cmdlist.draw(root);
+            renderer.DrawCmdList(this.m_cmdlist);
+        }
     }
 
     private onResizeCanvas(width:number,height:number){

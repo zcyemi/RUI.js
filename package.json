@@ -13,7 +13,8 @@
     "watch": "gulp watch",
     "build-sample": "gulp build && gulp build-sample",
     "watch-sample": "gulp build && gulp watch-sample",
-    "prebuild": "rimraf ./dist"
+    "prebuild": "rimraf ./dist",
+    "start": "gulp run-sample"
   },
   "repository": {
     "type": "git",
@@ -50,6 +51,6 @@
     "@types/webgl2": "0.0.4",
     "opentype.js": "^0.9.0",
     "typr-ts": "^1.1.5",
-    "wglut": "file:../wglut"
+    "wglut": "0.0.4"
   }
 }
