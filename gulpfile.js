@@ -6,12 +6,13 @@ const path = require('path');
 const fs = require('fs');
 const util = require('util');
 const seq = require('gulp-sequence');
+const child_process = require('child_process');
 
 const gulprun = require('gulp-run');
 
 gulp.task("build", () => {
-    BuildScript();
     BuildShader();
+    BuildScript();
 });
 
 gulp.task("watch", () => {
@@ -27,20 +28,15 @@ gulp.task('run-sample',()=>{
 
 gulp.task("build-sample",()=>{
     BuildShader();
-    BuildSample(true);
+    BuildSample();
 })
 
 
 gulp.task("watch-sample",()=>{
     BuildSample(true);
-    gulp.watch('./src/script/**/*.ts', ()=>{
-        BuildSample(true);
-    });
+    gulp.watch('./src/script/**/*.ts', BuildSample);
     gulp.watch('./src/shader/*.glsl', BuildShader);
-    gulp.watch('./sample/src/*.ts',()=>{
-        BuildSample();
-    });
-
+    gulp.watch('./sample/src/*.ts',BuildSample);
     RunSample();
 })
 
@@ -52,40 +48,63 @@ gulp.task("builscript",BuildScript);
 gulp.task("buildsample",BuildSample);
 
 
-function BuildScript() {
-    gulprun('tsc --module amd --outFile ./dist/rui.js --emitDeclarationOnly && rollup -c rollup.config.ts').exec();
+function asyncGenDeclaration(){
+    return new Promise(resolve=>{
+        console.log('[gen declaration]');
+        child_process.exec('tsc --module amd --outFile ./dist/rui.js --emitDeclarationOnly',(error,stdout,stderr)=>{
+            if(stdout != null && stdout != '') console.log(stdout);
+            if(stderr != null && stderr != '') console.log(stderr);
+            resolve();
+        });
+    });
 }
 
-var onBuild = false;
-var onScheduler = false;
+function asyncBuildLib(){
+    return new Promise(resolve=>{
+        console.log('[build lib]');
+        child_process.exec('rollup -c rollup.config.ts',(error,stdout,stderr)=>{
+            if(stdout != null && stdout != '') console.log(stdout);
+            if(stderr != null && stderr != '') console.log(stderr);
+            resolve();
+        });
+    });
+}
 
-function BuildSample(script = false) {
+function asyncBuildSample(){
+    return new Promise(resolve=>{
+        console.log('[build sample]');
+        child_process.exec('tsc -p ./sample',(error,stdout,stderr)=>{
+            if(stdout != null && stdout != '') console.log(stdout);
+            if(stderr != null && stderr != '') console.log(stderr);
+            resolve();
+        });
+    });
+}
 
-    if(onBuild){
-        if(onScheduler){
-            return;
+async function BuildScript() {
+    await asyncGenDeclaration();
+    await asyncBuildLib();
+}
+
+
+var onBuildSample =false;
+var onSchedulerBuild =false;
+
+async function BuildSample() {
+    onSchedulerBuild = false;
+    if(onBuildSample){
+        if(!onSchedulerBuild){
+            onSchedulerBuild = true;
+            setTimeout(BuildSample,5000);
         }
-        else{
-            setTimeout(()=>{
-                onScheduler = false;
-                BuildSample(script);
-            },5000);
-        }
+        return;
     }
-    onBuild = true;
-
-    if(script){
-        console.log('[build script and sample]');
-        gulprun('tsc --module amd --outFile ./dist/rui.js --emitDeclarationOnly && rollup -c rollup.config.ts && tsc -p ./sample').exec();
-    }
-    else{
-        console.log('[sync sample]');
-        gulprun('tsc -p ./sample').exec();
-        
-    }
+    onBuildSample = true;
+    await asyncGenDeclaration();
+    await asyncBuildLib();
+    await asyncBuildSample();
     gulp.src('./dist/rui.js').pipe(gulp.dest('./sample/js/'));
-
-    onBuild = false;
+    onBuildSample = false;
 }
 
 function RunSample(){
