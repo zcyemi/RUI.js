@@ -20,14 +20,12 @@ export function CLAMP(val:number,min:number,max:number){
     return Math.min(Math.max(min, val), max);
 }
 
-
 export class RUIConst{
     public static readonly TOP:number = 0;
     public static readonly RIGHT:number = 1;
     public static readonly BOTTOM:number = 2;
     public static readonly LEFT: number = 3;
 }
-
 
 export enum RUIPosition{
     Default = 0,
@@ -106,9 +104,7 @@ export class RUIObject{
 
     public clipMask:RUIRect = RUICLIP_MAX;
 
-
     public responseToMouseEvent:boolean = true;
-
 
 
     public Layout(){

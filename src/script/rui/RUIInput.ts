@@ -1,21 +1,15 @@
 import { RUIDOMCanvas } from "./RUIDOMCanvas";
 import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIWheelEvent, RUIEventType } from "./RUIEvent";
 
-
 export class IInputUI{
 
     public onKeyPress(e:KeyboardEvent){
 
     }
-
     public onKeyDown(e:KeyboardEvent){
 
     }
 }
-
-
-
-
 
 export class RUIInput{
 

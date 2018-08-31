@@ -2,7 +2,6 @@
 
 import { RUIContainer, RUIInitContext, RUIDOMCanvas, RUIRectangle, RUILabel } from "rui";
 
-
 let canvas = <HTMLCanvasElement>document.getElementById('ruisample');
 
 RUIInitContext({
@@ -14,3 +13,4 @@ uicontainer.addChild(new RUIRectangle(100,100));
 uicontainer.addChild(new RUILabel('demo'));
 
 let ruicanvas = new RUIDOMCanvas(canvas,uicontainer);
+
