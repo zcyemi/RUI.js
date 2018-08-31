@@ -1,5 +1,5 @@
 /// <reference path='./../../dist/rui.d.ts'/>
-import { RUIContainer, RUIRectangle, RUITabPage, RUITabView, RUICollapsibleContainer, RUIButton,RUIUtil, RUILabel, RUIStyle, RUIFlexContainer, RUIContainerClipType, RUIScrollBar, RUIButtonGroup, RUIScrollView, RUITextInput, RUITextInputFormat, RUITextField, RUICheckBox, RUICheckBoxField, RUISlider, RUISliderInput, RUIIntegerField, RUIFloatField, RUIToolTip, RUIOverlay, RUIImage, RUICanvas, RUICanvasContainerNode, RUIImageSize, RUIConst, RUIOrientation, RUIColor, RUIPosition, RUIAuto } from "rui";
+import { RUIContainer, RUIRectangle, RUITabPage, RUITabView, RUICollapsibleContainer, RUIButton,RUIUtil, RUILabel, RUIStyle, RUIFlexContainer, RUIContainerClipType, RUIScrollBar, RUIButtonGroup, RUIScrollView, RUITextInput, RUITextInputFormat, RUITextField, RUICheckBox, RUICheckBoxField, RUISlider, RUISliderInput, RUIIntegerField, RUIFloatField, RUIToolTip, RUIOverlay, RUIImage, RUICanvas, RUICanvasContainerNode, RUIImageSize, RUIConst, RUIOrientation, RUIColor, RUIPosition, RUIAuto, RUIDropdowns } from "rui";
 
 
 export class RUISampleWidget extends RUIContainer{
@@ -832,6 +832,7 @@ export class RUIPageWidget extends RUIContainer {
         
 
         var overlay = new RUIOverlay();
+        overlay.enable = false;
         let btn = new RUIButton('overlay',b=>{
             overlay.enable = !overlay.enable;
             overlay.setDirty();
@@ -839,6 +840,11 @@ export class RUIPageWidget extends RUIContainer {
         btn.width = 100;
         collapse.addChild(btn);
         collapse.addChild(overlay);
+
+        //dropdowns
+
+        let dropdown = new RUIDropdowns('dropdown');
+        collapse.addChild(dropdown);
     }
 
     private WidgetImage(parent:RUIContainer){

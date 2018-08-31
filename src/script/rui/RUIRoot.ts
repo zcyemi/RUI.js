@@ -84,6 +84,15 @@ export class RUIRoot {
 
     }
 
+    public setActiveUI(ui:RUIObject){
+        let curactiveUI = this.m_activeUI;
+        if(curactiveUI == ui) return;
+        if(curactiveUI != null){
+            curactiveUI.onInactive();
+        }
+        this.m_activeUI = ui;
+    }
+
     private dispatchMouseEvent(e: RUIMouseEvent) {
         let etype = e.type;
         if (etype == RUIEventType.MouseMove) {
@@ -212,7 +221,9 @@ export class RUIRoot {
     }
 
     private dispatchMouseMove(x: number, y: number) {
-        let newList = this.traversalAll(x, y);
+
+
+        let [newList,maxorder] = this.traversalAll(x, y);
         let curList = this.m_hoverUI;
 
         for (var i = curList.length - 1; i >= 0; i--) {
@@ -230,18 +241,21 @@ export class RUIRoot {
         for (var i = 0, len = newList.length; i < len; i++) {
             let c = newList[i];
             if (curList.indexOf(c) >= 0) continue;
-            c.onMouseEnter();
+            c.onMouseEnter(c._finalOrder == maxorder);
             curList.push(c);
         }
     }
 
-    private traversalAll(x: number, y: number): RUIObject[] {
+    private traversalAll(x: number, y: number):[RUIObject[],number] {
         var list: RUIObject[] = [];
+
+        var maxfinalOrder = 0;
 
         let f = (ui: RUIObject) => {
             if(!ui.enable) return;
             if (ui.rectContains(x, y)) {
                 list.push(ui);
+                maxfinalOrder = Math.max(maxfinalOrder,ui._finalOrder);
             }
         }
 
@@ -252,7 +266,7 @@ export class RUIRoot {
         else {
             f(root);
         }
-        return list;
+        return [list,maxfinalOrder];
     }
 
     private traversalNormal(x: number, y: number): RUIObject {
@@ -266,7 +280,7 @@ export class RUIRoot {
                     target = ui;
                 }
                 else {
-                    if (ui._order >= target._order) target = ui;
+                    if (ui._finalOrder >= target._finalOrder) target = ui;
                 }
             }
         };

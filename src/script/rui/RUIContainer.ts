@@ -149,6 +149,8 @@ export class RUIContainer extends RUIObject {
             if (!c.enable) continue;
 
             cmd.currentOrder = c._order;
+            cmd.currentLayer = c.layer;
+            c._finalOrder = c._order+ c.layer * cmd.MaxDrawCount;
 
             if (c.visible) {
                 if (c.isClip) {
@@ -203,6 +205,7 @@ export class RUIContainer extends RUIObject {
         this._drawClipRect = cliprect;
 
         cmd.currentOrder = this._order;
+        cmd.currentLayer = this.layer;
         //background
         if (this.boxBackground != null && cliprect != null) cmd.DrawRectWithColor(rect, this.boxBackground, cliprect);
     }

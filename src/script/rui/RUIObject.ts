@@ -34,6 +34,8 @@ export class RUIObject{
     private _enable:boolean = true;
     public _level:number = 0;
     public _order:number =0;
+    public _finalOrder:number =0;
+    public layer:number = 0;
 
     protected _rect :RUIRect;
     public _drawClipRect:RUIRect;
@@ -180,7 +182,7 @@ export class RUIObject{
     public onActive(){}
     public onInactive(){}
     public onMouseLeave(){}
-    public onMouseEnter(){}
+    public onMouseEnter(ontop?:boolean){}
     public onMouseClick(e:RUIMouseEvent){}
     public onMouseDrag(e:RUIMouseDragEvent){}
     public onKeyPress(e:RUIKeyboardEvent){}

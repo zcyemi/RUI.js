@@ -72,15 +72,16 @@ export class RUIDrawCmd{
 export class RUICmdList{
     public drawList: RUIDrawCmd[] = [];
     public MaxDrawCount:number = 1000;
+    public MaxLayer: number = 2;
     public isDirty:boolean = false;
 
     public currentOrder:number = 0;
+    public currentLayer:number =0;
 
     public draw(root: RUIRoot){
 
         this.drawList = [];
         root.root.onDraw(this);
-        
         this.isDirty = true;
     }
 
@@ -92,7 +93,7 @@ export class RUICmdList{
             cmd.Index = order;
         }
         else{
-            cmd.Index = this.currentOrder;
+            cmd.Index = this.currentOrder + this.currentLayer * this.MaxDrawCount;
         }
         this.drawList.push(cmd);
     }
@@ -105,7 +106,7 @@ export class RUICmdList{
             cmd.Index = order;
         }
         else{
-            cmd.Index = this.currentOrder;
+            cmd.Index = this.currentOrder + this.currentLayer * this.MaxDrawCount;
         }
 
         let uv = null;
@@ -190,7 +191,7 @@ export class RUICmdList{
             cmd.Index = order;
         }
         else{
-            cmd.Index = this.currentOrder;
+            cmd.Index = this.currentOrder + this.currentLayer * this.MaxDrawCount;
         }
         this.drawList.push(cmd);
     }
@@ -205,7 +206,7 @@ export class RUICmdList{
             cmd.Index = order;
         }
         else{
-            cmd.Index = this.currentOrder;
+            cmd.Index = this.currentOrder + this.currentLayer * this.MaxDrawCount;
         }
         this.drawList.push(cmd);
     }

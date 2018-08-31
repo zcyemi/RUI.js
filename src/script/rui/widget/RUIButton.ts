@@ -37,16 +37,21 @@ export class RUIButton extends RUIObject{
 
     }
 
-    public onMouseEnter(){
-        this.m_color = RUIStyle.Default.primary;
-        this.setDirty();
-        this.m_onhover = true;
+    public onMouseEnter(ontop?:boolean){
+        if(ontop && !this.m_onhover){
+            this.m_color = RUIStyle.Default.primary;
+            this.setDirty();
+            this.m_onhover = true;
+        }
+
     }
 
     public onMouseLeave(){
-        this.m_color = RUIStyle.Default.background3;
-        this.setDirty();
-        this.m_onhover = false;
+        if(this.m_onhover){
+            this.m_color = RUIStyle.Default.background3;
+            this.setDirty();
+            this.m_onhover = false;
+        }
     }
 
     public onMouseClick(e:RUIMouseEvent){

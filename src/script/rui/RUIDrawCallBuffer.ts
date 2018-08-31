@@ -256,7 +256,7 @@ export class RUIDrawCallBuffer {
         let textureDraw: RUITextureDrawData[] = [];
         this.textureDrawData = textureDraw;
 
-        let drawDepthMax = drawcall.MaxDrawCount;
+        let drawDepthMax = drawcall.MaxDrawCount * drawcall.MaxLayer;
 
         let rect_vert = this.m_aryBufferRectPos.resetPos();
         let rect_color = this.m_aryBufferRectColor.resetPos();
