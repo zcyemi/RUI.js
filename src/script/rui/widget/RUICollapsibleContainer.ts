@@ -1,7 +1,7 @@
 import { RUIContainer } from "../RUIContainer";
 import { RUIButton } from "./RUIButton";
 import { RUIPosition, RUIObject, RUIOrientation } from "../RUIObject";
-import { RUI } from "../RUI";
+import { RUIUtil } from "../RUIUtil";
 import { RUIRectangle } from "../RUIRectangle";
 import { RUIStyle } from "../RUIStyle";
 

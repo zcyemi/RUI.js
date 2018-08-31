@@ -1,7 +1,8 @@
 import { RUIObject, RUIAuto } from "../RUIObject";
 import { RUICmdList } from "../RUICmdList";
-import { RUI, RUIColor } from "../RUI";
+import { RUIUtil } from "../RUIUtil";
 import { RUIBind } from "../RUIBinder";
+import { RUIColor } from "../RUIColor";
 
 export enum RUIImageSize{
     Initial,
@@ -16,7 +17,7 @@ export class RUIImage extends RUIObject{
     private m_valid:boolean = false;
     private m_size:RUIImageSize;
 
-    public imageBackground?:RUIColor;
+    public imageBackground?:number[];
 
     public constructor(url:string,width:number = RUIAuto,height:number = RUIAuto,size:RUIImageSize = RUIImageSize.Initial){
         super();
@@ -124,7 +125,7 @@ export class RUIImage extends RUIObject{
             }
         }
         else{
-            cmd.DrawRectWithColor(cliprect,RUI.COLOR_ERROR);
+            cmd.DrawRectWithColor(cliprect,RUIColor.COLOR_ERROR);
         }
     }
 }

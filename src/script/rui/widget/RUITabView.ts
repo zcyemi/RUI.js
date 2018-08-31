@@ -6,7 +6,7 @@ import { RUIStyle } from "../RUIStyle";
 import { RUIBind } from "../RUIBinder";
 import { RUIScrollView } from "./RUIScrollView";
 import { RUIFlexContainer } from "../RUIFlexContainer";
-import { RUI } from "../RUI";
+import { RUIUtil } from "../RUIUtil";
 
 
 export interface RUITabPage{
@@ -44,7 +44,7 @@ export class RUITabView extends RUIFlexContainer{
             
             this.boxOrientation = RUIOrientation.Vertical;
             pagewrap.boxMatchWidth = true;
-            menu.height = RUI.LINE_HEIGHT_DEFAULT;
+            menu.height = RUIUtil.LINE_HEIGHT_DEFAULT;
             menu = new RUIButtonGroup(buttons,RUIOrientation.Horizontal);
             if(tabpos == RUIConst.TOP){
                 super.addChild(menu);

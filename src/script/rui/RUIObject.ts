@@ -2,7 +2,7 @@ import { RUIRoot } from "./RUIRoot";
 import { RUICmdList } from "./RUICmdList";
 import { RUIMouseEvent, RUIMouseDragEvent, RUIKeyboardEvent } from "./RUIEvent";
 import { RUIContainer } from "./RUIContainer";
-import { RUI, RUIVal } from "./RUI";
+import { RUIUtil } from "./RUIUtil";
 
 export const RUIAuto: number= -Infinity;
 
@@ -88,13 +88,13 @@ export class RUIObject{
     public _debugname:string;
 
     /* Refactoring Start*/
-    public rWidth?:RUIVal =RUIAuto;
-    public rHeight?:RUIVal = RUIAuto;
+    public rWidth?:number =RUIAuto;
+    public rHeight?:number = RUIAuto;
 
     //Layouter
     public layouter: RUILayouter = RUIDefaultLayouter.Layouter;
-    public layoutWidth?:RUIVal;
-    public layoutHeight?:RUIVal;
+    public layoutWidth?:number;
+    public layoutHeight?:number;
 
     public rCalWidth:number;
     public rCalHeight:number;
@@ -137,7 +137,7 @@ export class RUIObject{
     public onDraw(cmd:RUICmdList){
         let rect = this.calculateRect();
         this._rect = rect;
-        let cliprect = RUI.RectClip(rect,this.clipMask);
+        let cliprect = RUIUtil.RectClip(rect,this.clipMask);
 
         this._drawClipRect = cliprect;
     }
@@ -240,7 +240,7 @@ export class RUIObject{
         //let rect =  [this._calx,this._caly,this._calwidth,this._calheight];
         let rect = [this.rCalx,this.rCaly,this.rCalWidth,this.rCalHeight];
         if(cliprect != null){
-            return RUI.RectClip(rect,cliprect);
+            return RUIUtil.RectClip(rect,cliprect);
         }
         return rect;
     }
@@ -394,9 +394,9 @@ export interface RUILayouter{
 export class RUILayoutData{
 
     /** should not be RUIAuto */
-    public containerWidth:RUIVal;
+    public containerWidth:number;
     /** should not be RUIAuto */
-    public containerHeight:RUIVal;
+    public containerHeight:number;
     public containerPadding: number[];
 
 

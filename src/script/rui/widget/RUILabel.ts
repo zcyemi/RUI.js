@@ -1,6 +1,6 @@
 import { RUIObject } from "../RUIObject";
 import { RUICmdList } from "../RUICmdList";
-import { RUI } from "../RUI";
+import { RUIUtil } from "../RUIUtil";
 import { RUIFontTexture } from "../RUIFontTexture";
 import { RUIContainerClipType } from "../RUIContainer";
 
@@ -12,7 +12,7 @@ export class RUILabel extends RUIObject{
         super();
         this.m_label= label;
         this.width = 100;
-        this.height = RUI.LINE_HEIGHT_DEFAULT;
+        this.height = RUIUtil.LINE_HEIGHT_DEFAULT;
         this.responseToMouseEvent = false;
     }   
 

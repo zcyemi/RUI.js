@@ -3,7 +3,7 @@ import { RUIFlexContainer } from "../RUIFlexContainer";
 import { RUILabel } from "./RUILabel";
 import { RUITextInput, RUITextInputFormat } from "./RUITextInput";
 import { RUICheckBox } from "./RUICheckBox";
-import { RUIAlign, RUI } from "../RUI";
+import { RUIAlign, RUIUtil } from "../RUIUtil";
 import { RUIEventEmitter } from "../RUIEvent";
 import { RUISliderInput } from "./RUISliderInput";
 
@@ -54,7 +54,7 @@ export class RUITextField extends RUIField<RUITextInput>{
 }
 
 export class RUICheckBoxField extends RUIField<RUICheckBox>{
-    public constructor(label: string, checked: boolean, align: RUIAlign = RUI.ALIGN_LEFT) {
+    public constructor(label: string, checked: boolean, align: RUIAlign = RUIUtil.ALIGN_LEFT) {
         let checkbox = new RUICheckBox(checked, align);
         super(label, checkbox);
     }

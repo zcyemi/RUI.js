@@ -4,7 +4,8 @@ import { RUIContainer } from "../RUIContainer";
 import { RUIStyle } from "../RUIStyle";
 import { RUIKeyboardEvent, RUIEvent, RUIEventEmitter } from "../RUIEvent";
 import { RUIInput } from "../RUIInput";
-import { RUI } from "../RUI";
+import { RUIUtil } from "../RUIUtil";
+import { RUIColor } from "../RUIColor";
 
 
 export class RUITextInputFormat{
@@ -37,7 +38,7 @@ export class RUITextInput extends RUIObject{
         super();
         this.m_content = content;
         this.inputFormat = format;
-        this.height = RUI.LINE_HEIGHT_DEFAULT;
+        this.height = RUIUtil.LINE_HEIGHT_DEFAULT;
         this.width = 200;
 
         this.m_isError = !format.verify(this.m_content);
@@ -74,7 +75,7 @@ export class RUITextInput extends RUIObject{
 
         let color = RUIStyle.Default.primary0;
         if(this.m_isError){
-            color = RUI.RED;
+            color = RUIColor.RED;
         }
         else if(this.m_onActive){
             color = RUIStyle.Default.primary;

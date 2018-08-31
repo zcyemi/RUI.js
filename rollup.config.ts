@@ -8,19 +8,18 @@ import process from 'process';
 
 const libraryName = 'rui';
 
-var fileUMD = 'dist/rui.umd.js';
+var fileUMD = 'dist/rui.js';
 var fileESM = 'dist/rui.es5.js';
 
 if(process.env.TERSER === 'true'){
-    fileUMD = 'dist/rui.umd.min.js';
+    fileUMD = 'dist/rui.min.js';
     fileESM = 'dist/rui.es5.min.js';
 }
 
 export default{
     input: `src/script/${libraryName}.ts`,
     output: [
-        {file: fileUMD, name: camelCase(libraryName), format: 'umd',sourcemap: true},
-        {file:fileESM,format: 'es',sourcemap:true}
+        {file: fileUMD, name: camelCase(libraryName), format: 'umd',sourcemap: true}
     ],
     external: [],
     plugins: [

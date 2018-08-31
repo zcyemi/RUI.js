@@ -5,111 +5,103 @@ const through = require('through2')
 const path = require('path');
 const fs = require('fs');
 const util = require('util');
+const seq = require('gulp-sequence');
 
 const gulprun = require('gulp-run');
 
 gulp.task("build", () => {
     BuildScript();
-    BuildTemplate();
     BuildShader();
 });
 
 gulp.task("watch", () => {
-
     BuildScript();
-    BuildTemplate();
     BuildShader();
-
-
     gulp.watch('./src/script/**/*.ts', BuildScript);
-    gulp.watch('./src/template/**.*', BuildTemplate);
     gulp.watch('./src/shader/*.glsl', BuildShader);
+});
 
+gulp.task('run-sample',()=>{
+    RunSample();
+});
+
+gulp.task("build-sample",()=>{
+    BuildShader();
+    BuildSample(true);
+})
+
+
+gulp.task("watch-sample",()=>{
+    BuildSample(true);
+    gulp.watch('./src/script/**/*.ts', ()=>{
+        BuildSample(true);
+    });
+    gulp.watch('./src/shader/*.glsl', BuildShader);
+    gulp.watch('./sample/src/*.ts',()=>{
+        BuildSample();
+    });
+
+    RunSample();
+})
+
+gulp.task("shader",()=>{
+    BuildShader();
+});
+
+gulp.task("builscript",BuildScript);
+gulp.task("buildsample",BuildSample);
+
+
+function BuildScript() {
+    gulprun('tsc --module amd --outFile ./dist/rui.js --emitDeclarationOnly && rollup -c rollup.config.ts').exec();
+}
+
+var onBuild = false;
+var onScheduler = false;
+
+function BuildSample(script = false) {
+
+    if(onBuild){
+        if(onScheduler){
+            return;
+        }
+        else{
+            setTimeout(()=>{
+                onScheduler = false;
+                BuildSample(script);
+            },5000);
+        }
+    }
+    onBuild = true;
+
+    if(script){
+        console.log('[build script and sample]');
+        gulprun('tsc --module amd --outFile ./dist/rui.js --emitDeclarationOnly && rollup -c rollup.config.ts && tsc -p ./sample').exec();
+    }
+    else{
+        console.log('[sync sample]');
+        gulprun('tsc -p ./sample').exec();
+        
+    }
+    gulp.src('./dist/rui.js').pipe(gulp.dest('./sample/js/'));
+
+    onBuild = false;
+}
+
+function RunSample(){
     browersync.init({
         server: {
-            baseDir: './dist/',
+            baseDir: './sample/',
             middleware: function (req, res, next) {
                 res.setHeader('Access-Control-Allow-Origin', '*');
                 next();
             }
         },
         port: 6633,
-        files: ['./dist/*.js', './dist/*.html']
+        files: ['./sample/js/*.js', './sample/*.html']
     })
-});
-
-
-gulp.task("sample",()=>{
-    console.log("[sample]");
-    gulprun('rollup -c rollup.config.sample.ts').exec();
-
-});
-
-gulp.task("sample-run",()=>{
-    var onbuild = false;
-    var onTimeout = false;
-
-    var f = ()=>{
-        onTimeout = false;
-        if(onbuild){
-            if(!onTimeout){
-                onTimeout = true;
-                setTimeout(f,5000);
-            }
-        }
-        else{
-            onbuild = true;
-            console.log('[build sample]');
-            gulprun('rollup -c rollup.config.sample.ts').exec(()=>{
-                onbuild =false;
-                console.log('[build done!]');
-            });
-        }
-        
-    };
-
-    gulp.watch('./sample/src/**/*.ts',f);
-    gulp.watch('./src/**/*.ts',f);
-
-
-    // browersync.init({
-    //     server: {
-    //         baseDir: './sample/',
-    //         middleware: function (req, res, next) {
-    //             res.setHeader('Access-Control-Allow-Origin', '*');
-    //             next();
-    //         }
-    //     },
-    //     port: 6633,
-    //     files: ['./sample/dist/*.js','./sample/index.html']
-    // })
-    
-})
-
-
-gulp.task("shader",()=>{
-    BuildShader();
-});
-
-function BuildScript() {
-    console.log('[sync script]');
-    gulp.src('./src/script/**/*.ts').pipe(gulpts({
-        module: 'amd',
-        lib: ['dom', 'es2015'],
-        declaration: true,
-        outFile: 'rui.js',
-        target: 'es5',
-        moduleResolution: 'node'
-    }))
-        .pipe(gulp.dest('./dist/'));
 }
 
-function BuildTemplate() {
-    console.log('[sync template]');
-    gulp.src('./src/template/**.*').pipe(gulp.dest('./dist'));
-    gulp.src('./node_modules/opentype.js/dist/opentype.js').pipe(gulp.dest('./dist'));
-    gulp.src('./node_modules/wglut/dist/**.js').pipe(gulp.dest('./dist/'));
-}
 
 function BuildShader() {
     console.log('[sync shader]');

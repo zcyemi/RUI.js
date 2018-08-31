@@ -2,9 +2,7 @@ import { RUIObject, RUIAuto } from "../RUIObject";
 import { RUICmdList } from "../RUICmdList";
 import { RUIStyle } from "../RUIStyle";
 import { RUIMouseEvent } from "../RUIEvent";
-import { RUI, RUIVal } from "../RUI";
-import { RUIFontTexture } from "../RUIFontTexture";
-import { RUIContainerClipType } from "../RUIContainer";
+import { RUIUtil } from "../RUIUtil";
 
 export type RUIButtonFunc = (btn:RUIButton)=>void;
 
@@ -21,14 +19,14 @@ export class RUIButton extends RUIObject{
         super();
         this.label = label;
         this.clickFunction = f;
-        this.height = RUI.LINE_HEIGHT_DEFAULT;
+        this.height = RUIUtil.LINE_HEIGHT_DEFAULT;
     }
 
     public onDraw(cmd:RUICmdList){
         let rect= this.calculateRect();
         this._rect = rect;
 
-        let cliprect = RUI.RectClip(rect,this.clipMask);
+        let cliprect = RUIUtil.RectClip(rect,this.clipMask);
         this._drawClipRect = cliprect; 
 
         if(cliprect == null){

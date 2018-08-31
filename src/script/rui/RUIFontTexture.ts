@@ -1,7 +1,9 @@
-import * as opentype from 'opentype.js';
-import { GLContext } from 'wglut';
+import {GLContext,GLProgram} from 'wglut';
 import { RUIEventEmitter } from './RUIEvent';
-import { RUI } from './RUI';
+import { RUIUtil } from './RUIUtil';
+import { RUI_CONFIG} from './RUIContext';
+
+import * as opentype from 'opentype.js';
 
 
 export class RUIGlyph{
@@ -68,7 +70,7 @@ export class RUIFontTexture{
     }
 
     private LoadFont(){
-        opentype.load(RUI.InitConfig.fontPath,(e,f)=>{
+        opentype.load(RUI_CONFIG.fontPath,(e,f)=>{
             this.m_font = f;
             
             this.FillTexture();

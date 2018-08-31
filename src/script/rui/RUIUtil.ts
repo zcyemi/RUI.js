@@ -10,8 +10,6 @@ if(Array.prototype['includes'] == null){
     }
 }
 
-export type RUIColor = number[];
-export type RUIVal = number;
 
 
 export function ROUND(x:number){
@@ -30,37 +28,18 @@ export function SIZE(val:number){
     return Math.max(0,val);
 }
 
-export type RUISizePair = {width:RUIVal,height:RUIVal};
+export type RUISizePair = {width:number,height:number};
 
 
 export type RUIAlign = number;
 
-export type RUIInitConfig = {
-    fontPath?: string,
-    fontSize?: number,
-}
 
-export class RUI{
 
-    private static s_config: RUIInitConfig;
 
-    public static Init(config: RUIInitConfig){
-        RUI.s_config = config;
-    }
+export class RUIUtil{
 
-    public static get InitConfig():RUIInitConfig{
-        return RUI.s_config;
-    }
+    
 
-    public static readonly RED:RUIColor = [1,0,0,1];
-    public static readonly BLACK:RUIColor =[0,0,0,1];
-    public static readonly WHITE:RUIColor = [1,1,1,1];
-    public static readonly GREEN:RUIColor = [0,1,0,1];
-    public static readonly BLUE:RUIColor = [0,0,1,1];
-    public static readonly YELLOW:RUIColor = [1,1,0,1];
-    public static readonly GREY:RUIColor = RUI.ColorUNorm(200,200,200,255);
-
-    public static readonly COLOR_ERROR:RUIColor = [1,0,1,1];
 
     public static readonly ALIGN_CENTER: RUIAlign = 0;
     public static readonly ALIGN_LEFT:RUIAlign = 1;
@@ -119,7 +98,7 @@ export class RUI{
         return [v,v,v,v];
     }
 
-    public static ColorUNorm(r:number,g:number,b:number,a:number = 255):RUIColor{
+    public static ColorUNorm(r:number,g:number,b:number,a:number = 255):number[]{
         return [r/255.0,g/255.0,b/255.0,a/255.0];
     }
 

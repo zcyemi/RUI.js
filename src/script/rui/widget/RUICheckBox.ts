@@ -1,5 +1,5 @@
 import {RUIObject, ROUND, RUIRect, RUIPosition, RUIAuto} from "../RUIObject";
-import {RUIAlign, RUI} from "../RUI";
+import {RUIAlign, RUIUtil} from "../RUIUtil";
 import {RUICmdList} from "../RUICmdList";
 import {RUIStyle} from "../RUIStyle";
 import {RUIContainer} from "../RUIContainer";
@@ -52,7 +52,7 @@ class RUICheckBoxInner extends RUIObject {
         cmd.DrawBorder(rect, RUIStyle.Default.primary0, cliprect);
 
         if (this.m_checked) {
-            let crect = RUI.RectIndent(rect, 2);
+            let crect = RUIUtil.RectIndent(rect, 2);
             cmd.DrawRectWithColor(crect, RUIStyle.Default.primary, cliprect);
         }
     }
@@ -60,7 +60,7 @@ class RUICheckBoxInner extends RUIObject {
 
 export class RUICheckBox extends RUIContainer {
 
-    private m_align : RUIAlign = RUI.ALIGN_CENTER;
+    private m_align : RUIAlign = RUIUtil.ALIGN_CENTER;
     private m_inner : RUICheckBoxInner;
 
     public get EventOnClick() : RUIEventEmitter < boolean > {
@@ -72,9 +72,9 @@ export class RUICheckBox extends RUIContainer {
         this.m_inner.checked = c;
     }
 
-    public constructor(checked : boolean, align : RUIAlign = RUI.ALIGN_CENTER) {
+    public constructor(checked : boolean, align : RUIAlign = RUIUtil.ALIGN_CENTER) {
         super();
-        this.height = RUI.LINE_HEIGHT_DEFAULT;
+        this.height = RUIUtil.LINE_HEIGHT_DEFAULT;
 
         let inner = new RUICheckBoxInner(checked);
         inner.position = RUIPosition.Relative;
@@ -90,10 +90,10 @@ export class RUICheckBox extends RUIContainer {
         this.m_align = align;
 
         let inner = this.m_inner;
-        if (align == RUI.ALIGN_CENTER) {
+        if (align == RUIUtil.ALIGN_CENTER) {
             inner.left = RUIAuto;
             inner.right = RUIAuto;
-        } else if (align = RUI.ALIGN_LEFT) {
+        } else if (align = RUIUtil.ALIGN_LEFT) {
             inner.right = RUIAuto;
             inner.left = CHECKBOX_SIZE;
         } else {

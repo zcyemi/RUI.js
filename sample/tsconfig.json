@@ -2,26 +2,19 @@
     "compilerOptions": {
         "moduleResolution": "node",
         "target": "es5",
-        "module": "umd",
+        "module": "amd",
         "lib": ["es2015","es2016","es2017","dom"],
         "strict": false,
         "sourceMap": true,
-        "declaration": false,
+        "declaration": true,
         "allowSyntheticDefaultImports": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
-        "declarationDir": "dist/types",
-        "outDir": "dist/lib",
-        "typeRoots": [
-            "../node_modules/@types",
-            "../dist/types"
-        ],
+        "outDir": "./js",
+        "outFile": "./js/ruisample.js",
+        "rootDir": "./src",
         "strictNullChecks": false,
     },
-    "exclude": [
-        "./dist",
-        "./../dist"
-    ],
     "include": [
         "./src"
     ]

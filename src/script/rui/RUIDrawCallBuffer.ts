@@ -2,9 +2,10 @@ import { GLProgram, GLContext } from "wglut";
 import { GLSL_VERT_DEF, GLSL_FRAG_COLOR, GLSL_VERT_TEXT, GLSL_FRAG_TEXT, GLSL_VERT_IMAGE, GLSL_FRAG_IMAGE } from "../rui/RUIShaderLib";
 import { RUIFontTexture } from "./RUIFontTexture";
 import { RUICmdList, RUIDrawCmdType } from "./RUICmdList";
-import { RUI } from "./RUI";
+import { RUIUtil } from "./RUIUtil";
 import { RUITextureStorage } from "./RUIRenderer";
 import { CLAMP } from "./RUIObject";
+import { RUIColor } from "./RUIColor";
 
 
 const COLOR_ERROR: number[] = [1, 0, 1, 1];
@@ -310,7 +311,7 @@ export class RUIDrawCallBuffer {
                     break;
                 case RUIDrawCmdType.line:
                     {
-                        if (color == null) color = RUI.GREY;
+                        if (color == null) color = RUIColor.GREY;
 
                         rect_color.push(color);
                         rect_color.push(color);

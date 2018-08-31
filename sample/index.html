@@ -9,9 +9,17 @@
                 height: 100%;
             }
         </style>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.min.js"></script>
     </head>
     <body>
-        <script src="dist/opentype.min.js"></script>
-        <script src="dist/rui.sample.js"></script>
+        <canvas id="ruisample" style="width:100%;height:100%; background-color:black"></canvas>
+        <script>
+            require.config({
+                baseUrl: './js'
+            });
+            require(['rui'],(rui)=>{
+                require(['ruisample']);
+            });
+        </script>
     </body>
 </html>

@@ -1,6 +1,7 @@
-export * from './rui/RUIDOMCanvas';
+/// <reference path='../../node_modules/@types/webgl2/index.d.ts'/>
 
-export * from './rui/RUI';
+export * from './rui/RUIDOMCanvas';
+export * from './rui/RUIUtil';
 export * from './rui/RUIBinder';
 export * from './rui/RUICmdList';
 export * from './rui/RUIRoot';
@@ -12,6 +13,7 @@ export * from './rui/RUIInput';
 export * from './rui/RUIRectangle';
 export * from './rui/RUIRenderer';
 export * from './rui/RUIStyle';
+export * from './rui/RUIContext';
 
 export * from './rui/RUIContainer';
 export * from './rui/RUIFlexContainer';
