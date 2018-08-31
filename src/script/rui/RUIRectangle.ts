@@ -1,9 +1,9 @@
-import { RUIObject, RUIAuto } from "./RUIObject";
+import { RUIObject } from "./RUIObject";
 import { RUICmdList } from "./RUICmdList";
-import { RUIStyle } from "./RUIStyle";
 import { RUIMouseEvent, RUIMouseDragEvent } from "./RUIEvent";
 import { RUIUtil } from "./RUIUtil";
 import { RUIContainerClipType } from "./RUIContainer";
+import { RUIAuto } from "./RUIDefine";
 
 export class RUIRectangle extends RUIObject{
 

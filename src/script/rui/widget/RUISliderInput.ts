@@ -2,8 +2,8 @@ import { RUIFlexContainer } from "../RUIFlexContainer";
 import { RUIUtil } from "../RUIUtil";
 import { RUISlider } from "./RUISlider";
 import { RUITextInput, RUITextInputFormat } from "./RUITextInput";
-import { RUIAuto, RUIOrientation } from "../RUIObject";
 import { RUIEvent } from "../RUIEvent";
+import { RUIOrientation } from "../RUIDefine";
 
 
 

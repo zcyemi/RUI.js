@@ -1,5 +1,5 @@
 import { RUIContainer } from "../RUIContainer";
-import { RUIOrientation, RUIObject, RUIConst, RUIAuto } from "../RUIObject";
+import { RUIObject} from "../RUIObject";
 import { RUIButtonGroup } from "./RUIButtonGroup";
 import { RUIButton } from "./RUIButton";
 import { RUIStyle } from "../RUIStyle";
@@ -7,6 +7,7 @@ import { RUIBind } from "../RUIBinder";
 import { RUIScrollView } from "./RUIScrollView";
 import { RUIFlexContainer } from "../RUIFlexContainer";
 import { RUIUtil } from "../RUIUtil";
+import { RUIConst, RUIOrientation } from "../RUIDefine";
 
 
 export interface RUITabPage{

@@ -1,4 +1,4 @@
-import { RUIRect, RUIRectP } from "./RUIObject";
+import { RUIRect, RUIRectP } from "./RUIDefine";
 
 
 if(Array.prototype['includes'] == null){
@@ -9,8 +9,6 @@ if(Array.prototype['includes'] == null){
         return true;
     }
 }
-
-
 
 export function ROUND(x:number){
     return Math.round(x);
@@ -34,11 +32,7 @@ export type RUISizePair = {width:number,height:number};
 export type RUIAlign = number;
 
 
-
-
 export class RUIUtil{
-
-    
 
 
     public static readonly ALIGN_CENTER: RUIAlign = 0;

@@ -1,9 +1,9 @@
 import { RUIContainer } from "../RUIContainer";
-import { RUIPosition } from "../RUIObject";
 import { RUIUtil } from "../RUIUtil";
 import { RUIStyle } from "../RUIStyle";
-import { RUIMouseDragEvent, RUIMouseDragStage, RUIMouseEvent } from "../RUIEvent";
+import { RUIMouseDragEvent, RUIMouseDragStage } from "../RUIEvent";
 import { RUILabel } from "./RUILabel";
+import { RUIPosition } from "../RUIDefine";
 
 // import { RUIObject, RUIPosition } from "../RUIObject";
 // import { RUIRoot } from "../RUIRoot";

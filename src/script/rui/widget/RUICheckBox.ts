@@ -1,10 +1,11 @@
-import {RUIObject, ROUND, RUIRect, RUIPosition, RUIAuto} from "../RUIObject";
+import {RUIObject} from "../RUIObject";
 import {RUIAlign, RUIUtil} from "../RUIUtil";
 import {RUICmdList} from "../RUICmdList";
 import {RUIStyle} from "../RUIStyle";
 import {RUIContainer} from "../RUIContainer";
 import {RUIRectangle} from "../RUIRectangle";
 import {RUIEventEmitter} from "../RUIEvent";
+import { RUIPosition, RUIAuto } from "../RUIDefine";
 
 const CHECKBOX_SIZE = 15;
 const CHECKBOX_SIZE2X = CHECKBOX_SIZE * 2;

@@ -2,52 +2,9 @@ import { RUIRoot } from "./RUIRoot";
 import { RUICmdList } from "./RUICmdList";
 import { RUIMouseEvent, RUIMouseDragEvent, RUIKeyboardEvent } from "./RUIEvent";
 import { RUIContainer } from "./RUIContainer";
-import { RUIUtil } from "./RUIUtil";
+import { RUIUtil, ROUND } from "./RUIUtil";
+import { RUIRect, RUIAuto, RUIPosition, RUICLIP_MAX } from "./RUIDefine";
 
-export const RUIAuto: number= -Infinity;
-
-export type RUIRect = number[];
-export type RUIRectP = number[];
-export const RUICLIP_MAX = [0,0,5000,5000];
-export const RUICLIP_NULL = null;
-
-
-export function ROUND(x:number){
-    return Math.round(x);
-}
-
-export function CLAMP(val:number,min:number,max:number){
-    return Math.min(Math.max(min, val), max);
-}
-
-export class RUIConst{
-    public static readonly TOP:number = 0;
-    public static readonly RIGHT:number = 1;
-    public static readonly BOTTOM:number = 2;
-    public static readonly LEFT: number = 3;
-}
-
-export enum RUIPosition{
-    Default = 0,
-    Relative = 1,
-    Absolute = 2,
-    Offset = 3
-}
-
-export enum RUIBoxFlow{
-    Flow,
-    Flex
-}
-
-export enum RUIOverflow{
-    Clip,
-    Scroll
-}
-
-export enum RUIOrientation{
-    Vertical,
-    Horizontal
-}
 
 export class RUIObject{
 

@@ -1,8 +1,8 @@
 import { RUIContainer, RUIContainerClipType } from "../RUIContainer";
 import { RUIButton } from "./RUIButton";
-import { RUIObject, RUIOrientation, RUIAuto, CLAMP, RUILayoutData } from "../RUIObject";
+import { RUILayoutData } from "../RUIObject";
 import { RUIStyle } from "../RUIStyle";
-import { RUIWheelEvent } from "../RUIEvent";
+import { RUIAuto, RUIOrientation } from "../RUIDefine";
 
 export class RUIButtonGroup extends RUIContainer {
 

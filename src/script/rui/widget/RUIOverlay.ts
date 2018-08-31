@@ -1,8 +1,6 @@
 import { RUIContainer, RUIContainerClipType } from "../RUIContainer";
-import { RUIPosition } from "../RUIObject";
-import { RUILabel } from "./RUILabel";
-import { RUIUtil } from "../RUIUtil";
 import { RUIColor } from "../RUIColor";
+import { RUIPosition } from "../RUIDefine";
 
 
 export class RUIOverlay extends RUIContainer{

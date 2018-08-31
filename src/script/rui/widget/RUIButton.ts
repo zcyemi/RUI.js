@@ -1,4 +1,4 @@
-import { RUIObject, RUIAuto } from "../RUIObject";
+import { RUIObject } from "../RUIObject";
 import { RUICmdList } from "../RUICmdList";
 import { RUIStyle } from "../RUIStyle";
 import { RUIMouseEvent } from "../RUIEvent";

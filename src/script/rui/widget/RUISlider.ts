@@ -1,4 +1,4 @@
-import { RUIObject, RUIOrientation } from "../RUIObject";
+import { RUIObject } from "../RUIObject";
 import { RUICmdList } from "../RUICmdList";
 import { RUIStyle } from "../RUIStyle";
 import { SATURATE } from "../RUIUtil";

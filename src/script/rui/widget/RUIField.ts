@@ -1,4 +1,4 @@
-import { RUIObject, RUIOrientation } from "../RUIObject";
+import { RUIObject } from "../RUIObject";
 import { RUIFlexContainer } from "../RUIFlexContainer";
 import { RUILabel } from "./RUILabel";
 import { RUITextInput, RUITextInputFormat } from "./RUITextInput";
@@ -6,6 +6,7 @@ import { RUICheckBox } from "./RUICheckBox";
 import { RUIAlign, RUIUtil } from "../RUIUtil";
 import { RUIEventEmitter } from "../RUIEvent";
 import { RUISliderInput } from "./RUISliderInput";
+import { RUIOrientation } from "../RUIDefine";
 
 
 const FIELD_LABEL_WIDTH = 100;

@@ -1,9 +1,8 @@
 import { RUIContainer } from "../RUIContainer";
 import { RUIButton } from "./RUIButton";
-import { RUIPosition, RUIObject, RUIOrientation } from "../RUIObject";
-import { RUIUtil } from "../RUIUtil";
-import { RUIRectangle } from "../RUIRectangle";
+import { RUIObject } from "../RUIObject";
 import { RUIStyle } from "../RUIStyle";
+import { RUIOrientation } from "../RUIDefine";
 
 export class RUICollapsibleContainer extends RUIContainer {
     private m_show: boolean;

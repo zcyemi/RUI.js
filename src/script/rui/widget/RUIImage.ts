@@ -1,8 +1,8 @@
-import { RUIObject, RUIAuto } from "../RUIObject";
+import { RUIObject } from "../RUIObject";
 import { RUICmdList } from "../RUICmdList";
-import { RUIUtil } from "../RUIUtil";
 import { RUIBind } from "../RUIBinder";
 import { RUIColor } from "../RUIColor";
+import { RUIAuto } from "../RUIDefine";
 
 export enum RUIImageSize{
     Initial,

@@ -1,10 +1,11 @@
-import { RUIObject, RUIOrientation, CLAMP, RUIPosition, RUIAuto, RUILayoutData } from "../RUIObject";
+import { RUIObject, RUILayoutData } from "../RUIObject";
 import { RUIContainer, RUIContainerClipType } from "../RUIContainer";
 import { RUICmdList } from "../RUICmdList";
 import { RUIStyle } from "../RUIStyle";
 import { RUIRectangle } from "../RUIRectangle";
 import { RUIMouseEvent, RUIMouseDragEvent, RUIMouseDragStage, RUIEventEmitter } from "../RUIEvent";
-import { RUIUtil, SATURATE } from "../RUIUtil";
+import { RUIUtil, SATURATE, CLAMP } from "../RUIUtil";
+import { RUIPosition, RUIOrientation } from "../RUIDefine";
 
 export class RUIScrollBarThumb extends RUIRectangle {
     private m_hoverColor: number[] = RUIStyle.Default.primary0;

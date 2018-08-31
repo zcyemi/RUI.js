@@ -2,6 +2,7 @@
 
 export * from './rui/RUIDOMCanvas';
 export * from './rui/RUIUtil';
+export * from './rui/RUIDefine';
 export * from './rui/RUIBinder';
 export * from './rui/RUICmdList';
 export * from './rui/RUIRoot';
@@ -14,6 +15,8 @@ export * from './rui/RUIRectangle';
 export * from './rui/RUIRenderer';
 export * from './rui/RUIStyle';
 export * from './rui/RUIContext';
+export * from './rui/RUIColor';
+export * from './rui/RUIObject';
 
 export * from './rui/RUIContainer';
 export * from './rui/RUIFlexContainer';

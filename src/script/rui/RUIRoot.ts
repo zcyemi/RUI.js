@@ -1,7 +1,8 @@
-import { RUIObject, RUIRect, RUIOrientation, RUILayoutData } from "./RUIObject";
+import { RUIObject, RUILayoutData } from "./RUIObject";
 import { RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIMouseDragEvent, RUIMouseDragStage, RUIWheelEvent, RUIEventType } from "./RUIEvent";
 import { RUIContainer } from "./RUIContainer";
 import { RUIDefaultLayouter } from "./RUIObject";
+import { RUIRect, RUIOrientation } from "./RUIDefine";
 
 export class RUIRoot {
 
