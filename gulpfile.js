@@ -33,7 +33,7 @@ gulp.task("build-sample",()=>{
 
 
 gulp.task("watch-sample",()=>{
-    BuildSample(true);
+    BuildSample();
     gulp.watch('./src/script/**/*.ts', BuildSample);
     gulp.watch('./src/shader/*.glsl', BuildShader);
     gulp.watch('./sample/src/*.ts',BuildSample);

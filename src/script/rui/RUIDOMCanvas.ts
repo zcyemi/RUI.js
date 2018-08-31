@@ -5,7 +5,7 @@ import { RUIEventEmitter, RUIResizeEvent, RUIObjEvent } from "./RUIEvent";
 import { RUIContainer } from "./RUIContainer";
 import { RUIRoot } from "./RUIRoot";
 import { RUIObject } from "./RUIObject";
-import { RUIEVENT_ONFRAME } from "./RUIContext";
+import { RUIEVENT_ONFRAME, RUIEVENT_ONUI } from "./RUIContext";
 import { RUICmdList } from "./RUICmdList";
 
 export class RUIDOMCanvas {
@@ -44,6 +44,7 @@ export class RUIDOMCanvas {
         }
 
         RUIEVENT_ONFRAME.on(this.onFrame.bind(this));
+        RUIEVENT_ONUI.on(this.onUIEvent.bind(this));
     }
 
     private rootInit(){
@@ -61,6 +62,11 @@ export class RUIDOMCanvas {
         window.addEventListener('resize',()=>{
             ruicanvas.onResizeCanvas(window.innerWidth,window.innerHeight);
         })
+    }
+
+    private onUIEvent(e:RUIObjEvent){
+        let root = this.m_root;
+        root.dispatchEvent(e);
     }
 
     private onFrame(f:number){
