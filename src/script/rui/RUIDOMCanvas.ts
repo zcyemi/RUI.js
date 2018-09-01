@@ -74,8 +74,11 @@ export class RUIDOMCanvas {
         if(this.root == null) return;
         let renderer = this.renderer;
         if(root.isdirty || renderer.needRedraw){
+            let start = window.performance.now();
             root.layout();
+            console.log('> '+ (window.performance.now() - start).toPrecision(4));
             this.m_cmdlist.draw(root);
+            //console.log(root.root);
             renderer.DrawCmdList(this.m_cmdlist);
         }
     }

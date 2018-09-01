@@ -35,6 +35,7 @@ export class RUIContainer extends RUIObject {
 
     public layoutClipRect: RUIRect;
     public layoutClipRectPadded: RUIRect;
+    public layoutUpdateMode: RUIContainerUpdateMode;
     /** mark execute for children ui of @function traversal */
     public skipChildTraversal: boolean = false;
 
@@ -91,7 +92,7 @@ export class RUIContainer extends RUIObject {
         ui.setRoot(null);
     }
 
-    protected containerUpdateCheck(): RUIContainerUpdateMode {
+    public containerUpdateCheck(): RUIContainerUpdateMode {
         if (!this.isdirty && !this._resized) {
             let children = this.children;
             let cisdirty = false;
@@ -268,7 +269,17 @@ export class RUIContainerLayouter implements RUILayouter {
     }
 
     public Layout(ui: RUIObject) {
+
         let cui = <RUIContainer>ui;
+
+        let updateMode = cui.containerUpdateCheck();
+        cui.layoutUpdateMode = updateMode;
+        if(updateMode == RUIContainerUpdateMode.None){
+            return;
+        }
+        cui.layoutWidth = null;
+        cui.layoutHeight = null;
+
         let children = cui.children;
         let clen = children.length;
         let flowChildren = [];
@@ -356,6 +367,10 @@ export class RUIContainerLayouter implements RUILayouter {
     }
 
     public LayoutPost(ui: RUIObject, data: RUILayoutData) {
+        let cui = <RUIContainer>ui;
+        if(cui.layoutUpdateMode == RUIContainerUpdateMode.None) return;
+
+
         if (ui.layoutHeight == null) {
             console.error(ui);
             throw new Error();
@@ -364,8 +379,7 @@ export class RUIContainerLayouter implements RUILayouter {
         if (ui.layoutWidth == null) {
             throw new Error();
         }
-
-        let cui = <RUIContainer>ui;
+        
         let children = cui.children;
         let clen = children.length;
         let flowChildren = [];

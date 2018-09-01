@@ -1,5 +1,5 @@
 import { RUIObject, RUILayouter, RUILayoutData } from "./RUIObject";
-import { RUIContainer } from "./RUIContainer";
+import { RUIContainer, RUIContainerUpdateMode } from "./RUIContainer";
 import { RUIAuto } from "./RUIDefine";
 import { ROUND } from "./RUIUtil";
 
@@ -48,7 +48,10 @@ export class RUIFlexLayouter implements RUILayouter {
     public Layout(ui: RUIObject) {
         if (!(ui instanceof RUIFlexContainer)) throw new Error();
         var cui = <RUIFlexContainer>ui;
-
+        cui.layoutUpdateMode = cui.containerUpdateCheck();
+        if(cui.layoutUpdateMode == RUIContainerUpdateMode.None) return;
+        cui.layoutWidth = null;
+        cui.layoutHeight = null;
 
         let children = cui.children;
         let clen = children.length;
@@ -116,8 +119,9 @@ export class RUIFlexLayouter implements RUILayouter {
 
     public LayoutPost(ui: RUIObject, data: RUILayoutData) {
         if (!(ui instanceof RUIFlexContainer)) throw new Error();
-
         var cui = <RUIFlexContainer>ui;
+        if(cui.layoutUpdateMode == RUIContainerUpdateMode.None) return;
+
         let children = cui.children;
         var isvertical = cui.isVertical;
 

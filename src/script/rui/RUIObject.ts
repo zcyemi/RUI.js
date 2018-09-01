@@ -65,8 +65,6 @@ export class RUIObject{
 
 
     public Layout(){
-        this.layoutWidth = null;
-        this.layoutHeight = null;
         this.layouter.Layout(this);
         if(Number.isNaN(this.layoutWidth) || Number.isNaN(this.layoutHeight)){
             console.error(this);
@@ -77,6 +75,9 @@ export class RUIObject{
         if(data == null) throw new Error('layout data is null!');
         data.verify();
         this.layouter.LayoutPost(this,data);
+
+        this.isdirty =false;
+        this._resized = false;
     }
 
     public Update(){
