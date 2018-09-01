@@ -1,6 +1,6 @@
 /// <reference path='./../../dist/rui.d.ts'/>
 
-import { RUIContainer, RUIInitContext, RUIDOMCanvas } from "rui";
+import { RUIContainer, RUIInitContext, RUIDOMCanvas, RUIButton, RUITabView, RUIRectangle, RUIConst } from "rui";
 import { RUISampleWidget } from "./RUISampleWidget";
 
 

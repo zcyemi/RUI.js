@@ -197,6 +197,12 @@ export class RUIRoot {
 
                 //console.log('o '+c._order);
 
+                // if(c._resized || c.isdirty) {
+                //     console.error(c);
+                //     throw new Error('resized or dirty flag is true');
+                // }
+
+
 
                 c.rCalx = offx + c.rOffx;
                 c.rCaly = offy + c.rOffy;
