@@ -37,8 +37,6 @@ export class RUIRenderer {
         this.glctx = wglut.GLContext.createFromCanvas(uicanvas.canvas);
         this.m_textureStorage = new RUITextureStorage(this.glctx);
 
-
-
         if (!this.glctx) {
             return;
         }
@@ -54,13 +52,14 @@ export class RUIRenderer {
         this.SetupGL();
 
         let canvas = uicanvas.canvas;
-        this.resizeCanvas(window.innerWidth, window.innerHeight);
+        this.resizeCanvas(canvas.width,canvas.height);
 
     }
 
     public resizeCanvas(w: number, h: number) {
-        this.gl.canvas.width = w;
-        this.gl.canvas.height = h;
+        let canvas = this.gl.canvas;
+        if(canvas.width != w)canvas.width = w;
+        if(canvas.height != h) canvas.height =h;
 
         this.m_uicanvas.setSize(w, h);
 

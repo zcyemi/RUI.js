@@ -7,13 +7,26 @@
                 margin: 0;
                 width: 100%;
                 height: 100%;
+                background-color: #22222b;
             }
         </style>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.min.js"></script>
     </head>
     <body>
-        <canvas id="ruisample" style="width:100%;height:100%; background-color:black"></canvas>
+        <canvas id="ruisample" style="background-color:black"></canvas>
         <script>
+
+            var canvas = document.getElementById("ruisample");
+            canvas.width = 800;
+            canvas.height = 600;
+            // canvas.width = window.innerWidth;
+            // canvas.height = window.innerHeight;
+
+            // window.addEventListener('resize',(w,e)=>{
+            //     canvas.width = window.innerWidth;
+            //     canvas.height = window.innerHeight;
+            // })
+
             require.config({
                 baseUrl: './js'
             });

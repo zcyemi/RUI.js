@@ -28,7 +28,7 @@ function registerInputEvent(){
     window.addEventListener('mousedown',(e)=>RUIEVENT_ONUI.emit(new RUIMouseEvent(e,RUIEventType.MouseDown)));
     window.addEventListener('mouseup',(e)=>RUIEVENT_ONUI.emit(new RUIMouseEvent(e,RUIEventType.MouseUp)));
     window.addEventListener('mousemove',(e)=>RUIEVENT_ONUI.emit(new RUIMouseEvent(e,RUIEventType.MouseMove)));
-    window.addEventListener('mousewheel',(e)=>RUIEVENT_ONUI.emit(new RUIWheelEvent(e)));
+    window.addEventListener('mousewheel',(e)=>{RUIEVENT_ONUI.emit(new RUIWheelEvent(e))});
 }
 
 

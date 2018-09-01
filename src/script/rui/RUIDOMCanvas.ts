@@ -7,6 +7,7 @@ import { RUIRoot } from "./RUIRoot";
 import { RUIObject } from "./RUIObject";
 import { RUIEVENT_ONFRAME, RUIEVENT_ONUI } from "./RUIContext";
 import { RUICmdList } from "./RUICmdList";
+import { RUIBind } from "./RUIBinder";
 
 export class RUIDOMCanvas {
     private m_canvas: HTMLCanvasElement;
@@ -57,10 +58,19 @@ export class RUIDOMCanvas {
 
     private registerEvent() {
         //disable context menu
-        var ruicanvas=  this;
-        this.m_canvas.addEventListener('contextmenu', (e) => { e.preventDefault(); return false });
-        window.addEventListener('resize',()=>{
-            ruicanvas.onResizeCanvas(window.innerWidth,window.innerHeight);
+        var self=  this;
+        var canvas = this.m_canvas;
+        canvas.addEventListener('contextmenu', (e) => { e.preventDefault(); return false });
+        // canvas.addEventListener('resize',()=>{
+        //     self.onResizeCanvas(canvas.width,canvas.height);
+        // })
+
+        RUIBind(canvas,'width',(s)=>{
+            self.onResizeCanvas(s,canvas.height);
+        })
+
+        RUIBind(canvas,'height',(s)=>{
+            self.onResizeCanvas(canvas.width,s);
         })
     }
 
@@ -76,7 +86,7 @@ export class RUIDOMCanvas {
         if(root.isdirty || renderer.needRedraw){
             let start = window.performance.now();
             root.layout();
-            console.log('> '+ (window.performance.now() - start).toPrecision(4));
+            //console.log('> '+ (window.performance.now() - start).toPrecision(4));
             this.m_cmdlist.draw(root);
             //console.log(root.root);
             renderer.DrawCmdList(this.m_cmdlist);
@@ -84,6 +94,7 @@ export class RUIDOMCanvas {
     }
 
     private onResizeCanvas(width:number,height:number){
+        if(this.m_width == width && this.m_height == height) return;
         this.m_renderer.resizeCanvas(width,height);
         this.EventOnResize.emit(new RUIResizeEvent(width,height));
     }
