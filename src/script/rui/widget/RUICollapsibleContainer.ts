@@ -3,6 +3,7 @@ import { RUIButton } from "./RUIButton";
 import { RUIObject } from "../RUIObject";
 import { RUIStyle } from "../RUIStyle";
 import { RUIOrientation } from "../RUIDefine";
+import { RUIUtil } from "../RUIUtil";
 
 export class RUICollapsibleContainer extends RUIContainer {
     private m_show: boolean;
@@ -22,6 +23,7 @@ export class RUICollapsibleContainer extends RUIContainer {
 
         let container = new RUIContainer();
         container.boxSideExtens = true;
+        container.padding = RUIUtil.Vector(2);
         this.m_container = container;
         if (this.m_show) super.addChild(container);
     }

@@ -36,7 +36,7 @@ gulp.task("watch-sample",()=>{
     BuildSample();
     gulp.watch('./src/script/**/*.ts', BuildSample);
     gulp.watch('./src/shader/*.glsl', BuildShader);
-    gulp.watch('./sample/src/*.ts',BuildSample);
+    gulp.watch('./sample/src/*.ts',()=>{BuildSample(false)});
     RunSample();
 })
 
@@ -90,7 +90,7 @@ async function BuildScript() {
 var onBuildSample =false;
 var onSchedulerBuild =false;
 
-async function BuildSample() {
+async function BuildSample(rebuildlib = true) {
     onSchedulerBuild = false;
     if(onBuildSample){
         if(!onSchedulerBuild){
@@ -100,8 +100,11 @@ async function BuildSample() {
         return;
     }
     onBuildSample = true;
-    await asyncGenDeclaration();
-    await asyncBuildLib();
+
+    if(rebuildlib){
+        await asyncGenDeclaration();
+        await asyncBuildLib();
+    }
     await asyncBuildSample();
     gulp.src('./dist/rui.js').pipe(gulp.dest('./sample/js/'));
     onBuildSample = false;

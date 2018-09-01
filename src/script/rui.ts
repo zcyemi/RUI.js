@@ -37,5 +37,7 @@ export * from './rui/widget/RUISliderInput';
 export * from './rui/widget/RUITabView';
 export * from './rui/widget/RUITextInput';
 export * from './rui/widget/RUIToolTip';
+export * from './rui/widget/RUIDropdowns';
+export * from './rui/widget/RUIListView';
 
 export * from './rui/RUIShaderLib';

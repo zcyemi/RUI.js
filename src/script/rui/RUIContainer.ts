@@ -54,6 +54,10 @@ export class RUIContainer extends RUIObject {
             console.warn('can not add undefined child');
             return;
         }
+        if(ui == this){
+            console.warn('can not add self.');
+            return;
+        }
         let c = this.children;
         if (c.indexOf(ui) >= 0) {
             console.warn('skip add child');
@@ -140,7 +144,7 @@ export class RUIContainer extends RUIObject {
         }
     }
 
-    public onDraw(cmd: RUICmdList) {
+    public onDraw(cmd: RUICmdList):boolean {
         this.onDrawPre(cmd);
         if (this.clipMask == null) return;
 
@@ -150,6 +154,8 @@ export class RUIContainer extends RUIObject {
             if (!c.enable) continue;
 
             cmd.currentOrder = c._order;
+            cmd.currentLayer = c.calLayer;
+            c._finalOrder = c._order+ c.calLayer * cmd.MaxDrawCount;
 
             if (c.visible) {
                 if (c.isClip) {
@@ -169,7 +175,7 @@ export class RUIContainer extends RUIObject {
             }
         }
 
-        this.onDrawPost(cmd);
+        return this.onDrawPost(cmd);
     }
 
     public onDrawPre(cmd: RUICmdList) {
@@ -204,15 +210,18 @@ export class RUIContainer extends RUIObject {
         this._drawClipRect = cliprect;
 
         cmd.currentOrder = this._order;
+        cmd.currentLayer = this.calLayer;
         //background
         if (this.boxBackground != null && cliprect != null) cmd.DrawRectWithColor(rect, this.boxBackground, cliprect);
     }
-    public onDrawPost(cmd: RUICmdList) {
+    public onDrawPost(cmd: RUICmdList) :boolean {
         let rect = this._rect;
         let clipRect = this._drawClipRect;
-        if (clipRect == null) return;
+        if (clipRect == null) return false;
         //cmd.currentOrder = this._order;
         if (this.boxBorder != null && rect != RUICLIP_NULL) cmd.DrawBorder(rect, this.boxBorder, clipRect);
+        
+        return true;
     }
 
     protected RectMinusePadding(recta: RUIRect, offset: number[]): RUIRect {

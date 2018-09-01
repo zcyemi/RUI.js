@@ -1,21 +1,21 @@
 /// <reference path='./../../dist/rui.d.ts'/>
-import { RUIContainer, RUIRectangle, RUITabPage, RUITabView, RUICollapsibleContainer, RUIButton,RUIUtil, RUILabel, RUIStyle, RUIFlexContainer, RUIContainerClipType, RUIScrollBar, RUIButtonGroup, RUIScrollView, RUITextInput, RUITextInputFormat, RUITextField, RUICheckBox, RUICheckBoxField, RUISlider, RUISliderInput, RUIIntegerField, RUIFloatField, RUIToolTip, RUIOverlay, RUIImage, RUICanvas, RUICanvasContainerNode, RUIImageSize, RUIConst, RUIOrientation, RUIColor, RUIPosition, RUIAuto } from "rui";
+import { RUIContainer, RUIRectangle, RUITabPage, RUITabView, RUICollapsibleContainer, RUIButton, RUIUtil, RUILabel, RUIStyle, RUIFlexContainer, RUIContainerClipType, RUIScrollBar, RUIButtonGroup, RUIScrollView, RUITextInput, RUITextInputFormat, RUITextField, RUICheckBox, RUICheckBoxField, RUISlider, RUISliderInput, RUIIntegerField, RUIFloatField, RUIToolTip, RUIOverlay, RUIImage, RUICanvas, RUICanvasContainerNode, RUIImageSize, RUIConst, RUIOrientation, RUIColor, RUIPosition, RUIAuto, RUIDropdowns, RUIListView } from "rui";
 
 
-export class RUISampleWidget extends RUIContainer{
+export class RUISampleWidget extends RUIContainer {
 
 
     public constructor() {
         super();
 
-        let pages :RUITabPage[] = [];
+        let pages: RUITabPage[] = [];
 
-        pages.push({label: 'basis', ui: new RUIPageBasis()});
-        pages.push({label: 'layout', ui: new RUIPageLayout()});
-        pages.push({label: 'container', ui: new RUIPageContainer()});
-        pages.push({label: 'widget', ui: new RUIPageWidget()});
-        pages.push({label: 'compoundwidget', ui: new RUIPageCompoundWiget()});
-        pages.push({label: 'canvas',ui:new RUIPageCanvas()})
+        pages.push({ label: 'basis', ui: new RUIPageBasis() });
+        pages.push({ label: 'layout', ui: new RUIPageLayout() });
+        pages.push({ label: 'container', ui: new RUIPageContainer() });
+        pages.push({ label: 'widget', ui: new RUIPageWidget() });
+        pages.push({ label: 'compoundwidget', ui: new RUIPageCompoundWiget() });
+        pages.push({ label: 'canvas', ui: new RUIPageCanvas() })
 
         let tabview = new RUITabView(pages, RUIConst.LEFT);
         this.addChild(tabview);
@@ -35,7 +35,7 @@ export class RUIPageBasis extends RUIContainer {
         this.PageBasisTextRendering(this);
     }
 
-    public PageBasisAddRemove(parent : RUIContainer) {
+    public PageBasisAddRemove(parent: RUIContainer) {
         var collapse = new RUICollapsibleContainer('remove/add children', true);
         parent.addChild(collapse);
 
@@ -58,7 +58,7 @@ export class RUIPageBasis extends RUIContainer {
 
     }
 
-    public PageBasicResize(parent : RUIContainer) {
+    public PageBasicResize(parent: RUIContainer) {
 
         var collapse = new RUICollapsibleContainer('Resize', true);
         parent.addChild(collapse);
@@ -80,7 +80,7 @@ export class RUIPageBasis extends RUIContainer {
         }))
     }
 
-    public PageBasisToggleEnable(parent : RUIContainer) {
+    public PageBasisToggleEnable(parent: RUIContainer) {
         let collapse = new RUICollapsibleContainer('Enable/Disable', true);
         collapse.width = 400;
         parent.addChild(collapse);
@@ -164,8 +164,8 @@ export class RUIPageBasis extends RUIContainer {
         }
     }
 
-    public PageBasisTextRendering(parent:RUIContainer){
-        let collapse = new RUICollapsibleContainer("TextRendering",true);
+    public PageBasisTextRendering(parent: RUIContainer) {
+        let collapse = new RUICollapsibleContainer("TextRendering", true);
         parent.addChild(collapse);
     }
 }
@@ -178,11 +178,11 @@ export class RUIPageLayout extends RUIContainer {
         this.PageLayoutMargin(this);
     }
 
-    private PageLayoutClip(parent : RUIContainer) {
+    private PageLayoutClip(parent: RUIContainer) {
         let collapse = new RUICollapsibleContainer('Clip', true);
         parent.addChild(collapse);
 
-        
+
         collapse.addChild(new RUILabel('RUIContainerClipType.Clip'));
         {
             let c1 = new RUIContainer();
@@ -193,23 +193,23 @@ export class RUIPageLayout extends RUIContainer {
             c1.height = 75;
             collapse.addChild(c1);
 
-            c1.addChild(new RUIRectangle(50,100));
-            
-            let r2 = new RUIRectangle(50,100);
+            c1.addChild(new RUIRectangle(50, 100));
+
+            let r2 = new RUIRectangle(50, 100);
             r2.position = RUIPosition.Offset;
             r2.width = 50;
             r2.height = 100;
             r2.top = 25;
             c1.addChild(r2);
 
-            let r3 = new RUIRectangle(50,100);
+            let r3 = new RUIRectangle(50, 100);
             r3.position = RUIPosition.Relative;
-            r3.top =25;
+            r3.top = 25;
             r3.left = 100;
             c1.addChild(r3);
 
-            let r4 = new RUIRectangle(50,100);
-            r4.isClip =false;
+            let r4 = new RUIRectangle(50, 100);
+            r4.isClip = false;
             c1.addChild(r4);
 
         }
@@ -352,8 +352,8 @@ export class RUIPageLayout extends RUIContainer {
         // }
     }
 
-    private PageLayoutMargin(parent:RUIContainer){
-        var collapse = new RUICollapsibleContainer('Margin',true);
+    private PageLayoutMargin(parent: RUIContainer) {
+        var collapse = new RUICollapsibleContainer('Margin', true);
         parent.addChild(collapse);
 
         //Horizontal
@@ -363,15 +363,15 @@ export class RUIPageLayout extends RUIContainer {
             let c1 = new RUIContainer(RUIOrientation.Horizontal);
             collapse.addChild(c1);
 
-            c1.boxBorder= RUIColor.WHITE;
+            c1.boxBorder = RUIColor.WHITE;
             c1.padding = RUIUtil.Vector(5);
 
-            let r1 = new RUIRectangle(100,100);
-            r1.margin = [0,20,20,0];
+            let r1 = new RUIRectangle(100, 100);
+            r1.margin = [0, 20, 20, 0];
             c1.addChild(r1);
 
-            let r2 = new RUIRectangle(50,50);
-            r2.margin = [10,50,0,30];
+            let r2 = new RUIRectangle(50, 50);
+            r2.margin = [10, 50, 0, 30];
             c1.addChild(r2);
 
         }
@@ -387,7 +387,7 @@ export class RUIPageContainer extends RUIContainer {
         this.PageContainerMarginPadding(this);
     }
 
-    public PageContainerRUIContainer(parent : RUIContainer) {
+    public PageContainerRUIContainer(parent: RUIContainer) {
         let collapse = new RUICollapsibleContainer('RUIContainer', true);
         parent.addChild(collapse);
 
@@ -440,7 +440,7 @@ export class RUIPageContainer extends RUIContainer {
         }
     }
 
-    public PageContainerMarginPadding(parent : RUIContainer) {
+    public PageContainerMarginPadding(parent: RUIContainer) {
         let collapse = new RUICollapsibleContainer('Margin/Padding', true);
         parent.addChild(collapse);
 
@@ -492,7 +492,7 @@ export class RUIPageContainer extends RUIContainer {
         }
     }
 
-    public PageContainerFlexContainer(parent : RUIContainer) {
+    public PageContainerFlexContainer(parent: RUIContainer) {
         let collapse = new RUICollapsibleContainer('FlexContainer', true);
         parent.addChild(collapse);
 
@@ -618,7 +618,7 @@ export class RUIPageCompoundWiget extends RUIContainer {
         this.WidgetTabView(this);
     }
 
-    private WidgetTabView(parent : RUIContainer) {
+    private WidgetTabView(parent: RUIContainer) {
         let collapse = new RUICollapsibleContainer('tabview', true);
         parent.addChild(collapse);
 
@@ -646,7 +646,7 @@ export class RUIPageCompoundWiget extends RUIContainer {
         }
     }
 
-    private WidgetScrollView(parent : RUIContainer) {
+    private WidgetScrollView(parent: RUIContainer) {
         let collapse = new RUICollapsibleContainer('scrollview', true);
         parent.addChild(collapse);
         {
@@ -681,7 +681,7 @@ export class RUIPageCompoundWiget extends RUIContainer {
             collapse.addChild(c2);
 
             let sbarVertical = new RUIScrollBar(RUIOrientation.Vertical);
-            sbarVertical.sizeVal =0.5;
+            sbarVertical.sizeVal = 0.5;
             sbarVertical.height = 120;
             c2.addChild(sbarVertical);
 
@@ -720,9 +720,10 @@ export class RUIPageWidget extends RUIContainer {
         this.WidgetField(this);
         this.WidgetToolTip(this);
         this.WidgetImage(this);
+        this.WidgetDropdowns(this);
     }
 
-    private WidgetButtons(parent : RUIContainer) {
+    private WidgetButtons(parent: RUIContainer) {
 
         let collapse = new RUICollapsibleContainer('Button', true);
         parent.addChild(collapse);
@@ -768,28 +769,28 @@ export class RUIPageWidget extends RUIContainer {
         }
     }
 
-    private WidgetInput(parent:RUIContainer){
-        let collapse = new RUICollapsibleContainer('Input',true);
+    private WidgetInput(parent: RUIContainer) {
+        let collapse = new RUICollapsibleContainer('Input', true);
         parent.addChild(collapse);
 
         let input = new RUITextInput('hello');
         collapse.addChild(input);
 
-        let inputnumber = new RUITextInput('number input',RUITextInputFormat.NUMBER);
+        let inputnumber = new RUITextInput('number input', RUITextInputFormat.NUMBER);
         collapse.addChild(inputnumber);
 
         let inputemail = new RUITextInput('email input', RUITextInputFormat.EMAIL);
         collapse.addChild(inputemail);
     }
 
-    private WidgetField(parent:RUIContainer){
-        let collapse = new RUICollapsibleContainer('Fields',true);
+    private WidgetField(parent: RUIContainer) {
+        let collapse = new RUICollapsibleContainer('Fields', true);
         parent.addChild(collapse);
 
-        let textField= new RUITextField('TextField','contents');
+        let textField = new RUITextField('TextField', 'contents');
         collapse.addChild(textField);
 
-        let textFieldFixedSize = new RUITextField('TextField','fixed size');
+        let textFieldFixedSize = new RUITextField('TextField', 'fixed size');
         textFieldFixedSize.width = 300;
         collapse.addChild(textFieldFixedSize);
 
@@ -798,9 +799,9 @@ export class RUIPageWidget extends RUIContainer {
             collapse.addChild(new RUILabel('checkbox'));
             collapse.addChild(new RUICheckBox(true));
 
-            let checkboxField = new RUICheckBoxField('CheckboxField',true);
+            let checkboxField = new RUICheckBoxField('CheckboxField', true);
             collapse.addChild(checkboxField);
-            let checkboxFieldFixedSize = new RUICheckBoxField('CheckboxField',false);
+            let checkboxFieldFixedSize = new RUICheckBoxField('CheckboxField', false);
             checkboxFieldFixedSize.width = 300;
             collapse.addChild(checkboxFieldFixedSize);
         }
@@ -810,42 +811,65 @@ export class RUIPageWidget extends RUIContainer {
             collapse.addChild(new RUISlider(0.5));
 
             collapse.addChild(new RUILabel('sliderInput-[0.0,1.0]'));
-            collapse.addChild(new RUISliderInput(0.5,0,1.0,false));
+            collapse.addChild(new RUISliderInput(0.5, 0, 1.0, false));
 
             collapse.addChild(new RUILabel('sliderInput-[-10,100]'));
-            collapse.addChild(new RUISliderInput(50,-10,100,true));
+            collapse.addChild(new RUISliderInput(50, -10, 100, true));
 
             collapse.addChild(new RUILabel('integerfield'));
-            collapse.addChild(new RUIIntegerField('Integer',50));
+            collapse.addChild(new RUIIntegerField('Integer', 50));
 
             collapse.addChild(new RUILabel('Floatfield'));
-            collapse.addChild(new RUIFloatField('Float-xfwhoiyffes',0.3));
+            collapse.addChild(new RUIFloatField('Float-xfwhoiyffes', 0.3));
         }
     }
 
-    private WidgetToolTip(parent:RUIContainer){
-        let collapse = new RUICollapsibleContainer('ToolTip',true);
+    private WidgetToolTip(parent: RUIContainer) {
+        let collapse = new RUICollapsibleContainer('ToolTip', true);
         parent.addChild(collapse);
 
         let tip = new RUIToolTip();
         collapse.addChild(tip);
-        
+
 
         var overlay = new RUIOverlay();
-        let btn = new RUIButton('overlay',b=>{
+        overlay.enable = false;
+        let btn = new RUIButton('overlay', b => {
             overlay.enable = !overlay.enable;
             overlay.setDirty();
         });
         btn.width = 100;
         collapse.addChild(btn);
         collapse.addChild(overlay);
+
     }
 
-    private WidgetImage(parent:RUIContainer){
-        let collapse = new RUICollapsibleContainer('Image',true);
+    private WidgetDropdowns(parent: RUIContainer) {
+        let collapse = new RUICollapsibleContainer('Dropdowns', true);
         parent.addChild(collapse);
 
-        let image = new RUIImage('./resources/octocat.png',200,100,RUIImageSize.Cover);
+        //dropdowns
+        var listdata = ['AAA', 'VVVV', 'QD22', 'CCQD4'];
+
+        let c = new RUIContainer(RUIOrientation.Horizontal);
+        collapse.addChild(c);
+
+        let dropdown = new RUIDropdowns(listdata);
+        dropdown.width = 100;
+        c.addChild(dropdown);
+
+
+        let dropdown1 = new RUIDropdowns(listdata, 'AAA');
+        dropdown1.width = 200;
+        c.addChild(dropdown1);
+
+    }
+
+    private WidgetImage(parent: RUIContainer) {
+        let collapse = new RUICollapsibleContainer('Image', true);
+        parent.addChild(collapse);
+
+        let image = new RUIImage('./resources/octocat.png', 200, 100, RUIImageSize.Cover);
         image.imageBackground = RUIColor.RED;
         collapse.addChild(image);
 
@@ -858,23 +882,23 @@ export class RUIPageWidget extends RUIContainer {
     }
 }
 
-export class RUIPageCanvas extends RUIContainer{
-    
-    public constructor(){
+export class RUIPageCanvas extends RUIContainer {
+
+    public constructor() {
         super();
         this.PageCanvas(this);
     }
 
-    public PageCanvas(parent:RUIContainer){
-        var collapse = new RUICollapsibleContainer('Canvas',true);
+    public PageCanvas(parent: RUIContainer) {
+        var collapse = new RUICollapsibleContainer('Canvas', true);
         parent.addChild(collapse);
 
-        let canvas= new RUICanvas();
-        canvas.height =400;
+        let canvas = new RUICanvas();
+        canvas.height = 400;
         collapse.addChild(canvas);
 
         var node = new RUICanvasContainerNode("TestNode");
-        node.addChild(new RUIRectangle(50,100));
+        node.addChild(new RUIRectangle(50, 100));
 
         var node1 = new RUICanvasContainerNode('Node2');
 
