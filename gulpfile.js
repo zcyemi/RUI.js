@@ -91,7 +91,6 @@ var onBuildSample =false;
 var onSchedulerBuild =false;
 
 async function BuildSample(rebuildlib = true) {
-    onSchedulerBuild = false;
     if(onBuildSample){
         if(!onSchedulerBuild){
             onSchedulerBuild = true;
@@ -99,6 +98,7 @@ async function BuildSample(rebuildlib = true) {
         }
         return;
     }
+    onSchedulerBuild = false;
     onBuildSample = true;
 
     if(rebuildlib){
