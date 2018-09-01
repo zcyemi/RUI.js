@@ -35,7 +35,8 @@ export class RUIObject{
     public _level:number = 0;
     public _order:number =0;
     public _finalOrder:number =0;
-    public layer:number = 0;
+    private _layer?:number = null;
+    public calLayer:number = 0;
 
     protected _rect :RUIRect;
     public _drawClipRect:RUIRect;
@@ -155,6 +156,14 @@ export class RUIObject{
         if(this._enable == val) return;
         this._enable = val;
         this.setDirty();
+    }
+
+    public get layer():number{
+        return this._layer;
+    }
+
+    public set layer(val:number){
+        this._layer = val;
     }
 
     public setDirty(resize:boolean = false){

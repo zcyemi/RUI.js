@@ -204,7 +204,12 @@ export class RUIRoot {
                 c._order= corder;
                 corder ++;
 
-                //console.log('o '+c._order);
+                if(c.layer != null){
+                    c.calLayer = c.layer
+                }
+                else{
+                    c.calLayer = cui.calLayer;
+                }
 
 
                 c.rCalx = offx + c.rOffx;
