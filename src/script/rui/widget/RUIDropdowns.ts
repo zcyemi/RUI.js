@@ -1,11 +1,12 @@
 import { RUIButton } from "./RUIButton";
 import { RUIContainer } from "../RUIContainer";
-import { RUIOrientation } from "../RUIDefine";
+import { RUIOrientation, RUIAuto } from "../RUIDefine";
 import { RUIOverlay } from "./RUIOverlay";
 import { RUILayoutData } from "../RUIObject";
 import { RUIListView } from "./RUIListView";
 import { RUIStyle } from "../RUIStyle";
 import { RUIEventEmitter, RUIEvent } from "../RUIEvent";
+import { RUIUtil } from "../RUIUtil";
 
 
 export class RUIDropdowns extends RUIContainer{
@@ -35,7 +36,7 @@ export class RUIDropdowns extends RUIContainer{
         let overlay = new RUIDropdownsSelector(options);
         overlay.layer = 1;
         overlay.enable = false;
-        overlay.top = 0;
+        overlay.top = RUIUtil.LINE_HEIGHT_DEFAULT;
         overlay.left =0;
         overlay.right = 0;
 
@@ -61,15 +62,12 @@ export class RUIDropdowns extends RUIContainer{
         this.value = value.object;
     }
 
-    public LayoutPost(data:RUILayoutData){
-        super.LayoutPost(data);
-
-        this.m_overlay.rOffy += this.m_button.rCalHeight;
-    }
 
     private onButtonClick(btn:RUIButton){
         let overlay = this.m_overlay;
         if(!overlay.enable){
+            //adjust size
+            //TODO
             overlay.enable = true;
             this._root.setActiveUI(overlay);
         }
@@ -84,7 +82,7 @@ class RUIDropdownsSelector extends RUIOverlay{
 
     public constructor(options:string[]){
         super();
-
+        
         let self = this;
 
         this.boxBackground = RUIStyle.Default.background1;
@@ -98,8 +96,6 @@ class RUIDropdownsSelector extends RUIOverlay{
         this.addChild(listview);
     }
 
-    public onActive(){
-    }
 
     public onInactive(){
         this.enable = false;
