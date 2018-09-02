@@ -4,6 +4,7 @@ import { RUIRoot } from "./RUIRoot";
 import { RUIWheelEvent } from "./RUIEvent";
 import { RUIUtil, RUISizePair, SIZE } from "./RUIUtil";
 import { RUIOverflow, RUIOrientation, RUIRect, RUIPosition, RUICLIP_NULL, RUIAuto, RUIConst } from "./RUIDefine";
+import { RUI_CONFIG } from "./RUIContext";
 
 export enum RUIContainerUpdateMode {
     None,
@@ -97,6 +98,7 @@ export class RUIContainer extends RUIObject {
     }
 
     public containerUpdateCheck(): RUIContainerUpdateMode {
+        if(RUI_CONFIG.forceFullLayout) return RUIContainerUpdateMode.LayoutFull;
         if (!this.isdirty && !this._resized) {
             let children = this.children;
             let cisdirty = false;

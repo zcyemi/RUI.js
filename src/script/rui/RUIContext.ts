@@ -3,6 +3,7 @@ import { RUIEventEmitter, RUIObjEvent, RUIKeyboardEvent, RUIMouseEvent, RUIWheel
 export type RUIInitConfig = {
     fontPath?: string,
     fontSize?: number,
+    forceFullLayout?:boolean,
 }
 
 
@@ -15,6 +16,8 @@ var RUI_INITED:boolean = false;
 
 export function RUIInitContext(config:RUIInitConfig){
     RUI_CONFIG = config;
+    
+    if(config.forceFullLayout == null) config.forceFullLayout = true;
 
     if(!RUI_INITED){
         RUI_INITED = true;
