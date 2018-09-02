@@ -14,7 +14,8 @@
     "build-sample": "gulp build-sample",
     "watch-sample": "gulp watch-sample",
     "prebuild": "rimraf ./dist",
-    "start": "gulp run-sample"
+    "start": "gulp run-sample",
+    "test": "mocha -r ts-node/register tests/**/*.test.ts"
   },
   "repository": {
     "type": "git",
@@ -27,8 +28,11 @@
   },
   "homepage": "https://github.com/soyemi/RUI.js#readme",
   "devDependencies": {
+    "@types/chai": "^4.1.4",
+    "@types/mocha": "^5.2.5",
     "@types/opentype.js": "^0.7.0",
     "browser-sync": "^2.24.6",
+    "chai": "^4.1.2",
     "gulp": "^3.9.1",
     "gulp-glsl": "^1.2.4",
     "gulp-rollup": "^2.16.2",
@@ -36,6 +40,7 @@
     "gulp-sequence": "^1.0.0",
     "gulp-typescript": "^5.0.0-alpha.3",
     "lodash.camelcase": "^4.3.0",
+    "mocha": "^5.2.0",
     "rimraf": "^2.6.2",
     "rollup": "^0.65.0",
     "rollup-plugin-commonjs": "^9.1.6",
@@ -44,6 +49,7 @@
     "rollup-plugin-terser": "^1.0.1",
     "rollup-plugin-typescript2": "^0.17.0",
     "through2": "^2.0.3",
+    "ts-node": "^7.0.1",
     "typedoc": "^0.12.0",
     "typescript": "^2.9.2"
   },

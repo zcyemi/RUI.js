@@ -23,7 +23,12 @@ export default{
     ],
     external: [],
     plugins: [
-        typescript({useTsconfigDeclarationDir:true}),
+        typescript({
+            tsconfigOverride: {
+                compilerOptions: { module: 'es2015'}
+            },
+            tsconfig: 'tsconfig.json'
+        }),
         commonjs(),
         resolve({
             jsnext:true,
