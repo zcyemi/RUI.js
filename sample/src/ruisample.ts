@@ -7,7 +7,7 @@ import { RUISampleWidget } from "./RUISampleWidget";
 let canvas = <HTMLCanvasElement>document.getElementById('ruisample');
 
 RUIInitContext({
-    fontPath :'./resources/consola.ttf'
+    fontPath :'./resources/firacode.ttf'
 });
 
 
