@@ -38,7 +38,7 @@ export class RUIFontTexture{
     public glyphsWidth:number[] = [];
 
     public m_isDirty:boolean = false;
-    public fontSize:number = 16;
+    public fontSize:number = 15;
 
     public static EventOnTextureLoaded: RUIEventEmitter<RUIFontTexture> = new RUIEventEmitter();
 
@@ -81,6 +81,7 @@ export class RUIFontTexture{
     public MeasureTextWith(content:string):number{
         let w = 0;
         let gw = this.glyphsWidth;
+        w+= content.length;
         for(var i=0,len=content.length;i<len;i++){
            w+= gw[content.charCodeAt(i)]; 
         }
@@ -113,13 +114,13 @@ export class RUIFontTexture{
             let g = f.charToGlyph(c);
             let m =g.getMetrics();
 
-            let y = Math.ceil(upx *(m.yMax - m.yMin));
+            let y = Math.ceil(upx *(m.yMax - m.yMin))+1;
             let ybase = Math.ceil(upx *(m.yMax));
-            let x= Math.ceil(upx*(m.xMax - m.xMin));
+            let x= Math.ceil(upx*(m.xMax - m.xMin))+1;
 
             if(linw + x > 126){
                 linw =0;
-                linh += fontsize;
+                linh += fontsize+1;
                 maxh = 0;
             }
 
@@ -201,7 +202,7 @@ export class RUIFontTexture{
         let ctx : CanvasRenderingContext2D = canvas2d.getContext('2d');
         this.m_ctx2d = ctx;
 
-        //document.body.appendChild(canvas2d);
+        document.body.appendChild(canvas2d);
 
         this.m_textureWidth = texw;
         this.m_textureHeight = texh;

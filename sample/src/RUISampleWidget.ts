@@ -820,7 +820,7 @@ export class RUIPageWidget extends RUIContainer {
             collapse.addChild(new RUIIntegerField('Integer', 50));
 
             collapse.addChild(new RUILabel('Floatfield'));
-            collapse.addChild(new RUIFloatField('Float-xfwhoiyffes', 0.3));
+            collapse.addChild(new RUIFloatField('Float.,', 0.3));
         }
     }
 
