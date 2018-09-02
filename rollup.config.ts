@@ -27,7 +27,8 @@ export default{
             tsconfigOverride: {
                 compilerOptions: { module: 'es2015'}
             },
-            tsconfig: 'tsconfig.json'
+            tsconfig: 'tsconfig.json',
+            useTsconfigDeclarationDir:true
         }),
         commonjs(),
         resolve({
