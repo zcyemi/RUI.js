@@ -202,7 +202,7 @@ export class RUIFontTexture{
         let ctx : CanvasRenderingContext2D = canvas2d.getContext('2d');
         this.m_ctx2d = ctx;
 
-        document.body.appendChild(canvas2d);
+        //document.body.appendChild(canvas2d);
 
         this.m_textureWidth = texw;
         this.m_textureHeight = texh;
