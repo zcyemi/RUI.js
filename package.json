@@ -1,11 +1,12 @@
 {
   "name": "rui.js",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
   "main": "dist/bundle/rui.js",
   "typings": "dist/bundle/rui.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "doc": "typedoc --out docs --target es6 --theme minimal --mode file src",

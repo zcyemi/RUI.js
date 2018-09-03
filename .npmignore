@@ -1,0 +1,5 @@
+package-lock.json
+.rpt2_cache/
+docs/
+sample/
+tests/
