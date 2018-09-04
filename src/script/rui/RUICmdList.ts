@@ -9,7 +9,7 @@ export enum RUIDrawCmdType {
     text,
     border,
     line,
-    image,
+    image
 }
 
 export class RUIDrawCmd{
@@ -65,6 +65,14 @@ export class RUIDrawCmd{
         cmd.Rect = rect;
         cmd.type = RUIDrawCmdType.image;
         cmd.object = image;
+        return cmd;
+    }
+
+    public static CmdTexture(texture:WebGLTexture,rect:RUIRect){
+        let cmd = new RUIDrawCmd();
+        cmd.Rect = rect;
+        cmd.type = RUIDrawCmdType.image;
+        cmd.object = texture;
         return cmd;
     }
 }
@@ -195,6 +203,19 @@ export class RUICmdList{
         }
         this.drawList.push(cmd);
     }
+
+    public DrawTexture(texture:WebGLTexture,rect:RUIRect,clip?:RUIRect,order?:number){
+        let cmd = RUIDrawCmd.CmdTexture(texture,rect);
+        cmd.clip = RUIUtil.toRectP(clip == null? rect:clip);
+        if(order!=null){
+            cmd.Index = order;
+        }
+        else{
+            cmd.Index = this.currentOrder + this.currentLayer * this.MaxDrawCount;
+        }
+        this.drawList.push(cmd);
+    }
+
     
 
     public DrawBorder(rect: number[], color: number[],cliprect?:RUIRect,order?:number) {

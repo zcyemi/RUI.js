@@ -28,6 +28,7 @@ export class RUIDOMCanvas {
     private m_root: RUIRoot;
     private m_cmdlist:RUICmdList;
 
+
     constructor(canvas: HTMLCanvasElement,baseui:RUIObject = new RUIContainer()) {
         this.m_canvas = canvas;
         this.m_renderer = new RUIRenderer(this);
@@ -110,6 +111,7 @@ export class RUIDOMCanvas {
         this.rootInit();
     }
 
+
     public get canvasWidth():number{
         return this.m_canvas.width;
     }
@@ -124,6 +126,10 @@ export class RUIDOMCanvas {
 
     public get renderer(): RUIRenderer{
         return this.m_renderer;
+    }
+
+    public get webGLContext():WebGL2RenderingContext{
+        return this.renderer.GLContext;
     }
 
     public get input(): RUIInput {

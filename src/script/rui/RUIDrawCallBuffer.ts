@@ -411,8 +411,19 @@ export class RUIDrawCallBuffer {
                     break;
                 case RUIDrawCmdType.image:
                     {
-                        let image = <HTMLImageElement>cmd.object;
-                        let tex = textureStorage.getTexture(image);
+                        let image = cmd.object;
+
+                        let tex :WebGLTexture = null;
+                        if(image instanceof HTMLImageElement){
+                            tex = textureStorage.getTexture(image);
+                        }
+                        else if(image instanceof WebGLTexture){
+                            tex  =<WebGLTexture>image;
+                        }
+                        else{
+                            continue;
+                        }
+
 
                         let drawData:RUITextureDrawData;
                         for(var j=0,len= textureDraw.length;j<len;j++){
@@ -447,6 +458,7 @@ export class RUIDrawCallBuffer {
                             drawData.uv = uv;
                         }
                         drawData.count ++;
+      
 
                     }
                     break;
