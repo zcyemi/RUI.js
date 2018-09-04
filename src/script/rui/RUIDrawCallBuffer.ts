@@ -447,7 +447,6 @@ export class RUIDrawCallBuffer {
                         let x1 = rect[2];
                         let y1 = rect[3];
 
-
                         drawData.data.push(x,y,d,x1,y,d,x1,y1,d,x,y1,d);
                         if(cmd.param == null){
                             drawData.uv.push(0,0,1,0,1,1,0,1);
@@ -494,6 +493,5 @@ export class RUIDrawCallBuffer {
             gl.bindBuffer(gl.ARRAY_BUFFER, this.clipBufferText);
             gl.bufferData(gl.ARRAY_BUFFER, text_clip.buffer, gl.STATIC_DRAW);
         }
-
     }
 }

@@ -205,7 +205,7 @@ export class RUICmdList{
     }
 
     public DrawTexture(texture:WebGLTexture,rect:RUIRect,clip?:RUIRect,order?:number){
-        let cmd = RUIDrawCmd.CmdTexture(texture,rect);
+        let cmd = RUIDrawCmd.CmdTexture(texture,RUIUtil.toRectP(rect));
         cmd.clip = RUIUtil.toRectP(clip == null? rect:clip);
         if(order!=null){
             cmd.Index = order;
