@@ -39,5 +39,6 @@ export * from './rui/widget/RUITextInput';
 export * from './rui/widget/RUIToolTip';
 export * from './rui/widget/RUIDropdowns';
 export * from './rui/widget/RUIListView';
+export * from './rui/widget/RUIRawTexture';
 
 export * from './rui/RUIShaderLib';

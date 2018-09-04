@@ -6,7 +6,7 @@ import { RUIRect, RUIOrientation } from "./RUIDefine";
 
 export class RUIRoot {
 
-    public root: RUIObject;
+    private m_root: RUIObject;
 
     public isdirty: boolean = true;
 
@@ -27,6 +27,15 @@ export class RUIRoot {
 
         this.expandSize = expandSize;
         this.root = ui;
+        ui.setRoot(this);
+    }
+
+    public get root():RUIObject{
+        return this.m_root;
+    }
+    public set root(ui:RUIObject){
+        if(this.m_root == ui)return;
+        this.m_root = ui;
         ui.setRoot(this);
     }
 

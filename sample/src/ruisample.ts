@@ -3,6 +3,7 @@
 import { RUIContainer, RUIInitContext, RUIDOMCanvas, RUIButton, RUITabView, RUIRectangle, RUIConst } from "rui";
 import { RUISampleWidget } from "./RUISampleWidget";
 
+export var webglcontext:WebGL2RenderingContext = null;
 
 let canvas = <HTMLCanvasElement>document.getElementById('ruisample');
 
@@ -11,10 +12,11 @@ RUIInitContext({
 });
 
 
+
+
+
+let ruicanvas = new RUIDOMCanvas(canvas,null);
+webglcontext = ruicanvas.renderer.GLContext;
+
 let sample = new RUISampleWidget();
-
-
-
-
-let ruicanvas = new RUIDOMCanvas(canvas,sample);
-
+ruicanvas.setRootUI(sample);

@@ -28,24 +28,38 @@ export class RUIDOMCanvas {
     private m_root: RUIRoot;
     private m_cmdlist:RUICmdList;
 
+
     constructor(canvas: HTMLCanvasElement,baseui:RUIObject = new RUIContainer()) {
         this.m_canvas = canvas;
         this.m_renderer = new RUIRenderer(this);
 
         this.m_input = new RUIInput(this);
         this.m_cursor = new RUICursor(this);
+        this.m_cmdlist = new RUICmdList();
+
 
         this.registerEvent();
 
         if(baseui != null){
             let root = new RUIRoot(baseui,true);
             this.m_root = root;
-            this.m_cmdlist = new RUICmdList();
             this.rootInit();
         }
 
         RUIEVENT_ONFRAME.on(this.onFrame.bind(this));
         RUIEVENT_ONUI.on(this.onUIEvent.bind(this));
+    }
+
+    public setRootUI(ui:RUIObject){
+        let root = this.m_root;
+        if(root == null){
+            root = new RUIRoot(ui,true);
+            this.m_root = root;
+            this.rootInit();
+        }
+        else{
+            root.root = ui;
+        }
     }
 
     private rootInit(){
@@ -110,6 +124,7 @@ export class RUIDOMCanvas {
         this.rootInit();
     }
 
+
     public get canvasWidth():number{
         return this.m_canvas.width;
     }
@@ -124,6 +139,10 @@ export class RUIDOMCanvas {
 
     public get renderer(): RUIRenderer{
         return this.m_renderer;
+    }
+
+    public get webGLContext():WebGL2RenderingContext{
+        return this.renderer.GLContext;
     }
 
     public get input(): RUIInput {

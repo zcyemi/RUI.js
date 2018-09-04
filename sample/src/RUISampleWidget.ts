@@ -1,5 +1,6 @@
 /// <reference path='./../../dist/rui.d.ts'/>
-import { RUIContainer, RUIRectangle, RUITabPage, RUITabView, RUICollapsibleContainer, RUIButton, RUIUtil, RUILabel, RUIStyle, RUIFlexContainer, RUIContainerClipType, RUIScrollBar, RUIButtonGroup, RUIScrollView, RUITextInput, RUITextInputFormat, RUITextField, RUICheckBox, RUICheckBoxField, RUISlider, RUISliderInput, RUIIntegerField, RUIFloatField, RUIToolTip, RUIOverlay, RUIImage, RUICanvas, RUICanvasContainerNode, RUIImageSize, RUIConst, RUIOrientation, RUIColor, RUIPosition, RUIAuto, RUIDropdowns, RUIListView } from "rui";
+import { RUIContainer, RUIRectangle, RUITabPage, RUITabView, RUICollapsibleContainer, RUIButton, RUIUtil, RUILabel, RUIStyle, RUIFlexContainer, RUIContainerClipType, RUIScrollBar, RUIButtonGroup, RUIScrollView, RUITextInput, RUITextInputFormat, RUITextField, RUICheckBox, RUICheckBoxField, RUISlider, RUISliderInput, RUIIntegerField, RUIFloatField, RUIToolTip, RUIOverlay, RUIImage, RUICanvas, RUICanvasContainerNode, RUIImageSize, RUIConst, RUIOrientation, RUIColor, RUIPosition, RUIAuto, RUIDropdowns, RUIListView, RUIRawTexture } from "rui";
+import { webglcontext } from "./ruisample";
 
 
 export class RUISampleWidget extends RUIContainer {
@@ -721,6 +722,7 @@ export class RUIPageWidget extends RUIContainer {
         this.WidgetToolTip(this);
         this.WidgetImage(this);
         this.WidgetDropdowns(this);
+        this.WidgetRawTexture(this);
     }
 
     private WidgetButtons(parent: RUIContainer) {
@@ -879,6 +881,40 @@ export class RUIPageWidget extends RUIContainer {
 
         // let imageWrap1 = RUIImage.Create(image,100,120,RUIImageSize.Cover);
         // collapse.addChild(imageWrap1);
+    }
+
+    private WidgetRawTexture(parent:RUIContainer){
+        let collapse = new RUICollapsibleContainer("RawTexture",true);
+        parent.addChild(collapse);
+
+        //create webgl texture
+        let gl:WebGL2RenderingContext = webglcontext;
+
+        let tex = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D,tex);
+        gl.texStorage2D(gl.TEXTURE_2D,1,gl.RGBA8,128,128);
+
+        let fb = gl.createFramebuffer();
+
+        let curvp = gl.getParameter(gl.VIEWPORT);
+        let clearColor = gl.getParameter(gl.COLOR_CLEAR_VALUE);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER,fb);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,tex,0);
+        gl.viewport(0,0,128,128);
+        gl.clearColor(1,1,0,1);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+        gl.deleteFramebuffer(fb);
+
+        gl.viewport(curvp[0],curvp[1],curvp[2],curvp[3]);
+        gl.clearColor(clearColor[0],clearColor[1],clearColor[2],clearColor[3]);
+
+
+        let rawtex = new RUIRawTexture(tex);
+        rawtex.width = 128;
+        rawtex.height = 128;
+        collapse.addChild(rawtex);
     }
 }
 

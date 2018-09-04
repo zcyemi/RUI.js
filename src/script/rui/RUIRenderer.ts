@@ -32,6 +32,10 @@ export class RUIRenderer {
     private m_textureStorage: RUITextureStorage;
 
 
+    public get GLContext():WebGL2RenderingContext{
+        return this.gl;
+    }
+
     public constructor(uicanvas: RUIDOMCanvas) {
         this.m_uicanvas = uicanvas;
         this.glctx = wglut.GLContext.createFromCanvas(uicanvas.canvas);
