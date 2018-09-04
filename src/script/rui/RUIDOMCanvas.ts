@@ -35,18 +35,31 @@ export class RUIDOMCanvas {
 
         this.m_input = new RUIInput(this);
         this.m_cursor = new RUICursor(this);
+        this.m_cmdlist = new RUICmdList();
+
 
         this.registerEvent();
 
         if(baseui != null){
             let root = new RUIRoot(baseui,true);
             this.m_root = root;
-            this.m_cmdlist = new RUICmdList();
             this.rootInit();
         }
 
         RUIEVENT_ONFRAME.on(this.onFrame.bind(this));
         RUIEVENT_ONUI.on(this.onUIEvent.bind(this));
+    }
+
+    public setRootUI(ui:RUIObject){
+        let root = this.m_root;
+        if(root == null){
+            root = new RUIRoot(ui,true);
+            this.m_root = root;
+            this.rootInit();
+        }
+        else{
+            root.root = ui;
+        }
     }
 
     private rootInit(){
